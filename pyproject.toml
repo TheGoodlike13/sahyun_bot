@@ -8,8 +8,17 @@ maintainers = ["TheGoodlike13 <henrisssss@hotmail.com>"]
 readme = "README.md"
 homepage = "https://www.twitch.tv/sahyun"
 repository = "https://github.com/TheGoodlike13/sahyun-bot"
-documentation = "https://github.com/TheGoodlike13/sahyun-bot"
 keywords = ["irc", "bot", "sahyun", "twitch", "customsforge"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+include = [
+    "LICENSE"
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
