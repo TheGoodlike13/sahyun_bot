@@ -1,8 +1,15 @@
 [tool.poetry]
 name = "sahyun-bot"
-version = "0.1.0"
-description = "IRC bot used by Sahyun (twitch channel): https://www.twitch.tv/sahyun"
+version = "1"
+description = "IRC bot used by Sahyun"
+license = "MIT"
 authors = ["TheGoodlike13 <henrisssss@hotmail.com>"]
+maintainers = ["TheGoodlike13 <henrisssss@hotmail.com>"]
+readme = "README.md"
+homepage = "https://www.twitch.tv/sahyun"
+repository = "https://github.com/TheGoodlike13/sahyun-bot"
+documentation = "https://github.com/TheGoodlike13/sahyun-bot"
+keywords = ["irc", "bot", "sahyun", "twitch", "customsforge"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

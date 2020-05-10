@@ -1,3 +1,4 @@
+
 # Sahyun bot
 
 This is the implementation of the bot used in sahyun's twitch channel:
@@ -15,4 +16,14 @@ TODO
 
 ## Architecture & design
 
-TODO
+The purpose of this bot is to manage the playlist of user requests while sahyun is streaming.
+It may also perform some other trivial tasks alongside.
+
+For the sake of exercise, the bot is written using Python 3.8+. It uses poetry as build & dependency 
+management tool.
+
+install.bat should contain all the relevant commands & instructions which were used when setting up
+the application for development & running. All instructions assume windows, as anyone using linux is
+probably savvy enough to take care of such things on their own. Furthermore, most of the work is
+described in guides & documentation of python or its tools. In some cases, information from a reddit
+post was used: https://www.reddit.com/r/pycharm/comments/elga2z/using_pycharm_for_poetrybased_projects/
