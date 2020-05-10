@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "sahyun-bot"
 version = "0.1.0"
-description = ""
+description = "IRC bot used by Sahyun (twitch channel): https://www.twitch.tv/sahyun"
 authors = ["TheGoodlike13 <henrisssss@hotmail.com>"]
 
 [tool.poetry.dependencies]
