@@ -1,7 +1,7 @@
 
 # Sahyun bot
 
-This is the implementation of the bot used in sahyun's twitch channel:
+This is the implementation of the bot used in Sahyun's twitch channel:
 https://www.twitch.tv/sahyun
 
 ## Usage
@@ -16,7 +16,7 @@ TODO
 
 ## Architecture & design
 
-The purpose of this bot is to manage the playlist of user requests while sahyun is streaming.
+The purpose of this bot is to manage the playlist of user requests while Sahyun is streaming.
 It may also perform some other trivial tasks alongside.
 
 For the sake of exercise, the bot is written using Python 3.8+. It uses poetry as build & dependency 
