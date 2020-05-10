@@ -1,4 +1,12 @@
 [[package]]
+category = "main"
+description = "Simple assertion library for unit testing in python with a fluent API"
+name = "assertpy"
+optional = false
+python-versions = "*"
+version = "1.0"
+
+[[package]]
 category = "dev"
 description = "Atomic file writes."
 marker = "sys_platform == \"win32\""
@@ -171,10 +179,13 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "805f26a0be75a1e751afe55c70f557b704fb76f8d925c3b35ca380397ff7cf31"
+content-hash = "40cc5b91cd7887e21d64ac8c0030c46e1663d9b0d1fe9321ca9fee42540cf898"
 python-versions = "^3.8"
 
 [metadata.files]
+assertpy = [
+    {file = "assertpy-1.0.tar.gz", hash = "sha256:21b5923f1b49beaa96ed72fffe9991fcd869bd48583c80ec5d5a6e8e50f0df06"},
+]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
     {file = "atomicwrites-1.4.0.tar.gz", hash = "sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a"},
