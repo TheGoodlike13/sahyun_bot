@@ -1,0 +1,12 @@
+* Install module
+* Elastic setup module
+* Support for modules for IRC & customsforge
+* All modules should be optional & work automatically; minimal support - command entry via command line
+* commands for manual re-log, etc.
+* IRC on start; automatic reconnect; relaunch if takes too long to connect
+* twitch API key management
+* search elastic if available, fallback on customs + youtube if down
+* otherwise, mimic original bot functionality
+
+Ensure install.bat works with spaces in directory
+Investigate possibility to pass "artifacts" directory directly from gradle
