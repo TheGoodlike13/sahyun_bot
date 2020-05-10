@@ -56,6 +56,17 @@ version = "0.4.3"
 
 [[package]]
 category = "main"
+description = "A mocking library for requests."
+name = "httmock"
+optional = false
+python-versions = "*"
+version = "1.3.0"
+
+[package.dependencies]
+requests = ">=1.0.0"
+
+[[package]]
+category = "main"
 description = "Internationalized Domain Names in Applications (IDNA)"
 name = "idna"
 optional = false
@@ -179,7 +190,7 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "40cc5b91cd7887e21d64ac8c0030c46e1663d9b0d1fe9321ca9fee42540cf898"
+content-hash = "c424c928f85c668d6d947deebf1539f37590eab176bc3d2bc69acd10e3e67f10"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -205,6 +216,9 @@ chardet = [
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
+]
+httmock = [
+    {file = "httmock-1.3.0.tar.gz", hash = "sha256:e0bbaced224426bcd994a5f1c64ab60e0c923ea615825c53e6c0190b2a7341fe"},
 ]
 idna = [
     {file = "idna-2.9-py2.py3-none-any.whl", hash = "sha256:a068a21ceac8a4d63dbfd964670474107f541babbd2250d61922f029858365fa"},
