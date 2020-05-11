@@ -68,3 +68,22 @@ echo -----------------------------------------------------
 echo %poetry_env%
 echo -----------------------------------------------------
 pause
+exit /b 0
+
+
+:other_stuff_I_did_that_is_not_directly_related_to_the_project
+:: I had to manually edit an internal PyCharm file. Since I am using Python 3.8, and my PyCharm version is outdated,
+:: when opening the Python Console, I would receive the following error:
+::
+:: TypeError: an integer is required (got type bytes)
+::
+:: This error occurred in the '_compat.py' file. It was supposed to be fixed for a later PyCharm version.
+:: The exact fix can be found here:
+:: https://github.com/JetBrains/intellij-community/commit/07ef928f3b1fbc24401380110691342a558de242
+::
+:: To easily run & debug the files, I changed the default Python run configuration. First, I always launch in
+:: Python Console for maximum flexibility. Second, I set the working directory to project directory. This way
+:: I can use the 'config.ini' file there without issues.
+::
+:: I cannot run debug configurations with PyCharm anyway. They always hang when I enter a command. However, if
+:: I run them normally first, THEN attach the debugger in Python Console, it works like a charm.

@@ -4,17 +4,24 @@
 This is the implementation of the bot used in Sahyun's twitch channel:
 https://www.twitch.tv/sahyun
 
-## Usage
-
-Here are some example commands and outputs:
+## Usage examples
 
 TODO
 
-### Command reference
+## Permissions
+
+CustomsForge does not allow bots to access their API, unless given explicit permission.
+This bot's use of CustomsForge API has been officially approved with the condition that the
+source code is made public on Github.
+
+If you want to access their API using this bot (or build your own), please contact them and ask:
+http://customsforge.com/page/support.html
+
+## Command reference
 
 TODO
 
-## Architecture & design
+## Notes on development & running
 
 The purpose of this bot is to manage the playlist of user requests while Sahyun is streaming.
 It may also perform some other trivial tasks alongside.
@@ -26,4 +33,18 @@ install.bat should contain all the relevant commands & instructions which were u
 the application for development & running. All instructions assume windows, as anyone using linux is
 probably savvy enough to take care of such things on their own. Furthermore, most of the work is
 described in guides & documentation of python or its tools. In some cases, information from a reddit
-post was used: https://www.reddit.com/r/pycharm/comments/elga2z/using_pycharm_for_poetrybased_projects/
+post was used:
+https://www.reddit.com/r/pycharm/comments/elga2z/using_pycharm_for_poetrybased_projects/
+
+To launch the bot, use 'run.bat'. To play around with the library instead, use 'repl.bat'.
+The latter should configure all relevant objects, but not actually launch the bot itself.
+Both files assume 'install.bat' was already called before.
+
+### Configuration
+
+All configuration should be put into 'config.ini' file. This file should be in the working
+directory. Here are all expected values with corresponding sections & explanations:
+
+#### [customsforge]
+
+ApiKey = key used in login form of customsforge.com

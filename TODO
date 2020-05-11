@@ -18,3 +18,8 @@ COMMANDS
     same as original bot
 
 All functionality should be optional when possible.
+
+Debug login with bad credentials. Sometimes, it times out/fails due to exceeding retries - not sure what to configure
+here. For the time being, enable maximum logs (google it/bookmark).
+
+Improve logging (don't just print!)
