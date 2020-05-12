@@ -30,7 +30,7 @@ def login(url, request):
 
 
 @all_requests
-def login_fail(url, request):
+def request_fail(url, request):
     raise ValueError('Any exception during request')
 
 
@@ -41,7 +41,7 @@ def test_login(client):
     with HTTMock(login):
         assert_that(client.login('user', 'wrong_pass')).is_false()
 
-    with HTTMock(login_fail):
+    with HTTMock(request_fail):
         assert_that(client.login('user', 'pass')).is_false()
 
 

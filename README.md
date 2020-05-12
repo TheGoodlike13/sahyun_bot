@@ -48,3 +48,7 @@ directory. Here are all expected values with corresponding sections & explanatio
 #### [customsforge]
 
 ApiKey = key used in login form of customsforge.com
+
+#### [system]
+
+HttpDebugMode = true if you want to print http headers and stuff, false otherwise

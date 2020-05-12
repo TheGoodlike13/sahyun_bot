@@ -19,7 +19,6 @@ COMMANDS
 
 All functionality should be optional when possible.
 
-Debug login with bad credentials. Sometimes, it times out/fails due to exceeding retries - not sure what to configure
-here. For the time being, enable maximum logs (google it/bookmark).
+Add logging to file. All print should go there?
 
-Improve logging (don't just print!)
+Debug login. Sometimes, it times out/fails due to exceeding retries - not sure what to configure here.
