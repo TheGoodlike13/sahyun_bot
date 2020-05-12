@@ -16,7 +16,7 @@ def login(url, request):
         if data not in request.body:
             return {
                 'status_code': 200,
-                'content': 'Sign-in page'
+                'content': 'Sign-in error page'
             }
 
     return {
