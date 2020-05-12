@@ -1,6 +1,7 @@
-from typing import Iterator
+from typing import Iterator, Optional
 
 import requests
+from requests import Response
 from requests.cookies import RequestsCookieJar
 
 
@@ -21,13 +22,9 @@ class CustomsForgeClient:
             'rememberMe': '1',
             'referer': MAIN_PAGE
         }
-        try:
-            r = requests.post(LOGIN, data, allow_redirects=False)
-        except BaseException as e:
-            print('Could not login to customsforge: ' + type(e).__name__ + ': ' + str(e))
+        r = self.__call('login', requests.post, LOGIN, data, is_login=True)
+        if r is None:
             return False
-
-        self.__cookies.update(r.cookies)
 
         if not r.headers.get('Location', '') == MAIN_PAGE:
             print('Login failed. Please check your credentials.')
@@ -43,13 +40,9 @@ class CustomsForgeClient:
                 'skip': skip,
                 'take': self.__batch_size
             }
-            try:
-                r = requests.get(DATES, data, allow_redirects=False, cookies=self.__cookies)
-            except BaseException as e:
-                print('Cannot find groups of songs at customsforge: ' + type(e).__name__ + ': ' + str(e))
+            r = self.__call('find groups of songs', requests.get, DATES, data)
+            if not r:
                 break
-
-            self.__cookies.update(r.cookies)
 
             if r.is_redirect:
                 print('Not logged in - maybe we should automate that?')
@@ -67,6 +60,15 @@ class CustomsForgeClient:
                 break
 
             skip += self.__batch_size
+
+    def __call(self, description: str, call, url: str, data: dict, is_login=False) -> Optional[Response]:
+        try:
+            r = call(url, data, timeout=300, allow_redirects=False, cookies=None if is_login else self.__cookies)
+            self.__cookies.update(r.cookies)
+            return r
+        except BaseException as e:
+            print('Error while trying to {} @customsforge: {}: {}'.format(description, type(e).__name__, e))
+            return None
 
 
 MAIN_PAGE = 'http://customsforge.com/'
