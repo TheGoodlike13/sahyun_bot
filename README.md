@@ -48,6 +48,7 @@ directory. Here are all expected values with corresponding sections & explanatio
 #### [customsforge]
 
 ApiKey = key used in login form of customsforge.com
+BatchSize = amount of values returned per request; defaults to 100
 
 #### [system]
 

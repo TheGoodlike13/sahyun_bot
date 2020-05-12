@@ -7,20 +7,27 @@ from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE
 
 @pytest.fixture
 def client():
-    return CustomsForgeClient('key')
+    return CustomsForgeClient('key', 1)
 
 
 def test_login(client):
+    with HTTMock(request_fail):
+        assert_that(client.login('user', 'pass')).is_false()
+
     with HTTMock(customsforge):
         assert_that(client.login('user', 'pass')).is_true()
         assert_that(client.login('user', 'wrong_pass')).is_false()
 
-    with HTTMock(request_fail):
-        assert_that(client.login('user', 'pass')).is_false()
-
 
 def test_dates(client):
-    pass
+    with HTTMock(request_fail):
+        assert_that(list(client.dates())).is_empty()
+
+    with HTTMock(customsforge):
+        assert_that(list(client.dates())).is_empty()
+
+        client.login('user', 'pass')
+        assert_that(list(client.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
 
 
 @all_requests
@@ -44,14 +51,7 @@ def customsforge(url, request):
 
 def login_mock(url, request):
     if all(param in request.body for param in VALID_LOGIN_FORM):
-        return {
-            'status_code': 302,
-            'content': 'Redirect to main page',
-            'headers': {
-                'Set-Cookie': 'login_cookie',
-                'Location': MAIN_PAGE
-            }
-        }
+        return to_main_page()
 
     return {
         'status_code': 200,
@@ -60,7 +60,34 @@ def login_mock(url, request):
 
 
 def dates_mock(url, request):
-    pass
+    if not request.headers.get('Cookie', '') == 'login_cookie':
+        return to_main_page()
+
+    if 'skip=2' in url.query:
+        return group()
+
+    return group('2020-05-11' if 'skip=0' in url.query else '2020-05-12')
+
+
+def group(date=None):
+    return {
+        'status_code': 200,
+        'content': [
+            [{'grp': date}] if date else [],
+            [{'total': 2}]
+        ]
+    }
+
+
+def to_main_page():
+    return {
+        'status_code': 302,
+        'content': 'Redirect to main page',
+        'headers': {
+            'Set-Cookie': 'login_cookie',
+            'Location': MAIN_PAGE
+        }
+    }
 
 
 VALID_LOGIN_FORM = {
