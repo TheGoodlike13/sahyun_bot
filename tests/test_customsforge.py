@@ -10,6 +10,11 @@ def client():
     return CustomsForgeClient('key', 1)
 
 
+@pytest.fixture
+def client_with_login():
+    return CustomsForgeClient('key', 1, 'user', 'pass')
+
+
 def test_login(client):
     with HTTMock(request_fail):
         assert_that(client.login('user', 'pass')).is_false()
@@ -17,6 +22,11 @@ def test_login(client):
     with HTTMock(customsforge):
         assert_that(client.login('user', 'pass')).is_true()
         assert_that(client.login('user', 'wrong_pass')).is_false()
+
+
+def test_login_with_client_credentials(client_with_login):
+    with HTTMock(customsforge):
+        assert_that(client_with_login.login()).is_true()
 
 
 def test_dates(client):
@@ -28,6 +38,11 @@ def test_dates(client):
 
         client.login('user', 'pass')
         assert_that(list(client.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
+
+
+def test_dates_auto_login(client_with_login):
+    with HTTMock(customsforge):
+        assert_that(list(client_with_login.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
 
 
 @all_requests

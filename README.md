@@ -48,6 +48,13 @@ directory. Here are all expected values with corresponding sections & explanatio
 #### [customsforge]
 
 ApiKey = key used in login form of customsforge.com
+
+Username = username for an account in customsforge.com
+
+Password = password for an account in customsforge.com;
+it is possible this password will be sent over plaintext, so change your password to something
+completely random or anything else you wouldn't mind exposed
+
 BatchSize = amount of values returned per request; defaults to 100
 
 #### [system]
