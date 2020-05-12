@@ -2,7 +2,7 @@ import pytest
 from assertpy import assert_that
 from httmock import all_requests, HTTMock
 
-from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE_URL
+from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE
 
 
 @pytest.fixture
@@ -10,23 +10,17 @@ def client():
     return CustomsForgeClient('key')
 
 
-@all_requests
-def login(url, request):
-    for data in CORRECT_LOGIN_DATA:
-        if data not in request.body:
-            return {
-                'status_code': 200,
-                'content': 'Sign-in error page'
-            }
+def test_login(client):
+    with HTTMock(customsforge):
+        assert_that(client.login('user', 'pass')).is_true()
+        assert_that(client.login('user', 'wrong_pass')).is_false()
 
-    return {
-        'status_code': 302,
-        'content': 'Redirect to main page',
-        'headers': {
-            'Set-Cookie': 'login_cookie',
-            'Location': MAIN_PAGE_URL
-        }
-    }
+    with HTTMock(request_fail):
+        assert_that(client.login('user', 'pass')).is_false()
+
+
+def test_dates(client):
+    pass
 
 
 @all_requests
@@ -34,15 +28,39 @@ def request_fail(url, request):
     raise ValueError('Any exception during request')
 
 
-def test_login(client):
-    with HTTMock(login):
-        assert_that(client.login('user', 'pass')).is_true()
+@all_requests
+def customsforge(url, request):
+    if 'index.php' in url:
+        return login_mock(url, request)
 
-    with HTTMock(login):
-        assert_that(client.login('user', 'wrong_pass')).is_false()
+    if 'get_content' in url:
+        return dates_mock(url, request)
 
-    with HTTMock(request_fail):
-        assert_that(client.login('user', 'pass')).is_false()
+    return {
+        'status_code': 404,
+        'content': 'Unexpected URL'
+    }
+
+
+def login_mock(url, request):
+    if not all(data in request.body for data in CORRECT_LOGIN_DATA):
+        return {
+            'status_code': 200,
+            'content': 'Sign-in error page'
+        }
+
+    return {
+        'status_code': 302,
+        'content': 'Redirect to main page',
+        'headers': {
+            'Set-Cookie': 'login_cookie',
+            'Location': MAIN_PAGE
+        }
+    }
+
+
+def dates_mock(url, request):
+    pass
 
 
 CORRECT_LOGIN_DATA = {
