@@ -23,7 +23,12 @@ http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 
 
 # in this section we print the status of all modules
-print('Customsforge client available.') if client else print('Could not configure customsforge client.')
+def print_status(module, desc: str):
+    print('{} is available.'.format(desc)) if client else print('{} could not be configured.'.format(module))
+
+
+print('If any module is unavailable, please check your config.ini file')
+print_status(client, 'Customsforge client')
 
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full
