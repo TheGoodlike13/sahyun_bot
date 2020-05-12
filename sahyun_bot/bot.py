@@ -26,10 +26,10 @@ def init_module(module, desc, cleanup=False):
 
 print('If any module is unavailable, please check your config.ini file')
 
+http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
+
 client = CustomsForgeClient(c_api_key, c_batch, c_user, c_pass) if c_api_key else None
 init_module(client, 'Customsforge client', cleanup=True)
-
-http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full
