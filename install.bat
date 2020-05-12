@@ -53,20 +53,27 @@ call curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get
 :prepare_environment
 call "%USERPROFILE%\.poetry\bin\poetry" install
 for /f "tokens=*" %%a in ('"%USERPROFILE%\.poetry\bin\poetry" env info --path') do set poetry_env=%%a
+if not exist "config.ini" call xcopy empty_config.ini config.ini* /q
 
 
 :print_any_remaining_instructions
-echo -----------------------------------------------------
-echo If the installations succeeded, please confirm your PATH variable includes the following directories.
-echo Be careful - a similar, but not exact path may already be added by python installation.
-echo -----------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo Verify that your PATH variables include the following directories.
+echo Make sure they are exact, as similar ones may be added by Python installer.
+echo -------------------------------------------------------------------------------
 echo %USERPROFILE%\AppData\Roaming\Python\Python38\Scripts
 echo %USERPROFILE%\.poetry\bin
-echo -----------------------------------------------------
-echo Finally, if you are using an IDE which needs manual virtual environment setup, the following is the directory.
-echo -----------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo Virtual environment can be found in the following directory.
+echo -------------------------------------------------------------------------------
 echo %poetry_env%
-echo -----------------------------------------------------
+echo -------------------------------------------------------------------------------
+echo Review 'config.ini' file. README.md should help explain what is expected.
+echo -------------------------------------------------------------------------------
 pause
 exit /b 0
 
