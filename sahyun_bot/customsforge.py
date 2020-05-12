@@ -71,7 +71,7 @@ class CustomsForgeClient:
                 for date_group in date_groups:
                     yield date_group['grp']
             except BaseException as e:
-                print('Cannot parse response as JSON: ' + type(e).__name__ + ': ' + str(e))
+                print('Cannot parse response as JSON: {}: {}'.format(type(e).__name__, e))
                 break
 
             skip += self.__batch_size
