@@ -92,5 +92,5 @@ exit /b 0
 :: Python Console for maximum flexibility. Second, I set the working directory to project directory. This way
 :: I can use the 'config.ini' file there without issues.
 ::
-:: I cannot run debug configurations with PyCharm anyway. They always hang when I enter a command. However, if
-:: I run them normally first, THEN attach the debugger in Python Console, it works like a charm.
+:: I cannot run some debug configurations with PyCharm. They hang when I enter a command with a breakpoint.
+:: However, if I run them normally first, THEN attach the debugger in Python Console, it works like a charm.
