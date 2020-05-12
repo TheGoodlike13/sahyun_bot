@@ -7,12 +7,12 @@ from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE
 
 @pytest.fixture
 def client():
-    return CustomsForgeClient('key', 1)
+    return CustomsForgeClient(api_key='key', batch_size=1)
 
 
 @pytest.fixture
 def client_with_login():
-    return CustomsForgeClient('key', 1, 'user', 'pass')
+    return CustomsForgeClient(api_key='key', batch_size=1, username='user', password='pass')
 
 
 def test_login(client):
@@ -84,7 +84,7 @@ def dates_mock(url, request):
     return group('2020-05-11' if 'skip=0' in url.query else '2020-05-12')
 
 
-def group(date=None):
+def group(date: str = None):
     return {
         'status_code': 200,
         'content': [

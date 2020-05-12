@@ -1,4 +1,4 @@
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Callable
 
 from requests import Response
 from requests.sessions import Session
@@ -38,7 +38,7 @@ class CustomsForgeClient:
     def close(self):
         self.__session.close()
 
-    def login(self, username=None, password=None) -> bool:
+    def login(self, username: str = None, password: str = None) -> bool:
         if username and password:
             self.__username = username
             self.__password = password
@@ -91,7 +91,12 @@ class CustomsForgeClient:
 
             skip += self.__batch_size
 
-    def __call(self, desc: str, call, url: str, try_login=True, **kwargs) -> Optional[Response]:
+    def __call(self,
+               desc: str,
+               call: Callable[..., Response],
+               url: str,
+               try_login: bool = True,
+               **kwargs) -> Optional[Response]:
         try:
             r = call(url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except BaseException as e:
