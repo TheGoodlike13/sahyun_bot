@@ -1,3 +1,4 @@
+import atexit
 import http.client
 import sys
 from configparser import ConfigParser
@@ -17,18 +18,17 @@ s_debug = config.getboolean('system', 'HttpDebugMode', fallback=False)
 
 
 # in this section we initialize all objects the bot will make use of, but avoid launching anything (e.g. connect to IRC)
-client = CustomsForgeClient(c_api_key, c_batch, c_user, c_pass) if c_api_key else None
-
-http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
-
-
-# in this section we print the status of all modules
-def print_status(module, desc: str):
-    print('{} is available.'.format(desc)) if client else print('{} could not be configured.'.format(module))
+def init_module(module, desc, cleanup=False):
+    print('{} is available.'.format(desc)) if module else print('{} could not be configured.'.format(module))
+    if module and cleanup:
+        atexit.register(module.close)
 
 
 print('If any module is unavailable, please check your config.ini file')
-print_status(client, 'Customsforge client')
+client = CustomsForgeClient(c_api_key, c_batch, c_user, c_pass) if c_api_key else None
+init_module(client, 'Customsforge client', cleanup=True)
+
+http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full

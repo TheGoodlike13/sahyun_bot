@@ -1,8 +1,7 @@
 from typing import Iterator, Optional
 
-import requests
 from requests import Response
-from requests.cookies import RequestsCookieJar
+from requests.sessions import Session
 
 
 class CustomsForgeClient:
@@ -13,7 +12,16 @@ class CustomsForgeClient:
         self.__username = username
         self.__password = password
 
-        self.__cookies = RequestsCookieJar()
+        self.__session = Session()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def close(self):
+        self.__session.close()
 
     def login(self, username=None, password=None) -> bool:
         if username and password:
@@ -24,16 +32,16 @@ class CustomsForgeClient:
             print('Username and password were not provided.')
             return False
 
-        self.__cookies = RequestsCookieJar()
+        self.__session.cookies.clear()
 
-        data = {
+        form = {
             'ips_username': self.__username,
             'ips_password': self.__password,
             'auth_key': self.__api_key,
             'rememberMe': '1',
             'referer': MAIN_PAGE
         }
-        r = self.__call('login', requests.post, LOGIN_API, data, try_login=False)
+        r = self.__call('login', self.__session.post, LOGIN_API, data=form, try_login=False)
         if r is None:
             return False
 
@@ -47,11 +55,11 @@ class CustomsForgeClient:
         skip = 0
 
         while True:
-            data = {
+            params = {
                 'skip': skip,
                 'take': self.__batch_size
             }
-            r = self.__call('find groups of songs', requests.get, DATES_API, data)
+            r = self.__call('find groups of songs', self.__session.get, DATES_API, params=params)
             if not r:
                 break
 
@@ -68,14 +76,12 @@ class CustomsForgeClient:
 
             skip += self.__batch_size
 
-    def __call(self, desc: str, call, url: str, data: dict, try_login=True) -> Optional[Response]:
+    def __call(self, desc: str, call, url: str, try_login=True, **kwargs) -> Optional[Response]:
         try:
-            r = call(url, data, timeout=300, allow_redirects=False, cookies=self.__cookies)
+            r = call(url, timeout=300, allow_redirects=False, **kwargs)
         except BaseException as e:
             print('Error while trying to {} @customsforge: {}: {}'.format(desc, type(e).__name__, e))
             return None
-
-        self.__cookies.update(r.cookies)
 
         if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
             return r
@@ -84,7 +90,7 @@ class CustomsForgeClient:
             print('Error while trying to {} @customsforge: automatic login failed.'.format(desc))
             return None
 
-        return self.__call(desc, call, url, data, try_login=False)
+        return self.__call(desc, call, url, try_login=False, **kwargs)
 
 
 MAIN_PAGE = 'http://customsforge.com/'
