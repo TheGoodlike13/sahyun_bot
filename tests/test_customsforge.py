@@ -30,10 +30,10 @@ def request_fail(url, request):
 
 @all_requests
 def customsforge(url, request):
-    if 'index.php' in url:
+    if 'index.php' in url.path:
         return login_mock(url, request)
 
-    if 'get_content' in url:
+    if 'get_content' in url.path:
         return dates_mock(url, request)
 
     return {
@@ -43,19 +43,19 @@ def customsforge(url, request):
 
 
 def login_mock(url, request):
-    if not all(data in request.body for data in CORRECT_LOGIN_DATA):
+    if all(param in request.body for param in VALID_LOGIN_FORM):
         return {
-            'status_code': 200,
-            'content': 'Sign-in error page'
+            'status_code': 302,
+            'content': 'Redirect to main page',
+            'headers': {
+                'Set-Cookie': 'login_cookie',
+                'Location': MAIN_PAGE
+            }
         }
 
     return {
-        'status_code': 302,
-        'content': 'Redirect to main page',
-        'headers': {
-            'Set-Cookie': 'login_cookie',
-            'Location': MAIN_PAGE
-        }
+        'status_code': 200,
+        'content': 'Sign-in error page'
     }
 
 
@@ -63,7 +63,7 @@ def dates_mock(url, request):
     pass
 
 
-CORRECT_LOGIN_DATA = {
+VALID_LOGIN_FORM = {
     'ips_username=user',
     'ips_password=pass',
     'auth_key=key'
