@@ -43,7 +43,10 @@ Both files assume 'install.bat' was already called before.
 ### Configuration
 
 All configuration should be put into 'config.ini' file. This file should be in the working
-directory. Here are all expected values with corresponding sections & explanations:
+directory. 
+
+To make it easier to configure, 'empty_config.ini' file is provided which should have all possible
+expected values as empty. Here are all expected values with corresponding sections & explanations:
 
 #### [customsforge]
 
