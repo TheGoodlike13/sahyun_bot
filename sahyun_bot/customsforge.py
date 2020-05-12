@@ -33,11 +33,11 @@ class CustomsForgeClient:
             'rememberMe': '1',
             'referer': MAIN_PAGE
         }
-        r = self.__call('login', requests.post, LOGIN, data, is_login=True)
+        r = self.__call('login', requests.post, LOGIN_API, data, try_login=False)
         if r is None:
             return False
 
-        if not r.headers.get('Location', '') == MAIN_PAGE:
+        if not r.is_redirect or not r.headers.get('Location', '') == MAIN_PAGE:
             print('Login failed. Please check your credentials.')
             return False
 
@@ -51,15 +51,9 @@ class CustomsForgeClient:
                 'skip': skip,
                 'take': self.__batch_size
             }
-            r = self.__call('find groups of songs', requests.get, DATES, data)
+            r = self.__call('find groups of songs', requests.get, DATES_API, data)
             if not r:
                 break
-
-            if r.is_redirect:
-                if self.login():
-                    continue
-                else:
-                    break
 
             try:
                 date_groups = r.json()[0]
@@ -74,16 +68,27 @@ class CustomsForgeClient:
 
             skip += self.__batch_size
 
-    def __call(self, description: str, call, url: str, data: dict, is_login=False) -> Optional[Response]:
+    def __call(self, desc: str, call, url: str, data: dict, try_login=True) -> Optional[Response]:
         try:
-            r = call(url, data, timeout=300, allow_redirects=False, cookies=None if is_login else self.__cookies)
-            self.__cookies.update(r.cookies)
-            return r
+            r = call(url, data, timeout=300, allow_redirects=False, cookies=self.__cookies)
         except BaseException as e:
-            print('Error while trying to {} @customsforge: {}: {}'.format(description, type(e).__name__, e))
+            print('Error while trying to {} @customsforge: {}: {}'.format(desc, type(e).__name__, e))
             return None
+
+        self.__cookies.update(r.cookies)
+
+        if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
+            return r
+
+        if not self.login():
+            print('Error while trying to {} @customsforge: automatic login failed.'.format(desc))
+            return None
+
+        return self.__call(desc, call, url, data, try_login=False)
 
 
 MAIN_PAGE = 'http://customsforge.com/'
-LOGIN = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
-DATES = 'https://ignition.customsforge.com/search/get_content?group=updated'
+LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
+
+LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
+DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'

@@ -52,11 +52,11 @@ ApiKey = key used in login form of customsforge.com
 Username = username for an account in customsforge.com
 
 Password = password for an account in customsforge.com;
-it is possible this password will be sent over plaintext, so change your password to something
+while unlikely, it is possible the password will be sent over plaintext, so change it to something
 completely random or anything else you wouldn't mind exposed
 
 BatchSize = amount of values returned per request; defaults to 100
 
 #### [system]
 
-HttpDebugMode = true if you want to print http headers and stuff, false otherwise
+HttpDebugMode = true if you want to print http headers and stuff; defaults to false

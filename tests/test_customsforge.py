@@ -2,7 +2,7 @@ import pytest
 from assertpy import assert_that
 from httmock import all_requests, HTTMock
 
-from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE
+from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE
 
 
 @pytest.fixture
@@ -76,7 +76,7 @@ def login_mock(url, request):
 
 def dates_mock(url, request):
     if not request.headers.get('Cookie', '') == 'login_cookie':
-        return to_main_page()
+        return to_login_page()
 
     if 'skip=2' in url.query:
         return group()
@@ -97,10 +97,20 @@ def group(date=None):
 def to_main_page():
     return {
         'status_code': 302,
-        'content': 'Redirect to main page',
+        'content': 'Redirect to main page - login successful!',
         'headers': {
             'Set-Cookie': 'login_cookie',
             'Location': MAIN_PAGE
+        }
+    }
+
+
+def to_login_page():
+    return {
+        'status_code': 302,
+        'content': 'Redirect to login page - login is required!',
+        'headers': {
+            'Location': LOGIN_PAGE
         }
     }
 
