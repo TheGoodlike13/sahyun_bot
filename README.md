@@ -60,6 +60,9 @@ completely random or anything else you wouldn't mind exposed
 
 BatchSize = amount of values returned per request; defaults to 100
 
+Timeout = amount of seconds before HTTP gives up and fails the request; defaults to 300;
+yes, it can be a very laggy website, unfortunately; though this is overkill for sure :)
+
 #### [system]
 
 HttpDebugMode = true if you want to print http headers and stuff; defaults to false

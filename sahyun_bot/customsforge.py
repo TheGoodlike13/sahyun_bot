@@ -3,11 +3,26 @@ from typing import Iterator, Optional
 from requests import Response
 from requests.sessions import Session
 
+MAIN_PAGE = 'http://customsforge.com/'
+LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
+
+LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
+DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
+
+DEFAULT_BATCH_SIZE = 100
+DEFAULT_TIMEOUT = 300
+
 
 class CustomsForgeClient:
-    def __init__(self, api_key: str, batch_size: int, username=None, password=None):
+    def __init__(self,
+                 api_key: str,
+                 batch_size: int = DEFAULT_BATCH_SIZE,
+                 timeout: int = DEFAULT_TIMEOUT,
+                 username: str = None,
+                 password: str = None):
         self.__api_key = api_key
         self.__batch_size = batch_size
+        self.__timeout = timeout
 
         self.__username = username
         self.__password = password
@@ -78,7 +93,7 @@ class CustomsForgeClient:
 
     def __call(self, desc: str, call, url: str, try_login=True, **kwargs) -> Optional[Response]:
         try:
-            r = call(url, timeout=300, allow_redirects=False, **kwargs)
+            r = call(url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except BaseException as e:
             print('Error while trying to {} @customsforge: {}: {}'.format(desc, type(e).__name__, e))
             return None
@@ -91,10 +106,3 @@ class CustomsForgeClient:
             return None
 
         return self.__call(desc, call, url, try_login=False, **kwargs)
-
-
-MAIN_PAGE = 'http://customsforge.com/'
-LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
-
-LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
-DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
