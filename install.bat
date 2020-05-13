@@ -94,3 +94,7 @@ exit /b 0
 ::
 :: I cannot run some debug configurations with PyCharm. They hang when I enter a command with a breakpoint.
 :: However, if I run them normally first, THEN attach the debugger in Python Console, it works like a charm.
+::
+:: I use pytest for testing. Running tests, however, produces a '.pytest_cache' folder in the directory. This is
+:: annoying as fuck, even if they are ignored by git automatically. To avoid this, I modified my pytest run
+:: configuration template to always use the project directory as working directory.
