@@ -26,6 +26,7 @@ def test_identity(objects):
 
 def test_parse_bool(true, false):
     assert_that(parse_bool).raises(ValueError).when_called_with('')
+    assert_that(parse_bool('', fallback=True)).is_true()
 
     for t in true:
         assert_that(parse_bool(t)).is_true()

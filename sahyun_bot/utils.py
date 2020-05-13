@@ -1,18 +1,24 @@
 from configparser import ConfigParser
-from typing import Any, Callable, Optional, TypeVar
+from typing import Callable, Optional, TypeVar
 
 T = TypeVar('T')
 
 config = ConfigParser()
 
 
-def identity(o: Any):
+def identity(o: T) -> T:
     return o
 
 
 # noinspection PyProtectedMember
-def parse_bool(s: str):
-    return config._convert_to_boolean(s)
+def parse_bool(s: str, fallback: bool = None) -> bool:
+    try:
+        return config._convert_to_boolean(s)
+    except ValueError:
+        if fallback:
+            return fallback
+
+        raise
 
 
 # noinspection PyBroadException
