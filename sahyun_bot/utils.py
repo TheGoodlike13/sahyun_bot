@@ -1,7 +1,11 @@
 from configparser import ConfigParser
 from typing import Callable, Optional, TypeVar
 
+# general purpose generic variable to be used in generic functions
 T = TypeVar('T')
+
+# if next(it, default=non_existent) is non_existent: <do stuff if 'it' was empty>
+non_existent = object()
 
 config = ConfigParser()
 

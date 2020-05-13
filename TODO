@@ -3,10 +3,6 @@ IRC
     reconnect automatically or on command
     if connection takes too long, restart
 
-CUSTOMSFORGE
-    somewhat obfuscated
-    store cookies & login when needed; try to login on startup
-
 ELASTIC
     create explicit indexes
     automatically refresh data, as well as manual command
@@ -21,6 +17,6 @@ All functionality should be optional when possible.
 
 Add logging to file. All print should go there?
 
-Debug login. Sometimes, it times out/fails due to exceeding retries - not sure what to configure here.
+Retry all http calls a few times.
 
-Retry all http calls?
+Ping method for customsforge
