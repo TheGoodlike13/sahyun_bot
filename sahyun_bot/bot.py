@@ -2,7 +2,8 @@ import atexit
 import http.client
 import sys
 
-from sahyun_bot.customsforge import *
+from sahyun_bot.customsforge import CustomsForgeClient, DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT, DEFAULT_COOKIE_FILE, \
+    TEST_COOKIE_FILE
 from sahyun_bot.utils import config, read_config, parse_bool
 
 # in this section, we read all parameters expected in the config.ini file
