@@ -2,7 +2,7 @@ import atexit
 import http.client
 import sys
 
-from sahyun_bot.customsforge import CustomsForgeClient, DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT, DEFAULT_COOKIE_FILE
+from sahyun_bot.customsforge import *
 from sahyun_bot.utils import config, read_config, parse_bool
 
 # in this section, we read all parameters expected in the config.ini file
@@ -14,6 +14,7 @@ c_pass = read_config('customsforge', 'Password')
 c_batch = read_config('customsforge', 'BatchSize', fallback=DEFAULT_BATCH_SIZE, convert=int)
 c_timeout = read_config('customsforge', 'Timeout', fallback=DEFAULT_TIMEOUT, convert=int)
 c_jar = read_config('customsforge', 'CookieFilename', fallback=DEFAULT_COOKIE_FILE, allow_empty=True)
+c_jar = DEFAULT_COOKIE_FILE if c_jar == TEST_COOKIE_FILE else c_jar
 
 s_debug = read_config('system', 'HttpDebugMode', parse_bool)
 

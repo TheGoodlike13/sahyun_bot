@@ -6,7 +6,7 @@ from assertpy import assert_that
 from httmock import all_requests, HTTMock
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE
+from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE
 
 
 @pytest.fixture
@@ -24,12 +24,13 @@ def client_with_cookies():
     cookies = RequestsCookieJar()
     cookies.set('-login_cookie', 'login_value', domain='.customsforge.com', path='/')
 
-    with open('.cookie_jar_test', 'wb') as jar:
+    with open(TEST_COOKIE_FILE, 'wb') as jar:
         pickle.dump(cookies, jar)
 
-    yield CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file='.cookie_jar_test')
-    if os.path.exists('.cookie_jar_test'):
-        os.remove('.cookie_jar_test')
+    yield CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=TEST_COOKIE_FILE)
+
+    if os.path.exists(TEST_COOKIE_FILE):
+        os.remove(TEST_COOKIE_FILE)
 
 
 def test_login(client):

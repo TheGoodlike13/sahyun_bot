@@ -69,7 +69,8 @@ Timeout = amount of seconds before HTTP gives up and fails the request; defaults
 yes, it can be a very laggy website, unfortunately; though this is overkill for sure :)
 
 CookieFilename = filename for cookie storage; defaults to '.cookie_jar'; speeds up login
-process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only
+process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only;
+to avoid clashing with tests, '.cookie_jar_test' is automatically replaced with default value
 
 #### [system]
 

@@ -17,6 +17,7 @@ DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
 DEFAULT_BATCH_SIZE = 100
 DEFAULT_TIMEOUT = 300
 DEFAULT_COOKIE_FILE = '.cookie_jar'
+TEST_COOKIE_FILE = '.cookie_jar_test'
 
 
 class CustomsForgeClient:
