@@ -22,3 +22,5 @@ All functionality should be optional when possible.
 Add logging to file. All print should go there?
 
 Debug login. Sometimes, it times out/fails due to exceeding retries - not sure what to configure here.
+
+Retry all http calls?

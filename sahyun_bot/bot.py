@@ -1,21 +1,21 @@
 import atexit
 import http.client
 import sys
-from configparser import ConfigParser
 
-from sahyun_bot.customsforge import CustomsForgeClient, DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT
+from sahyun_bot.customsforge import CustomsForgeClient, DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT, DEFAULT_COOKIE_FILE
+from sahyun_bot.utils import config, read_config, parse_bool
 
 # in this section, we read all parameters expected in the config.ini file
-config = ConfigParser()
 config.read('config.ini')
 
-c_api_key = config.get('customsforge', 'ApiKey', fallback=None)
-c_user = config.get('customsforge', 'Username', fallback=None)
-c_pass = config.get('customsforge', 'Password', fallback=None)
-c_batch = config.getint('customsforge', 'BatchSize', fallback=DEFAULT_BATCH_SIZE)
-c_timeout = config.getint('customsforge', 'Timeout', fallback=DEFAULT_TIMEOUT)
+c_api_key = read_config('customsforge', 'ApiKey')
+c_user = read_config('customsforge', 'Username')
+c_pass = read_config('customsforge', 'Password')
+c_batch = read_config('customsforge', 'BatchSize', fallback=DEFAULT_BATCH_SIZE, convert=int)
+c_timeout = read_config('customsforge', 'Timeout', fallback=DEFAULT_TIMEOUT, convert=int)
+c_jar = read_config('customsforge', 'CookieFilename', fallback=DEFAULT_COOKIE_FILE, allow_empty=True)
 
-s_debug = config.getboolean('system', 'HttpDebugMode', fallback=False)
+s_debug = read_config('system', 'HttpDebugMode', parse_bool)
 
 
 # in this section we initialize all objects the bot will make use of, but avoid launching anything (e.g. connect to IRC)
@@ -32,6 +32,7 @@ http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 client = CustomsForgeClient(api_key=c_api_key,
                             batch_size=c_batch,
                             timeout=c_timeout,
+                            cookie_jar_file=c_jar,
                             username=c_user,
                             password=c_pass) if c_api_key else None
 init_module(client, 'Customsforge client', cleanup=True)

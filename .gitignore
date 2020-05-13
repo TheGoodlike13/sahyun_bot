@@ -5,3 +5,5 @@
 .pytest_cache/
 
 config.ini
+.cookie_jar
+.cookie_jar_test

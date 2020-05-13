@@ -43,10 +43,15 @@ Both files assume 'install.bat' was already called before.
 ### Configuration
 
 All configuration should be put into 'config.ini' file. This file should be in the working
-directory. 
+directory. Use 'empty_config.ini' as an example to quick-start your configuration.
 
-To make it easier to configure, 'empty_config.ini' file is provided which should have all possible
-expected values as empty. Here are all expected values with corresponding sections & explanations:
+If a specific configuration is missing from the file entirely, or is set to a value incompatible
+with expected type (e.g. integer 'a'), default value is used. In most cases empty value is also
+replaced with the default, HOWEVER, there are some exceptions.
+
+To be certain, please refer to the list of expected values & explanations below. If no default
+is specified, assume it defaults to None. Generally speaking, if any values without defaults
+are not provided, the related module will not function, or have limited functionality.
 
 #### [customsforge]
 
@@ -62,6 +67,9 @@ BatchSize = amount of values returned per request; defaults to 100
 
 Timeout = amount of seconds before HTTP gives up and fails the request; defaults to 300;
 yes, it can be a very laggy website, unfortunately; though this is overkill for sure :)
+
+CookieFilename = filename for cookie storage; defaults to '.cookie_jar'; speeds up login
+process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only
 
 #### [system]
 

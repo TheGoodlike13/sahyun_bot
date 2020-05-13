@@ -1,18 +1,35 @@
+import os
+import pickle
+
 import pytest
 from assertpy import assert_that
 from httmock import all_requests, HTTMock
+from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE
 
 
 @pytest.fixture
 def client():
-    return CustomsForgeClient(api_key='key', batch_size=1)
+    return CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=None)
 
 
 @pytest.fixture
 def client_with_login():
-    return CustomsForgeClient(api_key='key', batch_size=1, username='user', password='pass')
+    return CustomsForgeClient(api_key='key', batch_size=1, username='user', password='pass', cookie_jar_file=None)
+
+
+@pytest.fixture
+def client_with_cookies():
+    cookies = RequestsCookieJar()
+    cookies.set('-login_cookie', 'login_value', domain='.customsforge.com', path='/')
+
+    with open('.cookie_jar_test', 'wb') as jar:
+        pickle.dump(cookies, jar)
+
+    yield CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file='.cookie_jar_test')
+    if os.path.exists('.cookie_jar_test'):
+        os.remove('.cookie_jar_test')
 
 
 def test_login(client):
@@ -45,6 +62,11 @@ def test_dates_auto_login(client_with_login):
         assert_that(list(client_with_login.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
 
 
+def test_cookie_jar(client_with_cookies):
+    with HTTMock(customsforge):
+        assert_that(list(client_with_cookies.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
+
+
 @all_requests
 def request_fail(url, request):
     raise ValueError('Any exception during request')
@@ -75,7 +97,7 @@ def login_mock(url, request):
 
 
 def dates_mock(url, request):
-    if not request.headers.get('Cookie', '') == 'login_cookie':
+    if not request.headers.get('Cookie', '') == '-login_cookie=login_value':
         return to_login_page()
 
     if 'skip=2' in url.query:
@@ -90,7 +112,11 @@ def group(date: str = None):
         'content': [
             [{'grp': date}] if date else [],
             [{'total': 2}]
-        ]
+        ],
+        # we have to return this, because httmock overrides session cookies with response cookies
+        'headers': {
+            'Set-Cookie': '-login_cookie=login_value; path=/; domain=.customsforge.com; httponly',
+        }
     }
 
 
@@ -99,7 +125,7 @@ def to_main_page():
         'status_code': 302,
         'content': 'Redirect to main page - login successful!',
         'headers': {
-            'Set-Cookie': 'login_cookie',
+            'Set-Cookie': '-login_cookie=login_value; path=/; domain=.customsforge.com; httponly',
             'Location': MAIN_PAGE
         }
     }
