@@ -4,7 +4,7 @@ from typing import Iterator, Optional, Callable, IO, TypeVar
 from requests import Response
 from requests.sessions import Session
 
-from sahyun_bot.utils import print_error, identity
+from sahyun_bot.utils import print_error, identity, parse_bool
 
 T = TypeVar('T')
 
@@ -13,6 +13,7 @@ LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=
 
 LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
 DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
+DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
 
 DEFAULT_BATCH_SIZE = 100
 DEFAULT_TIMEOUT = 300
@@ -139,3 +140,22 @@ class CustomsForgeClient:
             else:
                 with f:
                     return on_file(f)
+
+
+class CDLC:
+    def __init__(self, **data):
+        self.id = str(data.get('id'))
+        self.artist = data.get('artist').strip()
+        self.title = data.get('title').strip()
+        self.album = data.get('album').strip()
+        self.author = data.get('member').strip()
+        self.tuning = data.get('tuning').strip()
+        self.parts = [p.strip() for p in data.get('parts').split(',') if p and not p.isspace()]
+        self.platforms = [p.strip() for p in data.get('platforms').split(',') if p and not p.isspace()]
+        self.hasDynamicDifficulty = parse_bool(data.get('dd').strip())
+        self.isOfficial = parse_bool(data.get('official').strip())
+        self.lastUpdated = data.get('updated')
+        self.musicVideo = data.get('music_video').strip()
+
+    def link(self) -> Optional[str]:
+        return DOWNLOAD_API.format(self.id) if self.id else None
