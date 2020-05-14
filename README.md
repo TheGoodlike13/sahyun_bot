@@ -67,8 +67,8 @@ completely random or anything else you wouldn't mind exposed
 BatchSize = amount of values returned per request; defaults to 100; allowed range: [1..100]
 
 Timeout = amount of seconds before HTTP gives up and fails the request; defaults to 300;
-yes, it can be a very laggy website, unfortunately; though this is overkill for sure :);
-any positive value is allowed
+any positive value is allowed;
+yes, it can be a very laggy website, unfortunately; though this is overkill for sure :)
 
 CookieFilename = filename for cookie storage; defaults to '.cookie_jar'; speeds up login
 process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only;
