@@ -2,11 +2,10 @@ import pickle
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any
 
-import requests
 from requests import Response
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, print_error, identity, parse_bool, non_existent
+from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, print_error, WithRetry
 
 MAIN_PAGE = 'http://customsforge.com/'
 LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
@@ -17,7 +16,7 @@ CDLC_BY_DATE_API = 'http://ignition.customsforge.com/search/get_group_content?gr
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
 
 DEFAULT_BATCH_SIZE = 100
-DEFAULT_TIMEOUT = 300
+DEFAULT_TIMEOUT = 100
 DEFAULT_COOKIE_FILE = '.cookie_jar'
 TEST_COOKIE_FILE = '.cookie_jar_test'
 
@@ -59,8 +58,8 @@ class CustomsForgeClient:
                  username: str = None,
                  password: str = None):
         self.__api_key = api_key
-        self.__batch_size = batch_size if 0 < batch_size <= DEFAULT_BATCH_SIZE else DEFAULT_BATCH_SIZE
-        self.__timeout = timeout if 0 < timeout else DEFAULT_TIMEOUT
+        self.__batch_size = batch_size if Verify.batch_size(batch_size) else DEFAULT_BATCH_SIZE
+        self.__timeout = timeout if Verify.timeout(timeout) else DEFAULT_TIMEOUT
         self.__cookie_jar_file = cookie_jar_file
 
         self.__username = username
@@ -95,7 +94,7 @@ class CustomsForgeClient:
                 'rememberMe': '1',
                 'referer': MAIN_PAGE
             }
-            r = self.__call('login', requests.post, LOGIN_API, data=form, cookies=None, try_login=False)
+            r = self.__call('login', WithRetry.post, LOGIN_API, data=form, cookies=None, try_login=False)
             if r is None:  # this indicates an error - repeated attempts may still succeed
                 return False
 
@@ -108,16 +107,23 @@ class CustomsForgeClient:
             self.__cookies = r.cookies
             return True
 
-    def dates(self) -> Iterator[str]:
+    def ping(self) -> bool:
+        """
+        :returns true if a simple call to customsforge succeeded (including login), false otherwise
+        """
+        return next(self.dates(custom_batch=1), NON_EXISTENT) is not NON_EXISTENT
+
+    def dates(self, custom_batch: int = None) -> Iterator[str]:
         yield from self.__all(trying_to='find groups of songs',
-                              call=requests.get,
+                              call=WithRetry.get,
                               url=DATES_API,
+                              custom_batch=custom_batch,
                               parse=Parse.dates)
 
     def cdlcs(self) -> Iterator[CDLC]:
         for date in self.dates():
             yield from self.__all(trying_to='find CDLCs',
-                                  call=requests.get,
+                                  call=WithRetry.get,
                                   url=CDLC_BY_DATE_API,
                                   params={'filter': date},
                                   parse=Parse.cdlcs)
@@ -131,7 +137,7 @@ class CustomsForgeClient:
         kwargs.setdefault('cookies', self.__cookies)
 
         try:
-            r = call(url, timeout=self.__timeout, allow_redirects=False, **kwargs)
+            r = call(url=url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except Exception as e:
             print_error(e, trying_to=trying_to)
             return None
@@ -146,13 +152,17 @@ class CustomsForgeClient:
         kwargs.pop('cookies', None)
         return self.__call(trying_to, call, url, try_login=False, **kwargs)
 
-    def __all(self, parse: Callable[[Any], Iterator[T]], **call_params) -> Iterator[T]:
+    def __all(self,
+              parse: Callable[[Any], Iterator[T]],
+              custom_batch: int = None,
+              **call_params) -> Iterator[T]:
         skip = 0
+        batch = custom_batch if Verify.batch_size(custom_batch) else self.__batch_size
 
         while True:
             params = call_params.setdefault('params', {})
             params['skip'] = skip
-            params['take'] = self.__batch_size
+            params['take'] = batch
 
             r = self.__call(**call_params)
             if not r:
@@ -160,8 +170,8 @@ class CustomsForgeClient:
 
             try:
                 it = parse(r.json())
-                first = next(it, non_existent)
-                if first is non_existent:
+                first = next(it, NON_EXISTENT)
+                if first is NON_EXISTENT:
                     break
 
                 yield first
@@ -170,7 +180,7 @@ class CustomsForgeClient:
                 print_error(e, trying_to='parse response of [{}] as JSON'.format(call_params.get('trying_to')))
                 break
 
-            skip += self.__batch_size
+            skip += batch
 
     def __with_cookie_jar(self,
                           options: str,
@@ -204,3 +214,13 @@ class Parse:
 
         for cdlc in cdlc_by_date_api_json:
             yield CDLC(**cdlc)
+
+
+class Verify:
+    @staticmethod
+    def batch_size(batch_size: int) -> bool:
+        return batch_size and 0 < batch_size <= DEFAULT_BATCH_SIZE
+
+    @staticmethod
+    def timeout(timeout: int) -> bool:
+        return 0 < timeout

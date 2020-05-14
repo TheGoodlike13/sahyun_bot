@@ -85,8 +85,7 @@ def test_cdlc_parsing():
 
 
 def assert_logged_in(client):
-    # for now we just perform a random call which returns expected values only when logged in
-    assert_that(list(client.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
+    assert_that(client.ping()).is_true()
 
 
 def assert_cdlc_1(cdlc_json):

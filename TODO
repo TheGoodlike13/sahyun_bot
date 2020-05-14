@@ -16,7 +16,3 @@ COMMANDS
 All functionality should be optional when possible.
 
 Add logging to file. All print should go there?
-
-Retry all http calls a few times.
-
-Ping method for customsforge
