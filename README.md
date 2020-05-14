@@ -46,8 +46,9 @@ All configuration should be put into 'config.ini' file. This file should be in t
 directory. Use 'empty_config.ini' as an example to quick-start your configuration.
 
 If a specific configuration is missing from the file entirely, or is set to a value incompatible
-with expected type (e.g. integer 'a'), default value is used. In most cases empty value is also
-replaced with the default, HOWEVER, there are some exceptions.
+with expected type (e.g. integer 'a'), default value is used. Same applies for values exceeding
+constraints, like -1 or 500 when allowed values are in [1..100].
+In most cases empty value is also replaced with the default, HOWEVER, there are some exceptions.
 
 To be certain, please refer to the list of expected values & explanations below. If no default
 is specified, assume it defaults to None. Generally speaking, if any values without defaults
@@ -63,10 +64,11 @@ Password = password for an account in customsforge.com;
 while unlikely, it is possible the password will be sent over plaintext, so change it to something
 completely random or anything else you wouldn't mind exposed
 
-BatchSize = amount of values returned per request; defaults to 100
+BatchSize = amount of values returned per request; defaults to 100; allowed range: [1..100]
 
 Timeout = amount of seconds before HTTP gives up and fails the request; defaults to 300;
-yes, it can be a very laggy website, unfortunately; though this is overkill for sure :)
+yes, it can be a very laggy website, unfortunately; though this is overkill for sure :);
+any positive value is allowed
 
 CookieFilename = filename for cookie storage; defaults to '.cookie_jar'; speeds up login
 process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only;

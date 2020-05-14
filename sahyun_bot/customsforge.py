@@ -59,8 +59,8 @@ class CustomsForgeClient:
                  username: str = None,
                  password: str = None):
         self.__api_key = api_key
-        self.__batch_size = batch_size
-        self.__timeout = timeout
+        self.__batch_size = batch_size if 0 < batch_size <= DEFAULT_BATCH_SIZE else DEFAULT_BATCH_SIZE
+        self.__timeout = timeout if 0 < timeout else DEFAULT_TIMEOUT
         self.__cookie_jar_file = cookie_jar_file
 
         self.__username = username
