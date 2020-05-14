@@ -1,8 +1,10 @@
 import pickle
+from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any
 
+import requests
 from requests import Response
-from requests.sessions import Session
+from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.utils import T, print_error, identity, parse_bool, non_existent
 
@@ -63,59 +65,59 @@ class CustomsForgeClient:
 
         self.__username = username
         self.__password = password
+        self.__login_rejected = False
+        self.__prevent_multiple_login_lock = Lock()
 
-        self.__session = Session()
-        self.__with_cookie_file('rb', lambda f: self.__session.cookies.update(pickle.load(f)))
+        self.__cookies = RequestsCookieJar()
+        self.__with_cookie_jar('rb', lambda f: self.__cookies.update(pickle.load(f)))
         # no error, since cookie file probably doesn't exist; we'll try to write it later and log any error then
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.close()
-
-    def close(self):
-        self.__session.close()
-
     def login(self, username: str = None, password: str = None) -> bool:
-        if username and password:
-            self.__username = username
-            self.__password = password
+        with self.__prevent_multiple_login_lock:
+            if username and password:
+                self.__username = username
+                self.__password = password
+                self.__login_rejected = False
 
-        if not self.__username and not self.__password:
-            print('Username and password were not provided.')
-            return False
+            if self.__login_rejected:
+                print('Login rejected. Please provide new credentials to try again.')
+                return False
 
-        self.__session.cookies.clear()
-        self.__with_cookie_file('wb', trying_to='clear cookie jar')
+            if not self.__username and not self.__password:
+                print('No credentials have been provided.')
+                self.__login_rejected = True
+                return False
 
-        form = {
-            'ips_username': self.__username,
-            'ips_password': self.__password,
-            'auth_key': self.__api_key,
-            'rememberMe': '1',
-            'referer': MAIN_PAGE
-        }
-        r = self.__call('login', self.__session.post, LOGIN_API, data=form, try_login=False)
-        if r is None:
-            return False
+            form = {
+                'ips_username': self.__username,
+                'ips_password': self.__password,
+                'auth_key': self.__api_key,
+                'rememberMe': '1',
+                'referer': MAIN_PAGE
+            }
+            r = self.__call('login', requests.post, LOGIN_API, data=form, cookies=None, try_login=False)
+            if r is None:  # this indicates an error - repeated attempts may still succeed
+                return False
 
-        if not r.is_redirect or not r.headers.get('Location', '') == MAIN_PAGE:
-            print('Login failed. Please check your credentials.')
-            return False
+            if not r.is_redirect or not r.headers.get('Location', '') == MAIN_PAGE:
+                print('Login failed. Please check your credentials.')
+                self.__login_rejected = True
+                return False
 
-        return True
+            self.__with_cookie_jar('wb', lambda f: pickle.dump(r.cookies, f), trying_to='update cookie jar')
+            self.__cookies = r.cookies
+            return True
 
     def dates(self) -> Iterator[str]:
         yield from self.__all(trying_to='find groups of songs',
-                              call=self.__session.get,
+                              call=requests.get,
                               url=DATES_API,
                               parse=Parse.dates)
 
     def cdlcs(self) -> Iterator[CDLC]:
         for date in self.dates():
             yield from self.__all(trying_to='find CDLCs',
-                                  call=self.__session.get,
+                                  call=requests.get,
                                   url=CDLC_BY_DATE_API,
                                   params={'filter': date},
                                   parse=Parse.cdlcs)
@@ -126,13 +128,13 @@ class CustomsForgeClient:
                url: str,
                try_login: bool = True,
                **kwargs) -> Optional[Response]:
+        kwargs.setdefault('cookies', self.__cookies)
+
         try:
             r = call(url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except Exception as e:
             print_error(e, trying_to=trying_to)
             return None
-
-        self.__with_cookie_file('wb', lambda f: pickle.dump(self.__session.cookies, f), trying_to='update cookie jar')
 
         if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
             return r
@@ -141,6 +143,7 @@ class CustomsForgeClient:
             print('Cannot {}: automatic login to customsforge failed.'.format(trying_to))
             return None
 
+        kwargs.pop('cookies', None)
         return self.__call(trying_to, call, url, try_login=False, **kwargs)
 
     def __all(self, parse: Callable[[Any], Iterator[T]], **call_params) -> Iterator[T]:
@@ -169,10 +172,10 @@ class CustomsForgeClient:
 
             skip += self.__batch_size
 
-    def __with_cookie_file(self,
-                           options: str,
-                           on_file: Callable[[IO], T] = identity,
-                           trying_to: str = None) -> T:
+    def __with_cookie_jar(self,
+                          options: str,
+                          on_file: Callable[[IO], T] = identity,
+                          trying_to: str = None) -> T:
         if self.__cookie_jar_file:
             try:
                 f = open(self.__cookie_jar_file, options)

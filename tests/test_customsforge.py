@@ -193,11 +193,7 @@ def cdlc(cdlc_json=None):
 def values(v):
     return {
         'status_code': 200,
-        'content': v,
-        # we have to return this, because httmock overrides session cookies with response cookies
-        'headers': {
-            'Set-Cookie': '-login_cookie=login_value; path=/; domain=.customsforge.com; httponly',
-        }
+        'content': v
     }
 
 

@@ -37,7 +37,7 @@ client = CustomsForgeClient(api_key=c_api_key,
                             cookie_jar_file=c_jar,
                             username=c_user,
                             password=c_pass) if c_api_key else None
-init_module(client, 'Customsforge client', cleanup=True)
+init_module(client, 'Customsforge client')
 
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full
