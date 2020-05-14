@@ -1,5 +1,5 @@
 [[package]]
-category = "main"
+category = "dev"
 description = "Simple assertion library for unit testing in python with a fluent API"
 name = "assertpy"
 optional = false
@@ -55,7 +55,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "0.4.3"
 
 [[package]]
-category = "main"
+category = "dev"
 description = "A mocking library for requests."
 name = "httmock"
 optional = false
@@ -190,7 +190,7 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "c424c928f85c668d6d947deebf1539f37590eab176bc3d2bc69acd10e3e67f10"
+content-hash = "333d5007ac8a3e8c78226c5b6657302ec3282ab4caa3fc3cb314d02ddb4c80fd"
 python-versions = "^3.8"
 
 [metadata.files]
