@@ -41,6 +41,19 @@ init_module(client, 'Customsforge client')
 
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full
+def run_main():
+    print('Main will only execute when there are no parameters. Use config.ini instead.')
+
+
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        print('Main will only execute when there are no parameters.')
+    if sys.argv:
+        # here we import all kinds of utilities so repl can be used more conveniently
+
+        # noinspection PyUnresolvedReferences
+        from datetime import *
+        # noinspection PyUnresolvedReferences
+        from urllib.parse import unquote
+        # noinspection PyUnresolvedReferences
+        import html
+    else:
+        run_main()

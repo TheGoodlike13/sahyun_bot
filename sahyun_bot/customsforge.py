@@ -1,4 +1,6 @@
+import html
 import pickle
+from datetime import date
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any
 
@@ -15,26 +17,42 @@ DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
 CDLC_BY_DATE_API = 'http://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
 
+YOUTUBE_SHORT_LINK = 'https://youtu.be/{}'
+
 DEFAULT_BATCH_SIZE = 100
 DEFAULT_TIMEOUT = 100
 DEFAULT_COOKIE_FILE = '.cookie_jar'
 TEST_COOKIE_FILE = '.cookie_jar_test'
 
+EONS_AGO = date.fromisoformat('2010-01-01')
+
+
+def read(data: dict, key: str):
+    return html.unescape(data.get(key).strip())
+
+
+def read_all(data: dict, key: str):
+    return [p.strip() for p in data.get(key).split(',') if p and not p.isspace()]
+
+
+def read_bool(data: dict, key: str):
+    return parse_bool(read(data, key))
+
 
 class CDLC:
     def __init__(self, **data):
         self.id = str(data.get('id'))
-        self.artist = data.get('artist').strip()
-        self.title = data.get('title').strip()
-        self.album = data.get('album').strip()
-        self.author = data.get('member').strip()
-        self.tuning = data.get('tuning').strip()
-        self.parts = [p.strip() for p in data.get('parts').split(',') if p and not p.isspace()]
-        self.platforms = [p.strip() for p in data.get('platforms').split(',') if p and not p.isspace()]
-        self.hasDynamicDifficulty = parse_bool(data.get('dd').strip())
-        self.isOfficial = parse_bool(data.get('official').strip())
+        self.artist = read(data, 'artist')
+        self.title = read(data, 'title')
+        self.album = read(data, 'album')
+        self.author = read(data, 'member')
+        self.tuning = read(data, 'tuning')
+        self.parts = read_all(data, 'parts')
+        self.platforms = read_all(data, 'platforms')
+        self.hasDynamicDifficulty = read_bool(data, 'dd')
+        self.isOfficial = read_bool(data, 'official')
         self.lastUpdated = data.get('updated')
-        self.musicVideo = data.get('music_video').strip()
+        self.musicVideo = read(data, 'music_video')
 
     def link(self) -> Optional[str]:
         return DOWNLOAD_API.format(self.id) if self.id else None
@@ -113,20 +131,48 @@ class CustomsForgeClient:
         """
         return next(self.dates(custom_batch=1), NON_EXISTENT) is not NON_EXISTENT
 
-    def dates(self, custom_batch: int = None) -> Iterator[str]:
-        yield from self.__all(trying_to='find groups of songs',
-                              call=WithRetry.get,
-                              url=DATES_API,
-                              custom_batch=custom_batch,
-                              parse=Parse.dates)
+    def dates(self, since: date = EONS_AGO, custom_batch: int = None) -> Iterator[date]:
+        remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
+                                               call=WithRetry.get,
+                                               url=DATES_API,
+                                               parse=Parse.dates,
+                                               skip=self.__estimate_date_skip(since),
+                                               batch=custom_batch)
 
-    def cdlcs(self) -> Iterator[CDLC]:
-        for date in self.dates():
-            yield from self.__all(trying_to='find CDLCs',
-                                  call=WithRetry.get,
-                                  url=CDLC_BY_DATE_API,
-                                  params={'filter': date},
-                                  parse=Parse.cdlcs)
+        for d in remaining_lazy_dates:
+            if date.fromisoformat(d) >= since:
+                yield d
+                break
+
+        yield from remaining_lazy_dates
+
+    def cdlcs(self, since: date = EONS_AGO) -> Iterator[CDLC]:
+        for d in self.dates(since):
+            yield from self.__lazy_all(trying_to='find CDLCs',
+                                       call=WithRetry.get,
+                                       url=CDLC_BY_DATE_API,
+                                       params={'filter': d},
+                                       parse=Parse.cdlcs)
+
+    def __estimate_date_skip(self, since: date) -> int:
+        """
+        :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
+        but can become outdated; therefore, only estimate right before calling for dates
+        """
+        if since <= EONS_AGO:
+            return 0
+
+        delta = date.today() - since
+        skip_estimate = self.__date_count() - delta.days - 1
+        return skip_estimate if skip_estimate > 0 else 0
+
+    def __date_count(self) -> Optional[int]:
+        date_count = self.__lazy_all(trying_to='total count of dates',
+                                     call=WithRetry.get,
+                                     url=DATES_API,
+                                     parse=Parse.date_count,
+                                     batch=1)
+        return next(date_count, None)
 
     def __call(self,
                trying_to: str,
@@ -152,12 +198,12 @@ class CustomsForgeClient:
         kwargs.pop('cookies', None)
         return self.__call(trying_to, call, url, try_login=False, **kwargs)
 
-    def __all(self,
-              parse: Callable[[Any], Iterator[T]],
-              custom_batch: int = None,
-              **call_params) -> Iterator[T]:
-        skip = 0
-        batch = custom_batch if Verify.batch_size(custom_batch) else self.__batch_size
+    def __lazy_all(self,
+                   parse: Callable[[Any], Iterator[T]],
+                   skip: int = 0,
+                   batch: int = None,
+                   **call_params) -> Iterator[T]:
+        batch = batch if Verify.batch_size(batch) else self.__batch_size
 
         while True:
             params = call_params.setdefault('params', {})
@@ -165,7 +211,7 @@ class CustomsForgeClient:
             params['take'] = batch
 
             r = self.__call(**call_params)
-            if not r:
+            if not r or not r.text:
                 break
 
             try:
@@ -208,6 +254,10 @@ class Parse:
             yield date_group['grp']
 
     @staticmethod
+    def date_count(dates_api_json) -> Iterator[str]:
+        yield dates_api_json[1][0]['total']
+
+    @staticmethod
     def cdlcs(cdlc_by_date_api_json) -> Iterator[CDLC]:
         if not cdlc_by_date_api_json:
             return
@@ -223,4 +273,4 @@ class Verify:
 
     @staticmethod
     def timeout(timeout: int) -> bool:
-        return 0 < timeout
+        return timeout > 0

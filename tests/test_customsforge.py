@@ -1,5 +1,6 @@
 import os
 import pickle
+from datetime import date
 
 import pytest
 from assertpy import assert_that
@@ -66,6 +67,7 @@ def test_dates(client):
 
         client.login('user', 'pass')
         assert_that(list(client.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
+        assert_that(list(client.dates(since=FILTER_DATE))).is_length(1).contains('2020-05-12')
 
 
 def test_cdlcs(client):
@@ -77,11 +79,13 @@ def test_cdlcs(client):
 
         client.login('user', 'pass')
         assert_that(list(client.cdlcs())).is_length(2).contains(CDLC(**CDLC_JSON_1), CDLC(**CDLC_JSON_2))
+        assert_that(list(client.cdlcs(since=FILTER_DATE))).is_length(1).contains(CDLC(**CDLC_JSON_2))
 
 
 def test_cdlc_parsing():
     assert_cdlc_1(CDLC(**CDLC_JSON_1))
     assert_cdlc_2(CDLC(**CDLC_JSON_2))
+    assert_cdlc_3(CDLC(**CDLC_JSON_3))
 
 
 def assert_logged_in(client):
@@ -120,6 +124,23 @@ def assert_cdlc_2(cdlc_json):
     assert_that(cdlc_json.musicVideo).is_equal_to('https://www.youtube.com/watch?v=SSbBvKaM6sk')
 
     assert_that(cdlc_json.link()).is_equal_to('https://customsforge.com/process.php?id=8623')
+
+
+def assert_cdlc_3(cdlc_json):
+    assert_that(cdlc_json.id).is_equal_to('49410')
+    assert_that(cdlc_json.artist).is_equal_to('Yellowcard')
+    assert_that(cdlc_json.title).is_equal_to('Hang You Up')
+    assert_that(cdlc_json.album).is_equal_to('When You\'re Through Thinking Say Yes')
+    assert_that(cdlc_json.author).is_equal_to('llfnv321')
+    assert_that(cdlc_json.tuning).is_equal_to('estandard')
+    assert_that(cdlc_json.parts).is_length(3).contains('lead', 'rhythm', 'vocals')
+    assert_that(cdlc_json.platforms).is_length(1).contains('pc')
+    assert_that(cdlc_json.hasDynamicDifficulty).is_equal_to(True)
+    assert_that(cdlc_json.isOfficial).is_equal_to(False)
+    assert_that(cdlc_json.lastUpdated).is_equal_to(1588013991)
+    assert_that(cdlc_json.musicVideo).is_equal_to('')
+
+    assert_that(cdlc_json.link()).is_equal_to('https://customsforge.com/process.php?id=49410')
 
 
 @all_requests
@@ -164,12 +185,12 @@ def dates_mock(url, request):
     if 'skip=1' in url.query:
         return group('2020-05-12')
 
-    return group()
+    return values()
 
 
-def group(date: str = None):
+def group(date: str):
     return values([
-        [{'grp': date}] if date else [],
+        [{'grp': date}],
         [{'total': 2}]
     ])
 
@@ -189,7 +210,7 @@ def cdlc(cdlc_json=None):
     values([cdlc_json] if cdlc_json else [])
 
 
-def values(v):
+def values(v=None):
     return {
         'status_code': 200,
         'content': v
@@ -222,6 +243,8 @@ VALID_LOGIN_FORM = {
     'ips_password=pass',
     'auth_key=key'
 }
+
+FILTER_DATE = date.fromisoformat('2020-05-12')
 
 CDLC_JSON_1 = {
     "artist": "Porno Graffiti",
@@ -323,4 +346,50 @@ CDLC_JSON_2 = {
     "22": None,
     "saved": None,
     "23": None
+}
+
+CDLC_JSON_3 = {
+    "artist": "Yellowcard",
+    "0": "Yellowcard",
+    "title": "Hang You Up",
+    "1": "Hang You Up",
+    "album": "When You&#39;re Through Thinking Say Yes",
+    "2": "When You&#39;re Through Thinking Say Yes",
+    "tuning": "estandard",
+    "3": "estandard",
+    "parts": ",lead,rhythm,vocals,",
+    "4": ",lead,rhythm,vocals,",
+    "dd": "yes",
+    "5": "yes",
+    "platforms": ",pc,",
+    "6": ",pc,",
+    "rating": 60033,
+    "7": 60033,
+    "updated": 1588013991,
+    "8": 1588013991,
+    "member": "llfnv321",
+    "9": "llfnv321",
+    "furl": "hang-you-up",
+    "10": "hang-you-up",
+    "id": 49410,
+    "11": 49410,
+    "added": 1588013991,
+    "12": 1588013991,
+    "version": "1.0",
+    "13": "1.0",
+    "downloads": 52,
+    "14": 52,
+    "official": "No",
+    "15": "No",
+    "direct": "",
+    "16": "",
+    "music_video": "",
+    "17": "",
+    "instrument_info": "",
+    "18": "",
+    "album_art": "http://i.imgur.com/3251bFh.jpg",
+    "19": "http://i.imgur.com/3251bFh.jpg",
+    "notes": "",
+    "20": "",
+    "collections": 24
 }

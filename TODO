@@ -16,3 +16,5 @@ COMMANDS
 All functionality should be optional when possible.
 
 Add logging to file. All print should go there?
+
+Shorten youtube URLs
