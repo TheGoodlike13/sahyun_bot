@@ -118,7 +118,7 @@ class CustomsForgeClient:
         """
         :returns true if a simple call to customsforge succeeded (including login), false otherwise
         """
-        return next(self.dates(custom_batch=1), NON_EXISTENT) is not NON_EXISTENT
+        return self.__estimate_date_skip(since=date.today()) > 0
 
     def dates(self, since: date = EONS_AGO, custom_batch: int = None) -> Iterator[date]:
         remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
@@ -134,6 +134,14 @@ class CustomsForgeClient:
                 break
 
         yield from remaining_lazy_dates
+
+    def cdlcs(self, since: date = EONS_AGO) -> Iterator[CDLC]:
+        for d in self.dates(since):
+            yield from self.__lazy_all(trying_to='find CDLCs',
+                                       call=WithRetry.get,
+                                       url=CDLC_BY_DATE_API,
+                                       params={'filter': d},
+                                       parse=Parse.cdlcs)
 
     def __has_credentials(self, username: str, password: str):
         if username and password:
@@ -152,14 +160,6 @@ class CustomsForgeClient:
 
         return True
 
-    def cdlcs(self, since: date = EONS_AGO) -> Iterator[CDLC]:
-        for d in self.dates(since):
-            yield from self.__lazy_all(trying_to='find CDLCs',
-                                       call=WithRetry.get,
-                                       url=CDLC_BY_DATE_API,
-                                       params={'filter': d},
-                                       parse=Parse.cdlcs)
-
     def __estimate_date_skip(self, since: date) -> int:
         """
         :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
@@ -168,8 +168,12 @@ class CustomsForgeClient:
         if since <= EONS_AGO:
             return 0
 
+        date_count = self.__date_count()
+        if not date_count:
+            return 0
+
         delta = date.today() - since
-        skip_estimate = self.__date_count() - delta.days - 1
+        skip_estimate = date_count - delta.days - 2
         return skip_estimate if skip_estimate > 0 else 0
 
     def __date_count(self) -> Optional[int]:

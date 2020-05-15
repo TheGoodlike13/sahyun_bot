@@ -9,6 +9,8 @@ from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE, CDLC
 
+today = date.today()
+
 
 @pytest.fixture
 def client():
@@ -66,8 +68,8 @@ def test_dates(client):
         assert_that(list(client.dates())).is_empty()
 
         client.login('user', 'pass')
-        assert_that(list(client.dates())).is_length(2).contains('2020-05-11', '2020-05-12')
-        assert_that(list(client.dates(since=FILTER_DATE))).is_length(1).contains('2020-05-12')
+        assert_that(list(client.dates())).is_length(4).contains('2020-05-10', '2020-05-11', '2020-05-12', str(today))
+        assert_that(list(client.dates(since=today))).is_length(1).contains(str(today))
 
 
 def test_cdlcs(client):
@@ -79,7 +81,7 @@ def test_cdlcs(client):
 
         client.login('user', 'pass')
         assert_that(list(client.cdlcs())).is_length(2).contains(CDLC(**CDLC_JSON_1), CDLC(**CDLC_JSON_2))
-        assert_that(list(client.cdlcs(since=FILTER_DATE))).is_length(1).contains(CDLC(**CDLC_JSON_2))
+        assert_that(list(client.cdlcs(since=today))).is_length(1).contains(CDLC(**CDLC_JSON_2))
 
 
 def test_cdlc_parsing():
@@ -179,19 +181,27 @@ def login_mock(url, request):
 
 
 def dates_mock(url, request):
+    # for ping() to work correctly, we need at least 4 dates
+
     if 'skip=0' in url.query:
-        return group('2020-05-11')
+        return group('2020-05-10')
 
     if 'skip=1' in url.query:
+        return group('2020-05-11')
+
+    if 'skip=2' in url.query:
         return group('2020-05-12')
+
+    if 'skip=3' in url.query:
+        return group(str(today))
 
     return values()
 
 
-def group(date: str):
+def group(date_str: str):
     return values([
-        [{'grp': date}],
-        [{'total': 2}]
+        [{'grp': date_str}],
+        [{'total': 4}]
     ])
 
 
@@ -200,7 +210,7 @@ def cdlcs_mock(url, request):
         if '2020-05-11' in url.query:
             return values([CDLC_JSON_1])
 
-        if '2020-05-12' in url.query:
+        if str(today) in url.query:
             return values([CDLC_JSON_2])
 
     return values([])
@@ -243,8 +253,6 @@ VALID_LOGIN_FORM = {
     'ips_password=pass',
     'auth_key=key'
 }
-
-FILTER_DATE = date.fromisoformat('2020-05-12')
 
 CDLC_JSON_1 = {
     "artist": "Porno Graffiti",
