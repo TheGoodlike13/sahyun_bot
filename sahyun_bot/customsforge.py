@@ -30,7 +30,8 @@ SOME_TIME_AGO = date.fromisoformat('2020-05-15')  # this should be in the past, 
 
 
 def read(data: dict, key: str):
-    return html.unescape(data.get(key).strip())
+    value = data.get(key)
+    return html.unescape(value.strip()) if value else ''
 
 
 def read_all(data: dict, key: str):
