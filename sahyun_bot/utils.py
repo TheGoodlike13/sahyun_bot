@@ -10,7 +10,7 @@ from urllib3.util.retry import Retry
 # general purpose generic variable to be used in generic functions
 T = TypeVar('T')
 
-# if next(it, non_existent) is non_existent: <do stuff if 'it' was empty>
+# if next(it, NON_EXISTENT) is NON_EXISTENT: <do stuff if 'it' was empty>
 NON_EXISTENT = object()
 
 config = ConfigParser()
@@ -44,6 +44,7 @@ def read_config(section: str,
     try:
         return convert(value.strip())
     except Exception:
+        logging.debug('Cannot convert config value [%s]->%s: %s', section, key, value)
         return fallback
 
 
