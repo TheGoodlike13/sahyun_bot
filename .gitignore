@@ -1,9 +1,12 @@
+.pytest_cache/
+
+*.log
+
 /.idea/
 /dist/
 /*.egg-info/
 
-.pytest_cache/
-
-config.ini
 .cookie_jar
 .cookie_jar_test
+config.ini
+config_log.ini

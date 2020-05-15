@@ -1,3 +1,5 @@
+import logging
+import time
 from configparser import ConfigParser
 from typing import Callable, Optional, TypeVar
 
@@ -45,8 +47,8 @@ def read_config(section: str,
         return fallback
 
 
-def print_error(e: Exception, trying_to: str = 'do something'):
-    print('Error while trying to {}: {}: {}'.format(trying_to, type(e).__name__, e))
+def to_error(e: Exception, trying_to: str = 'do something'):
+    return 'Error while trying to {}: {}: {}'.format(trying_to, type(e).__name__, e)
 
 
 RETRY_ON_METHOD = frozenset(
@@ -85,3 +87,7 @@ class WithRetry:
     def post(url: str, **kwargs) -> Response:
         with retry_session() as session:
             return session.post(url, **kwargs)
+
+
+class FormatterUTC(logging.Formatter):
+    converter = time.gmtime

@@ -1,6 +1,8 @@
 import atexit
 import http.client
+import logging.config
 import sys
+from typing import Any
 
 from sahyun_bot.customsforge import CustomsForgeClient, DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT, DEFAULT_COOKIE_FILE, \
     TEST_COOKIE_FILE
@@ -18,16 +20,20 @@ c_jar = read_config('customsforge', 'CookieFilename', fallback=DEFAULT_COOKIE_FI
 c_jar = DEFAULT_COOKIE_FILE if c_jar == TEST_COOKIE_FILE else c_jar
 
 s_debug = read_config('system', 'HttpDebugMode', parse_bool)
+s_log = read_config('system', 'LoggingConfig', fallback='config_log_default.ini')
+
+logging.config.fileConfig(s_log)
+LOG = logging.getLogger('root')
 
 
 # in this section we initialize all objects the bot will make use of, but avoid launching anything (e.g. connect to IRC)
-def init_module(module, desc, cleanup=False):
-    print('{} is available.'.format(desc)) if module else print('{} could not be configured.'.format(module))
-    if module and cleanup:
+def init_module(module: Any, desc: str):
+    LOG.info('%s is available.', desc) if module else LOG.warning('%s could not be configured.', desc)
+    if module and hasattr(module, 'close') and callable(module.close):
         atexit.register(module.close)
 
 
-print('If any module is unavailable, please check your config.ini file')
+LOG.info('Please check config.ini file if any module is unavailable')
 
 http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 
@@ -42,7 +48,7 @@ init_module(client, 'Customsforge client')
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full
 def run_main():
-    print('Main will only execute when there are no parameters. Use config.ini instead.')
+    LOG.info('Bot launch.')
 
 
 if __name__ == '__main__':

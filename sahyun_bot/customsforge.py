@@ -1,4 +1,5 @@
 import html
+import logging
 import pickle
 from datetime import date
 from threading import Lock
@@ -8,7 +9,9 @@ from urllib.parse import urlparse, parse_qs
 from requests import Response
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, print_error, WithRetry
+from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, to_error, WithRetry
+
+logger = logging.getLogger(__name__.rpartition('.')[2])
 
 MAIN_PAGE = 'http://customsforge.com/'
 LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
@@ -213,7 +216,7 @@ class CustomsForgeClient:
         try:
             r = call(url=url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except Exception as e:
-            print_error(e, trying_to=trying_to)
+            to_error(e, trying_to=trying_to)
             return None
 
         if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
@@ -251,7 +254,7 @@ class CustomsForgeClient:
                 yield first
                 yield from it
             except Exception as e:
-                print_error(e, trying_to='parse response of [{}] as JSON'.format(call_params.get('trying_to')))
+                to_error(e, trying_to='parse response of [{}] as JSON'.format(call_params.get('trying_to')))
                 break
 
             skip += batch
@@ -265,7 +268,7 @@ class CustomsForgeClient:
                 f = open(self.__cookie_jar_file, options)
             except Exception as e:
                 if trying_to:
-                    print_error(e, trying_to)
+                    to_error(e, trying_to)
             else:
                 with f:
                     return on_file(f)
