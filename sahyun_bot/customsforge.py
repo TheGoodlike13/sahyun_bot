@@ -95,7 +95,8 @@ class CustomsForgeClient:
                  timeout: int = DEFAULT_TIMEOUT,
                  cookie_jar_file: Optional[str] = DEFAULT_COOKIE_FILE,
                  username: str = None,
-                 password: str = None):
+                 password: str = None,
+                 get_today: Callable[[], date] = date.today):
         self.__api_key = api_key
         self.__batch_size = batch_size if Verify.batch_size(batch_size) else DEFAULT_BATCH_SIZE
         self.__timeout = timeout if Verify.timeout(timeout) else DEFAULT_TIMEOUT
@@ -109,6 +110,8 @@ class CustomsForgeClient:
         self.__cookies = RequestsCookieJar()
         self.__with_cookie_jar('rb', lambda f: self.__cookies.update(pickle.load(f)))
         # no error, since cookie file probably doesn't exist; we'll try to write it later and log any error then
+
+        self.__get_today = get_today
 
     def login(self, username: str = None, password: str = None) -> bool:
         with self.__prevent_multiple_login_lock:
@@ -192,8 +195,9 @@ class CustomsForgeClient:
         if not date_count:
             return 0
 
-        delta = date.today() - since
-        skip_estimate = date_count - delta.days - 2
+        passed_since = self.__get_today() - since
+        skip_estimate = date_count - passed_since.days - 3
+        # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
         return skip_estimate if skip_estimate > 0 else 0
 
     def __date_count(self) -> Optional[int]:

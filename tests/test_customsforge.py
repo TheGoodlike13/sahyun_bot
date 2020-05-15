@@ -9,17 +9,17 @@ from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE, CDLC
 
-test_date = date.fromisoformat('2020-05-14')
+test_date = date.fromisoformat('2020-05-15')
 
 
 @pytest.fixture
 def client():
-    return CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=None)
+    return CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=None, get_today=lambda: test_date)
 
 
 @pytest.fixture
 def client_with_login():
-    return CustomsForgeClient(api_key='key', batch_size=1, username='user', password='pass', cookie_jar_file=None)
+    return CustomsForgeClient(api_key='key', batch_size=1, username='user', password='pass', cookie_jar_file=None, get_today=lambda: test_date)
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def client_with_cookies():
     with open(TEST_COOKIE_FILE, 'wb') as jar:
         pickle.dump(cookies, jar)
 
-    yield CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=TEST_COOKIE_FILE)
+    yield CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=TEST_COOKIE_FILE, get_today=lambda: test_date)
 
     if os.path.exists(TEST_COOKIE_FILE):
         os.remove(TEST_COOKIE_FILE)
@@ -69,7 +69,7 @@ def test_dates(client):
 
         client.login('user', 'pass')
         assert_that(list(client.dates())).is_length(4).contains('2020-05-12', '2020-05-13', '2020-05-14', '2020-05-15')
-        assert_that(list(client.dates(since=test_date))).is_length(2).contains('2020-05-14', '2020-05-15')
+        assert_that(list(client.dates(since=test_date))).is_length(1).contains('2020-05-15')
 
 
 def test_cdlcs(client):
@@ -199,16 +199,16 @@ def dates_mock(url, request):
 def group(date_str: str):
     return values([
         [{'grp': date_str}],
-        [{'total': 3}]
+        [{'total': 4}]
     ])
 
 
 def cdlcs_mock(url, request):
     if 'skip=0' in url.query:
-        if '2020-05-13' in url.query:
+        if '2020-05-14' in url.query:
             return values([CDLC_JSON_1])
 
-        if '2020-05-14' in url.query:
+        if '2020-05-15' in url.query:
             return values([CDLC_JSON_2])
 
     return values('[]')
