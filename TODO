@@ -14,5 +14,3 @@ COMMANDS
     same as original bot
 
 All functionality should be optional when possible.
-
-Add logging to file. All print should go there?
