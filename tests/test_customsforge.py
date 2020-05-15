@@ -94,55 +94,55 @@ def assert_logged_in(client):
     assert_that(client.ping()).is_true()
 
 
-def assert_cdlc_1(cdlc_json):
-    assert_that(cdlc_json.id).is_equal_to('3492')
-    assert_that(cdlc_json.artist).is_equal_to('Porno Graffiti')
-    assert_that(cdlc_json.title).is_equal_to('Hitori No Yoru(Great Teacher Onizuka)')
-    assert_that(cdlc_json.album).is_equal_to('Romantist Egoist')
-    assert_that(cdlc_json.author).is_equal_to('BMB')
-    assert_that(cdlc_json.tuning).is_equal_to('estandard')
-    assert_that(cdlc_json.parts).is_length(3).contains('lead', 'rhythm', 'bass')
-    assert_that(cdlc_json.platforms).is_length(2).contains('pc', 'mac')
-    assert_that(cdlc_json.hasDynamicDifficulty).is_equal_to(False)
-    assert_that(cdlc_json.isOfficial).is_equal_to(False)
-    assert_that(cdlc_json.lastUpdated).is_equal_to(1398197782)
-    assert_that(cdlc_json.musicVideo).is_equal_to('http://youtu.be/kDh3D2ewiNs')
+def assert_cdlc_1(cdlc):
+    assert_that(cdlc.id).is_equal_to('3492')
+    assert_that(cdlc.artist).is_equal_to('Porno Graffiti')
+    assert_that(cdlc.title).is_equal_to('Hitori No Yoru(Great Teacher Onizuka)')
+    assert_that(cdlc.album).is_equal_to('Romantist Egoist')
+    assert_that(cdlc.author).is_equal_to('BMB')
+    assert_that(cdlc.tuning).is_equal_to('estandard')
+    assert_that(cdlc.parts).is_length(3).contains('lead', 'rhythm', 'bass')
+    assert_that(cdlc.platforms).is_length(2).contains('pc', 'mac')
+    assert_that(cdlc.has_dynamic_difficulty).is_equal_to(False)
+    assert_that(cdlc.is_official).is_equal_to(False)
+    assert_that(cdlc.last_updated).is_equal_to(1398197782)
 
-    assert_that(cdlc_json.link()).is_equal_to('https://customsforge.com/process.php?id=3492')
-
-
-def assert_cdlc_2(cdlc_json):
-    assert_that(cdlc_json.id).is_equal_to('8623')
-    assert_that(cdlc_json.artist).is_equal_to('Blur')
-    assert_that(cdlc_json.title).is_equal_to('Song 2')
-    assert_that(cdlc_json.album).is_equal_to('Blur')
-    assert_that(cdlc_json.author).is_equal_to('CustomsForge')
-    assert_that(cdlc_json.tuning).is_equal_to('estandard')
-    assert_that(cdlc_json.parts).is_length(3).contains('lead', 'bass', 'vocals')
-    assert_that(cdlc_json.platforms).is_length(4).contains('pc', 'mac', 'xbox360', 'ps3')
-    assert_that(cdlc_json.hasDynamicDifficulty).is_equal_to(True)
-    assert_that(cdlc_json.isOfficial).is_equal_to(True)
-    assert_that(cdlc_json.lastUpdated).is_equal_to(1318910400)
-    assert_that(cdlc_json.musicVideo).is_equal_to('https://www.youtube.com/watch?v=SSbBvKaM6sk')
-
-    assert_that(cdlc_json.link()).is_equal_to('https://customsforge.com/process.php?id=8623')
+    assert_that(cdlc.music_video()).is_equal_to('https://youtu.be/kDh3D2ewiNs')
+    assert_that(cdlc.download_link()).is_equal_to('https://customsforge.com/process.php?id=3492')
 
 
-def assert_cdlc_3(cdlc_json):
-    assert_that(cdlc_json.id).is_equal_to('49410')
-    assert_that(cdlc_json.artist).is_equal_to('Yellowcard')
-    assert_that(cdlc_json.title).is_equal_to('Hang You Up')
-    assert_that(cdlc_json.album).is_equal_to('When You\'re Through Thinking Say Yes')
-    assert_that(cdlc_json.author).is_equal_to('llfnv321')
-    assert_that(cdlc_json.tuning).is_equal_to('estandard')
-    assert_that(cdlc_json.parts).is_length(3).contains('lead', 'rhythm', 'vocals')
-    assert_that(cdlc_json.platforms).is_length(1).contains('pc')
-    assert_that(cdlc_json.hasDynamicDifficulty).is_equal_to(True)
-    assert_that(cdlc_json.isOfficial).is_equal_to(False)
-    assert_that(cdlc_json.lastUpdated).is_equal_to(1588013991)
-    assert_that(cdlc_json.musicVideo).is_equal_to('')
+def assert_cdlc_2(cdlc):
+    assert_that(cdlc.id).is_equal_to('8623')
+    assert_that(cdlc.artist).is_equal_to('Blur')
+    assert_that(cdlc.title).is_equal_to('Song 2')
+    assert_that(cdlc.album).is_equal_to('Blur')
+    assert_that(cdlc.author).is_equal_to('CustomsForge')
+    assert_that(cdlc.tuning).is_equal_to('estandard')
+    assert_that(cdlc.parts).is_length(3).contains('lead', 'bass', 'vocals')
+    assert_that(cdlc.platforms).is_length(4).contains('pc', 'mac', 'xbox360', 'ps3')
+    assert_that(cdlc.has_dynamic_difficulty).is_equal_to(True)
+    assert_that(cdlc.is_official).is_equal_to(True)
+    assert_that(cdlc.last_updated).is_equal_to(1318910400)
 
-    assert_that(cdlc_json.link()).is_equal_to('https://customsforge.com/process.php?id=49410')
+    assert_that(cdlc.music_video()).is_equal_to('https://youtu.be/SSbBvKaM6sk')
+    assert_that(cdlc.download_link()).is_equal_to('https://customsforge.com/process.php?id=8623')
+
+
+def assert_cdlc_3(cdlc):
+    assert_that(cdlc.id).is_equal_to('49410')
+    assert_that(cdlc.artist).is_equal_to('Yellowcard')
+    assert_that(cdlc.title).is_equal_to('Hang You Up')
+    assert_that(cdlc.album).is_equal_to('When You\'re Through Thinking Say Yes')
+    assert_that(cdlc.author).is_equal_to('llfnv321')
+    assert_that(cdlc.tuning).is_equal_to('estandard')
+    assert_that(cdlc.parts).is_length(3).contains('lead', 'rhythm', 'vocals')
+    assert_that(cdlc.platforms).is_length(1).contains('pc')
+    assert_that(cdlc.has_dynamic_difficulty).is_equal_to(True)
+    assert_that(cdlc.is_official).is_equal_to(False)
+    assert_that(cdlc.last_updated).is_equal_to(1588013991)
+
+    assert_that(cdlc.music_video()).is_equal_to('')
+    assert_that(cdlc.download_link()).is_equal_to('https://customsforge.com/process.php?id=49410')
 
 
 @all_requests
@@ -211,11 +211,7 @@ def cdlcs_mock(url, request):
         if '2020-05-14' in url.query:
             return values([CDLC_JSON_2])
 
-    return values([])
-
-
-def cdlc(cdlc_json=None):
-    values([cdlc_json] if cdlc_json else [])
+    return values('[]')
 
 
 def values(v=None):

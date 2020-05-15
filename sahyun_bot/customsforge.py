@@ -3,6 +3,7 @@ import pickle
 from datetime import date
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any
+from urllib.parse import urlparse, parse_qs
 
 from requests import Response
 from requests.cookies import RequestsCookieJar
@@ -50,12 +51,27 @@ class CDLC:
         self.tuning = read(data, 'tuning')
         self.parts = read_all(data, 'parts')
         self.platforms = read_all(data, 'platforms')
-        self.hasDynamicDifficulty = read_bool(data, 'dd')
-        self.isOfficial = read_bool(data, 'official')
-        self.lastUpdated = data.get('updated')
-        self.musicVideo = read(data, 'music_video')
+        self.has_dynamic_difficulty = read_bool(data, 'dd')
+        self.is_official = read_bool(data, 'official')
+        self.last_updated = data.get('updated')
 
-    def link(self) -> Optional[str]:
+        self.__music_video_full = read(data, 'music_video')
+
+    def music_video(self) -> Optional[str]:
+        try:
+            url_parts = urlparse(self.__music_video_full or '')
+            if 'youtube.com' in url_parts.netloc:
+                video_id = parse_qs(url_parts.query).get('v', None)
+                if video_id:
+                    return YOUTUBE_SHORT_LINK.format(video_id[0])
+            elif url_parts.scheme == 'http':
+                return self.__music_video_full[:4] + 's' + self.__music_video_full[4:]
+        except ValueError:
+            pass
+
+        return self.__music_video_full
+
+    def download_link(self) -> Optional[str]:
         return DOWNLOAD_API.format(self.id) if self.id else None
 
     def __eq__(self, o: object) -> bool:

@@ -52,7 +52,7 @@ if __name__ == '__main__':
         # noinspection PyUnresolvedReferences
         from datetime import *
         # noinspection PyUnresolvedReferences
-        from urllib.parse import unquote
+        from urllib.parse import *
         # noinspection PyUnresolvedReferences
         import html
     else:
