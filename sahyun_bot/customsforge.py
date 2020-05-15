@@ -9,9 +9,9 @@ from urllib.parse import urlparse, parse_qs
 from requests import Response
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, to_error, WithRetry
+from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, debug_ex, WithRetry
 
-logger = logging.getLogger(__name__.rpartition('.')[2])
+LOG = logging.getLogger(__name__.rpartition('.')[2])
 
 MAIN_PAGE = 'http://customsforge.com/'
 LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
@@ -127,7 +127,7 @@ class CustomsForgeClient:
                 return False
 
             if not r.is_redirect or not r.headers.get('Location', '') == MAIN_PAGE:
-                print('Login failed. Please check your credentials.')
+                LOG.error('Login failed. Please check your credentials.')
                 self.__login_rejected = True
                 return False
 
@@ -171,11 +171,11 @@ class CustomsForgeClient:
             self.__login_rejected = False
 
         if self.__login_rejected:
-            print('Login rejected. Please provide new credentials to try again.')
+            LOG.debug('Login rejected. Please provide new credentials to try again.')
             return False
 
         if not self.__username and not self.__password:
-            print('No credentials have been provided.')
+            LOG.info('No credentials have been provided.')
             self.__login_rejected = True
             return False
 
@@ -216,14 +216,13 @@ class CustomsForgeClient:
         try:
             r = call(url=url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except Exception as e:
-            to_error(e, trying_to=trying_to)
-            return None
+            return debug_ex(LOG, e, trying_to)
 
         if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
             return r
 
         if not self.login():
-            print('Cannot {}: automatic login to customsforge failed.'.format(trying_to))
+            LOG.debug('Cannot %s: automatic login to customsforge failed.', trying_to)
             return None
 
         kwargs.pop('cookies', None)
@@ -254,8 +253,7 @@ class CustomsForgeClient:
                 yield first
                 yield from it
             except Exception as e:
-                to_error(e, trying_to='parse response of [{}] as JSON'.format(call_params.get('trying_to')))
-                break
+                return debug_ex(LOG, e, 'parse response of [{}] as JSON', call_params.get('trying_to'))
 
             skip += batch
 
@@ -268,7 +266,7 @@ class CustomsForgeClient:
                 f = open(self.__cookie_jar_file, options)
             except Exception as e:
                 if trying_to:
-                    to_error(e, trying_to)
+                    debug_ex(LOG, e, trying_to)
             else:
                 with f:
                     return on_file(f)

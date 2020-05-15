@@ -48,6 +48,10 @@ call curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get
 ::
 :: Finally, I added all dependencies that I wanted to use with 'poetry add <name>'. This also installed the
 :: dependencies in the environment.
+::
+:: Much later, I added pytest.ini configuration file to the project. This file ensures two things: 1) tests log
+:: DEBUG information, and 2) logs are printed immediately, which causes them to appear in PyCharm test-specific
+:: windows (both passing and failing tests). This should help a lot if some unhandled error occurs out of nowhere.
 
 
 :prepare_environment

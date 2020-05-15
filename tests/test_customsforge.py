@@ -147,7 +147,7 @@ def assert_cdlc_3(cdlc):
 
 @all_requests
 def request_fail(url, request):
-    raise ValueError('Any exception during request')
+    raise ValueError('Failed as expected')
 
 
 @all_requests

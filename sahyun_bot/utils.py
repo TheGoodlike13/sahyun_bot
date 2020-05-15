@@ -47,8 +47,9 @@ def read_config(section: str,
         return fallback
 
 
-def to_error(e: Exception, trying_to: str = 'do something'):
-    return 'Error while trying to {}: {}: {}'.format(trying_to, type(e).__name__, e)
+def debug_ex(log: logging.Logger, e: Exception, message: str, *args):
+    log.error('Error while trying to %s: %s: %s', message.format(*args), type(e).__name__, e)
+    log.debug('Traceback:', exc_info=True)
 
 
 RETRY_ON_METHOD = frozenset(
