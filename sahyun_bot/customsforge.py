@@ -91,18 +91,7 @@ class CustomsForgeClient:
 
     def login(self, username: str = None, password: str = None) -> bool:
         with self.__prevent_multiple_login_lock:
-            if username and password:
-                self.__username = username
-                self.__password = password
-                self.__login_rejected = False
-
-            if self.__login_rejected:
-                print('Login rejected. Please provide new credentials to try again.')
-                return False
-
-            if not self.__username and not self.__password:
-                print('No credentials have been provided.')
-                self.__login_rejected = True
+            if not self.__has_credentials(username, password):
                 return False
 
             form = {
@@ -145,6 +134,23 @@ class CustomsForgeClient:
                 break
 
         yield from remaining_lazy_dates
+
+    def __has_credentials(self, username: str, password: str):
+        if username and password:
+            self.__username = username
+            self.__password = password
+            self.__login_rejected = False
+
+        if self.__login_rejected:
+            print('Login rejected. Please provide new credentials to try again.')
+            return False
+
+        if not self.__username and not self.__password:
+            print('No credentials have been provided.')
+            self.__login_rejected = True
+            return False
+
+        return True
 
     def cdlcs(self, since: date = EONS_AGO) -> Iterator[CDLC]:
         for d in self.dates(since):
