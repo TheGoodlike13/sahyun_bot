@@ -55,6 +55,9 @@ call curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get
 
 
 :prepare_environment
+:: It may seem like this runs twice, but the second one is always run inside the virtual environment. This is needed
+:: to stay consistent with PyCharm which seems to automatically open the console in the virtual environment.
+call poetry run python -m pip install --upgrade pip setuptools wheel
 call "%USERPROFILE%\.poetry\bin\poetry" install
 for /f "tokens=*" %%a in ('"%USERPROFILE%\.poetry\bin\poetry" env info --path') do set poetry_env=%%a
 if not exist "config.ini" call xcopy empty_config.ini config.ini* /q
