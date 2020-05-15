@@ -141,7 +141,7 @@ class CustomsForgeClient:
         """
         return self.__estimate_date_skip(since=SOME_TIME_AGO) > 0
 
-    def dates(self, since: date = EONS_AGO, custom_batch: int = None) -> Iterator[date]:
+    def dates(self, since: date = EONS_AGO, custom_batch: int = None) -> Iterator[str]:
         remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
                                                call=WithRetry.get,
                                                url=DATES_API,
