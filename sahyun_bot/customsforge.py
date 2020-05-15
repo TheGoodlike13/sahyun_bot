@@ -24,7 +24,8 @@ DEFAULT_TIMEOUT = 100
 DEFAULT_COOKIE_FILE = '.cookie_jar'
 TEST_COOKIE_FILE = '.cookie_jar_test'
 
-EONS_AGO = date.fromisoformat('2010-01-01')
+EONS_AGO = date.fromisoformat('2010-01-01')       # this should pre-date even the oldest CDLC
+SOME_TIME_AGO = date.fromisoformat('2020-05-15')  # this should be in the past, but many older CDLCs should exist (1K+)
 
 
 def read(data: dict, key: str):
@@ -118,7 +119,7 @@ class CustomsForgeClient:
         """
         :returns true if a simple call to customsforge succeeded (including login), false otherwise
         """
-        return self.__estimate_date_skip(since=date.today()) > 0
+        return self.__estimate_date_skip(since=SOME_TIME_AGO) > 0
 
     def dates(self, since: date = EONS_AGO, custom_batch: int = None) -> Iterator[date]:
         remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',

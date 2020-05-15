@@ -9,7 +9,7 @@ from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE, CDLC
 
-today = date.today()
+test_date = date.fromisoformat('2020-05-14')
 
 
 @pytest.fixture
@@ -68,8 +68,8 @@ def test_dates(client):
         assert_that(list(client.dates())).is_empty()
 
         client.login('user', 'pass')
-        assert_that(list(client.dates())).is_length(4).contains('2020-05-10', '2020-05-11', '2020-05-12', str(today))
-        assert_that(list(client.dates(since=today))).is_length(1).contains(str(today))
+        assert_that(list(client.dates())).is_length(4).contains('2020-05-12', '2020-05-13', '2020-05-14', '2020-05-15')
+        assert_that(list(client.dates(since=test_date))).is_length(2).contains('2020-05-14', '2020-05-15')
 
 
 def test_cdlcs(client):
@@ -81,7 +81,7 @@ def test_cdlcs(client):
 
         client.login('user', 'pass')
         assert_that(list(client.cdlcs())).is_length(2).contains(CDLC(**CDLC_JSON_1), CDLC(**CDLC_JSON_2))
-        assert_that(list(client.cdlcs(since=today))).is_length(1).contains(CDLC(**CDLC_JSON_2))
+        assert_that(list(client.cdlcs(since=test_date))).is_length(1).contains(CDLC(**CDLC_JSON_2))
 
 
 def test_cdlc_parsing():
@@ -181,19 +181,17 @@ def login_mock(url, request):
 
 
 def dates_mock(url, request):
-    # for ping() to work correctly, we need at least 4 dates
-
     if 'skip=0' in url.query:
-        return group('2020-05-10')
-
-    if 'skip=1' in url.query:
-        return group('2020-05-11')
-
-    if 'skip=2' in url.query:
         return group('2020-05-12')
 
+    if 'skip=1' in url.query:
+        return group('2020-05-13')
+
+    if 'skip=2' in url.query:
+        return group('2020-05-14')
+
     if 'skip=3' in url.query:
-        return group(str(today))
+        return group('2020-05-15')
 
     return values()
 
@@ -201,16 +199,16 @@ def dates_mock(url, request):
 def group(date_str: str):
     return values([
         [{'grp': date_str}],
-        [{'total': 4}]
+        [{'total': 3}]
     ])
 
 
 def cdlcs_mock(url, request):
     if 'skip=0' in url.query:
-        if '2020-05-11' in url.query:
+        if '2020-05-13' in url.query:
             return values([CDLC_JSON_1])
 
-        if str(today) in url.query:
+        if '2020-05-14' in url.query:
             return values([CDLC_JSON_2])
 
     return values([])
