@@ -61,6 +61,7 @@ class CDLC:
 
         self.__music_video_full = read(data, 'music_video')
 
+    @property
     def music_video(self) -> Optional[str]:
         try:
             url_parts = urlparse(self.__music_video_full or '')
@@ -75,6 +76,7 @@ class CDLC:
 
         return self.__music_video_full
 
+    @property
     def download_link(self) -> Optional[str]:
         return DOWNLOAD_API.format(self.id) if self.id else None
 

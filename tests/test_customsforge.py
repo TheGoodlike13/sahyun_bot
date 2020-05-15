@@ -117,9 +117,8 @@ def assert_cdlc_1(cdlc):
     assert_that(cdlc.has_dynamic_difficulty).is_equal_to(False)
     assert_that(cdlc.is_official).is_equal_to(False)
     assert_that(cdlc.last_updated).is_equal_to(1398197782)
-
-    assert_that(cdlc.music_video()).is_equal_to('https://youtu.be/kDh3D2ewiNs')
-    assert_that(cdlc.download_link()).is_equal_to('https://customsforge.com/process.php?id=3492')
+    assert_that(cdlc.music_video).is_equal_to('https://youtu.be/kDh3D2ewiNs')
+    assert_that(cdlc.download_link).is_equal_to('https://customsforge.com/process.php?id=3492')
 
 
 def assert_cdlc_2(cdlc):
@@ -134,9 +133,8 @@ def assert_cdlc_2(cdlc):
     assert_that(cdlc.has_dynamic_difficulty).is_equal_to(True)
     assert_that(cdlc.is_official).is_equal_to(True)
     assert_that(cdlc.last_updated).is_equal_to(1318910400)
-
-    assert_that(cdlc.music_video()).is_equal_to('https://youtu.be/SSbBvKaM6sk')
-    assert_that(cdlc.download_link()).is_equal_to('https://customsforge.com/process.php?id=8623')
+    assert_that(cdlc.music_video).is_equal_to('https://youtu.be/SSbBvKaM6sk')
+    assert_that(cdlc.download_link).is_equal_to('https://customsforge.com/process.php?id=8623')
 
 
 def assert_cdlc_3(cdlc):
@@ -151,9 +149,8 @@ def assert_cdlc_3(cdlc):
     assert_that(cdlc.has_dynamic_difficulty).is_equal_to(True)
     assert_that(cdlc.is_official).is_equal_to(False)
     assert_that(cdlc.last_updated).is_equal_to(1588013991)
-
-    assert_that(cdlc.music_video()).is_equal_to('')
-    assert_that(cdlc.download_link()).is_equal_to('https://customsforge.com/process.php?id=49410')
+    assert_that(cdlc.music_video).is_equal_to('')
+    assert_that(cdlc.download_link).is_equal_to('https://customsforge.com/process.php?id=49410')
 
 
 @all_requests
