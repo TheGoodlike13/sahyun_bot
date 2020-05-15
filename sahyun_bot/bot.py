@@ -27,7 +27,7 @@ c_jar = DEFAULT_COOKIE_FILE if c_jar == TEST_COOKIE_FILE else c_jar
 
 # in this section we initialize all objects the bot will make use of, but avoid launching anything (e.g. connect to IRC)
 def init_module(module: Any, desc: str):
-    logging.info('%s is available.', desc) if module else logging.warning('%s could not be configured.', desc)
+    logging.info('%s is available', desc) if module else logging.warning('%s could not be configured', desc)
     if module and hasattr(module, 'close') and callable(module.close):
         atexit.register(module.close)
 
