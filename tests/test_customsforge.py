@@ -14,12 +14,20 @@ test_date = date.fromisoformat('2020-05-15')
 
 @pytest.fixture
 def client():
-    return CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=None, get_today=lambda: test_date)
+    return CustomsForgeClient(api_key='key',
+                              batch_size=1,
+                              cookie_jar_file=None,
+                              get_today=lambda: test_date)
 
 
 @pytest.fixture
 def client_with_login():
-    return CustomsForgeClient(api_key='key', batch_size=1, username='user', password='pass', cookie_jar_file=None, get_today=lambda: test_date)
+    return CustomsForgeClient(api_key='key',
+                              batch_size=1,
+                              username='user',
+                              password='pass',
+                              cookie_jar_file=None,
+                              get_today=lambda: test_date)
 
 
 @pytest.fixture
@@ -30,7 +38,10 @@ def client_with_cookies():
     with open(TEST_COOKIE_FILE, 'wb') as jar:
         pickle.dump(cookies, jar)
 
-    yield CustomsForgeClient(api_key='key', batch_size=1, cookie_jar_file=TEST_COOKIE_FILE, get_today=lambda: test_date)
+    yield CustomsForgeClient(api_key='key',
+                             batch_size=1,
+                             cookie_jar_file=TEST_COOKIE_FILE,
+                             get_today=lambda: test_date)
 
     if os.path.exists(TEST_COOKIE_FILE):
         os.remove(TEST_COOKIE_FILE)
