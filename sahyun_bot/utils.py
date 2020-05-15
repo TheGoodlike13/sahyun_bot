@@ -38,19 +38,22 @@ def read_config(section: str,
                 allow_empty: bool = False,
                 convert: Callable[[str], T] = identity) -> Optional[T]:
     value = config.get(section, key, fallback=fallback)
-    if not allow_empty and not value or value is None:
+    if value is None or value is fallback or not allow_empty and not value:
         return fallback
 
     try:
         return convert(value.strip())
-    except Exception:
-        logging.debug('Cannot convert config value [%s]->%s: %s', section, key, value)
+    except Exception as e:
+        debug_ex(logging.root, e, 'convert config value [{}]->{}: {}', section, key, value, silent=True)
         return fallback
 
 
-def debug_ex(log: logging.Logger, e: Exception, message: str, *args):
-    log.error('Error while trying to %s: %s: %s', message.format(*args), type(e).__name__, e)
-    log.debug('Traceback:', exc_info=True)
+def debug_ex(log: logging.Logger, e: Exception, message: str, *args, silent: bool = False):
+    if silent:
+        log.debug('Error while trying to %s: %s: %s', message.format(*args), type(e).__name__, e, exc_info=True)
+    else:
+        log.error('Error while trying to %s: %s: %s', message.format(*args), type(e).__name__, e)
+        log.debug('Traceback:', exc_info=True)
 
 
 RETRY_ON_METHOD = frozenset(
