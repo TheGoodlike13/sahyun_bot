@@ -177,7 +177,7 @@ def customsforge(url, request):
 
     return {
         'status_code': 404,
-        'content': 'Unexpected URL'
+        'content': 'Unexpected URL',
     }
 
 
@@ -187,7 +187,7 @@ def login_mock(url, request):
 
     return {
         'status_code': 200,
-        'content': 'Sign-in error page'
+        'content': 'Sign-in error page',
     }
 
 
@@ -228,7 +228,7 @@ def cdlcs_mock(url, request):
 def values(v=None):
     return {
         'status_code': 200,
-        'content': v
+        'content': v,
     }
 
 
@@ -239,7 +239,7 @@ def to_main_page():
         'headers': {
             'Set-Cookie': '-login_cookie=login_value; path=/; domain=.customsforge.com; httponly',
             'Location': MAIN_PAGE
-        }
+        },
     }
 
 
@@ -249,14 +249,14 @@ def to_login_page():
         'content': 'Redirect to login page - login is required!',
         'headers': {
             'Location': LOGIN_PAGE
-        }
+        },
     }
 
 
 VALID_LOGIN_FORM = {
     'ips_username=user',
     'ips_password=pass',
-    'auth_key=key'
+    'auth_key=key',
 }
 
 CDLC_JSON_1 = {
@@ -307,7 +307,7 @@ CDLC_JSON_1 = {
     "record_id": None,
     "22": None,
     "saved": None,
-    "23": None
+    "23": None,
 }
 
 CDLC_JSON_2 = {
@@ -358,7 +358,7 @@ CDLC_JSON_2 = {
     "record_id": None,
     "22": None,
     "saved": None,
-    "23": None
+    "23": None,
 }
 
 CDLC_JSON_3 = {
@@ -404,5 +404,5 @@ CDLC_JSON_3 = {
     "19": "http://i.imgur.com/3251bFh.jpg",
     "notes": "",
     "20": "",
-    "collections": 24
+    "collections": 24,
 }

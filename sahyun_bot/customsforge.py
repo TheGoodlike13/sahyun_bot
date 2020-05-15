@@ -123,7 +123,7 @@ class CustomsForgeClient:
                 'ips_password': self.__password,
                 'auth_key': self.__api_key,
                 'rememberMe': '1',
-                'referer': MAIN_PAGE
+                'referer': MAIN_PAGE,
             }
             r = self.__call('login', WithRetry.post, LOGIN_API, data=form, cookies=None, try_login=False)
             if r is None:  # this indicates an error - repeated attempts may still succeed
