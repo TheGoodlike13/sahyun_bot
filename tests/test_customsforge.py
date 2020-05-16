@@ -14,7 +14,7 @@ test_date = date.fromisoformat('2020-05-15')
 
 
 @pytest.fixture
-def client():
+def cf():
     return CustomsForgeClient(api_key='key',
                               batch_size=1,
                               cookie_jar_file=None,
@@ -22,7 +22,7 @@ def client():
 
 
 @pytest.fixture
-def client_with_login():
+def cf_with_credentials():
     return CustomsForgeClient(api_key='key',
                               batch_size=1,
                               username='user',
@@ -32,7 +32,7 @@ def client_with_login():
 
 
 @pytest.fixture
-def client_with_cookies():
+def cf_with_cookies():
     cookies = RequestsCookieJar()
     cookies.set('-login_cookie', 'login_value', domain='.customsforge.com', path='/')
 
@@ -48,64 +48,64 @@ def client_with_cookies():
         os.remove(TEST_COOKIE_FILE)
 
 
-def test_login_via_call(client):
+def test_login_via_call(cf):
     with HTTMock(request_fail):
-        assert_that(client.login('user', 'pass')).is_false()
+        assert_that(cf.login('user', 'pass')).is_false()
 
     with HTTMock(customsforge):
-        assert_that(client.login('user', 'pass')).is_true()
-        assert_that(client.login('user', 'wrong_pass')).is_false()
+        assert_that(cf.login('user', 'pass')).is_true()
+        assert_that(cf.login('user', 'wrong_pass')).is_false()
 
 
-def test_login_via_config(client_with_login):
+def test_login_via_config(cf_with_credentials):
     with HTTMock(customsforge):
-        assert_that(client_with_login.login()).is_true()
+        assert_that(cf_with_credentials.login()).is_true()
 
 
-def test_login_via_cookie_jar(client_with_cookies):
+def test_login_via_cookie_jar(cf_with_cookies):
     with HTTMock(customsforge):
-        assert_logged_in(client_with_cookies)
+        assert_logged_in(cf_with_cookies)
 
 
-def test_login_automatically(client_with_login):
+def test_login_automatically(cf_with_credentials):
     with HTTMock(customsforge):
-        assert_logged_in(client_with_login)
+        assert_logged_in(cf_with_credentials)
 
 
-def test_dates(client):
+def test_dates(cf):
     with HTTMock(request_fail):
-        assert_that(list(client.dates())).is_empty()
+        assert_that(list(cf.dates())).is_empty()
 
     with HTTMock(customsforge):
-        assert_that(list(client.dates())).is_empty()
+        assert_that(list(cf.dates())).is_empty()
 
-        client.login('user', 'pass')
-        assert_that(list(client.dates())).is_length(4).contains('2020-05-12', '2020-05-13', '2020-05-14', '2020-05-15')
-        assert_that(list(client.dates(since=test_date))).is_length(1).contains('2020-05-15')
+        cf.login('user', 'pass')
+        assert_that(list(cf.dates())).is_length(4).contains('2020-05-12', '2020-05-13', '2020-05-14', '2020-05-15')
+        assert_that(list(cf.dates(since=test_date))).is_length(1).contains('2020-05-15')
 
 
-def test_cdlcs(client):
+def test_cdlcs(cf):
     with HTTMock(request_fail):
-        assert_that(list(client.cdlcs())).is_empty()
+        assert_that(list(cf.cdlcs())).is_empty()
 
     with HTTMock(customsforge):
-        assert_that(list(client.cdlcs())).is_empty()
+        assert_that(list(cf.cdlcs())).is_empty()
 
-        client.login('user', 'pass')
-        assert_that(list(client.cdlcs())).is_length(2).contains(Parse.cdlc(CDLC_JSON_1), Parse.cdlc(CDLC_JSON_2))
-        assert_that(list(client.cdlcs(since=test_date))).is_length(1).contains(Parse.cdlc(CDLC_JSON_2))
+        cf.login('user', 'pass')
+        assert_that(list(cf.cdlcs())).is_length(2).contains(Parse.cdlc(CDLC_JSON_1), Parse.cdlc(CDLC_JSON_2))
+        assert_that(list(cf.cdlcs(since=test_date))).is_length(1).contains(Parse.cdlc(CDLC_JSON_2))
 
 
-def test_direct_link(client):
+def test_direct_link(cf):
     with HTTMock(request_fail):
-        assert_that(client.direct_link('49410')).is_empty()
+        assert_that(cf.direct_link('49410')).is_empty()
 
     with HTTMock(customsforge):
-        assert_that(client.direct_link('49410')).is_empty()
+        assert_that(cf.direct_link('49410')).is_empty()
 
-        client.login('user', 'pass')
-        assert_that(client.direct_link('49410')).is_equal_to('magical_link')
-        assert_that(client.direct_link('100000')).is_empty()
+        cf.login('user', 'pass')
+        assert_that(cf.direct_link('49410')).is_equal_to('magical_link')
+        assert_that(cf.direct_link('100000')).is_empty()
 
 
 def test_cdlc_parsing():
@@ -114,8 +114,8 @@ def test_cdlc_parsing():
     assert_cdlc_3(Parse.cdlc(CDLC_JSON_3))
 
 
-def assert_logged_in(client):
-    assert_that(client.ping()).is_true()
+def assert_logged_in(cf):
+    assert_that(cf.ping()).is_true()
 
 
 def assert_cdlc_1(cdlc):
