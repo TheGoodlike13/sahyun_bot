@@ -96,6 +96,18 @@ def test_cdlcs(client):
         assert_that(list(client.cdlcs(since=test_date))).is_length(1).contains(Parse.cdlc(CDLC_JSON_2))
 
 
+def test_direct_link(client):
+    with HTTMock(request_fail):
+        assert_that(client.direct_link('49410')).is_empty()
+
+    with HTTMock(customsforge):
+        assert_that(client.direct_link('49410')).is_empty()
+
+        client.login('user', 'pass')
+        assert_that(client.direct_link('49410')).is_equal_to('magical_link')
+        assert_that(client.direct_link('100000')).is_empty()
+
+
 def test_cdlc_parsing():
     assert_cdlc_1(Parse.cdlc(CDLC_JSON_1))
     assert_cdlc_2(Parse.cdlc(CDLC_JSON_2))
@@ -176,6 +188,9 @@ def customsforge(url, request):
     if 'get_group_content' in url.path:
         return cdlcs_mock(url, request)
 
+    if 'process.php' in url.path:
+        return direct_link_mock(url, request)
+
     return {
         'status_code': 404,
         'content': 'Unexpected URL',
@@ -226,6 +241,10 @@ def cdlcs_mock(url, request):
     return values('[]')
 
 
+def direct_link_mock(url, request):
+    return to_direct_link('magical_link') if 'id=49410' in url.query else to_direct_link()
+
+
 def values(v=None):
     return {
         'status_code': 200,
@@ -239,7 +258,7 @@ def to_main_page():
         'content': 'Redirect to main page - login successful!',
         'headers': {
             'Set-Cookie': '-login_cookie=login_value; path=/; domain=.customsforge.com; httponly',
-            'Location': MAIN_PAGE
+            'Location': MAIN_PAGE,
         },
     }
 
@@ -249,7 +268,17 @@ def to_login_page():
         'status_code': 302,
         'content': 'Redirect to login page - login is required!',
         'headers': {
-            'Location': LOGIN_PAGE
+            'Location': LOGIN_PAGE,
+        },
+    }
+
+
+def to_direct_link(link: str = ''):
+    return {
+        'status_code': 302,
+        'content': 'Redirect to direct link - if one exists, that is!',
+        'headers': {
+            'Location': link,
         },
     }
 

@@ -70,7 +70,7 @@ class CustomsForgeClient:
                 'referer': MAIN_PAGE,
             }
             r = self.__call('login', WithRetry.post, LOGIN_API, data=form, cookies=None, try_login=False)
-            if r is None:  # this indicates an error - repeated attempts may still succeed
+            if not r:  # this indicates an error - repeated attempts may still succeed
                 return False
 
             if not r.is_redirect or not r.headers.get('Location', '') == MAIN_PAGE:
@@ -109,6 +109,14 @@ class CustomsForgeClient:
                                        url=CDLC_BY_DATE_API,
                                        params={'filter': d},
                                        parse=Parse.cdlcs)
+
+    def direct_link(self, cdlc_id: str) -> str:
+        url = DOWNLOAD_API.format(cdlc_id)
+        r = self.__call('get direct link', WithRetry.get, url)
+        if not r or not r.is_redirect:
+            return ''
+
+        return r.headers.get('Location', '')
 
     def __has_credentials(self, username: str, password: str):
         if username and password:
