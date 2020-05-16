@@ -81,6 +81,17 @@ Host = host used by elasticsearch client; defaults to localhost; localhost is al
 CustomsforgeIndex = name of index which will contain information about cdlcs; defaults to 'cdlcs';
 if you set it to 'cdlcs_test', which is used by tests, the application will crash immediately
 
+RequestFields = comma separated list of fields used when making requests; it has a general purpose
+default value, but since it may change a lot in the future, I won't write it out explicitly; for
+examples of what is possible, refer to the elastic.CustomDLC class & elasticsearch documentation
+about passing fields into multi-match queries
+
+RequestMatchCeiling = max amount of matches from a request; defaults to 3; any positive integer
+is allowed
+
+Explain = true if you want elasticsearch to explain itself, false otherwise; defaults to false;
+explanations will only be visible in DEBUG level, in the JSON responses themselves
+
 #### [system]
 
 HttpDebugMode = true if you want to print http headers and stuff; defaults to false

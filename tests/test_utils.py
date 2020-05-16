@@ -1,7 +1,7 @@
 import pytest
 from assertpy import assert_that
 
-from sahyun_bot.utils import config, identity, parse_bool, read_config
+from sahyun_bot.utils import config, identity, parse_bool, read_config, parse_list
 
 
 @pytest.fixture
@@ -33,6 +33,22 @@ def test_parse_bool(true, false):
 
     for f in false:
         assert_that(parse_bool(f)).is_false()
+
+
+def test_parse_list():
+    # noinspection PyTypeChecker
+    assert_that(parse_list(None)).is_empty()
+    assert_that(parse_list('')).is_empty()
+    assert_that(parse_list(' ')).is_empty()
+    assert_that(parse_list(',')).is_empty()
+    assert_that(parse_list(' , ')).is_empty()
+
+    assert_that(parse_list('a,')).contains('a').is_length(1)
+    assert_that(parse_list('a,b')).contains('a', 'b').is_length(2)
+
+    assert_that(parse_list('1,2', convert=int)).contains(1, 2).is_length(2)
+    assert_that(parse_list).raises(ValueError).when_called_with('1,a', convert=int)
+    assert_that(parse_list('1,a', convert=int, fallback=[])).is_empty()
 
 
 def test_read_config():

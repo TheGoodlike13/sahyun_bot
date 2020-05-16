@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from configparser import ConfigParser
-from typing import Callable, Optional, TypeVar
+from typing import Callable, Optional, TypeVar, List
 
 from requests import Session, Response
 from requests.adapters import HTTPAdapter
@@ -27,6 +27,19 @@ def parse_bool(s: str, fallback: bool = None) -> bool:
         return config._convert_to_boolean(s)
     except ValueError:
         if fallback:
+            return fallback
+
+        raise
+
+
+def parse_list(s: str, convert: Callable[[str], T] = identity, fallback: List[T] = None) -> List[T]:
+    if not s or s.isspace():
+        return fallback or []
+
+    try:
+        return [convert(item.strip()) for item in s.split(',') if item and not item.isspace()]
+    except Exception:
+        if fallback is not None:
             return fallback
 
         raise

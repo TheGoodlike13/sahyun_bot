@@ -63,6 +63,15 @@ def test_last_auto_index_time(elastic_mock):
         assert_that(last_auto_index_time()).is_equal_to(1318910400)
 
 
+def test_request(elastic_mock):
+    from sahyun_bot.elastic import request
+    if ensure_testable(elastic_mock):
+        assert_that(request('definitely not here')).is_empty()
+        assert_that([cdlc.full_title for cdlc in request("you're")]).is_length(1).contains(
+            'Yellowcard - Hang You Up',
+        )
+
+
 def ensure_testable(elastic_mock: Elasticsearch) -> bool:
     if elastic_mock:
         return True

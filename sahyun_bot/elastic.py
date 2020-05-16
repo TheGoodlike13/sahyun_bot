@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 
 from elasticsearch_dsl import Document, Text, Keyword, Boolean, Long, Date, A
 from elasticsearch_dsl.connections import get_connection
@@ -71,6 +71,10 @@ class CustomDLC(Document):
             'number_of_replicas': 0,
         }
 
+    @classmethod
+    def search(cls, **kwargs):
+        return cls._index.search(**kwargs).extra(explain=elastic_settings.e_explain)
+
     def save(self, **kwargs):
         if not self.version_time:
             self.version_time = datetime.fromtimestamp(self.version_timestamp, timezone.utc)
@@ -99,3 +103,8 @@ def last_auto_index_time() -> Optional[int]:
     s.aggs.metric('last_auto_index_time', A('max', field='version_timestamp'))
     response = s.execute()
     return response.aggs.last_auto_index_time.value
+
+
+def request(query: str) -> List[CustomDLC]:
+    s = CustomDLC.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
+    return list(s[:elastic_settings.e_req_max])
