@@ -15,6 +15,9 @@ config.read('config.ini')
 
 s_log = read_config('system', 'LoggingConfig', fallback='config_log_default.ini')
 logging.config.fileConfig(s_log)  # we initialize logging first to avoid dangling loggers from being created
+logging.debug('---------------------------------------------------------')
+logging.debug('                      NEW EXECUTION                      ')
+logging.debug('---------------------------------------------------------')
 
 s_debug = read_config('system', 'HttpDebugMode', parse_bool)
 
