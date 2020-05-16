@@ -76,11 +76,14 @@ to avoid clashing with tests, '.cookie_jar_test' is automatically replaced with 
 
 #### [elastic]
 
-Host = host used by elasticsearch client; defaults to localhost
+Host = host used by elasticsearch client; defaults to localhost; localhost is also used for tests
+
+CustomsforgeIndex = name of index which will contain information about cdlcs; defaults to 'cdlcs';
+if you set it to 'cdlcs_test', which is used by tests, the application will crash immediately
 
 #### [system]
 
 HttpDebugMode = true if you want to print http headers and stuff; defaults to false
 
-LoggingConfig = filename which contains logging configuration; defaults to 'config_log_default.ini';
+LoggingConfigFilename = filename which contains logging configuration; defaults to 'config_log_default.ini';
 if the defaults are not suitable for you, consider using 'config_log.ini' which is ignored by git

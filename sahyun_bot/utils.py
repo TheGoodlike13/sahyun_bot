@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from configparser import ConfigParser
 from typing import Callable, Optional, TypeVar
@@ -34,9 +35,9 @@ def parse_bool(s: str, fallback: bool = None) -> bool:
 # noinspection PyBroadException
 def read_config(section: str,
                 key: str,
+                convert: Callable[[str], T] = identity,
                 fallback: T = None,
-                allow_empty: bool = False,
-                convert: Callable[[str], T] = identity) -> Optional[T]:
+                allow_empty: bool = False) -> Optional[T]:
     value = config.get(section, key, fallback=fallback)
     if value is None or value is fallback or not allow_empty and not value:
         return fallback
@@ -44,15 +45,19 @@ def read_config(section: str,
     try:
         return convert(value.strip())
     except Exception as e:
-        debug_ex(logging.root, e, 'convert config value [{}]->{}: {}', section, key, value, silent=True)
+        debug_ex(e, 'convert config value [{}]->{}: {}', section, key, value, silent=True)
         return fallback
 
 
-def debug_ex(log: logging.Logger, e: Exception, message: str, *args, silent: bool = False):
+def debug_ex(e: Exception,
+             trying_to: str = 'do something (check traceback)',
+             *args,
+             log: logging.Logger = logging.root,
+             silent: bool = False):
     if silent:
-        log.debug('Error while trying to %s: %s: %s', message.format(*args), type(e).__name__, e, exc_info=True)
+        log.debug('Error while trying to %s: %s: %s', trying_to.format(*args), type(e).__name__, e, exc_info=True)
     else:
-        log.error('Error while trying to %s: %s: %s', message.format(*args), type(e).__name__, e)
+        log.error('Error while trying to %s: %s: %s', trying_to.format(*args), type(e).__name__, e)
         log.debug('Traceback:', exc_info=True)
 
 
@@ -96,3 +101,9 @@ class WithRetry:
 
 class FormatterUTC(logging.Formatter):
     converter = time.gmtime
+
+
+# noinspection PyProtectedMember
+def nuke_from_orbit(reason: str):
+    logging.critical('Forcing shutdown of the application. Reason: {}'.format(reason))
+    os._exit(1)

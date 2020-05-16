@@ -1,8 +1,7 @@
 .pytest_cache/
 
-*.log
-
 /.idea/
+/.logs/
 /dist/
 /*.egg-info/
 

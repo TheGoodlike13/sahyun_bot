@@ -25,6 +25,7 @@ exit /b 1
 
 
 :install_other_stuff
+call mkdir .logs
 call python -m pip install --upgrade pip setuptools wheel
 call curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 

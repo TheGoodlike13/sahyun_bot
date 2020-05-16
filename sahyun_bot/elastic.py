@@ -1,16 +1,16 @@
 import logging
 from datetime import datetime, timezone
+from typing import Optional
 
-from elasticsearch import ElasticsearchException
-from elasticsearch_dsl import Document, Text, Keyword, Boolean, Integer, Join, Date
+from elasticsearch_dsl import Document, Text, Keyword, Boolean, Long, Date, A
 from elasticsearch_dsl.connections import get_connection
 
+from sahyun_bot import elastic_settings
 from sahyun_bot.utils import debug_ex
 
-LOG = logging.getLogger(__name__.rpartition('.')[2])
+elastic_settings.ready_or_die()
 
-CUSTOMSFORGE_TEMPLATE = 'cdoc'
-CUSTOMSFORGE_INDEX = 'cdlcs'
+LOG = logging.getLogger(__name__.rpartition('.')[2])
 
 
 # noinspection PyProtectedMember
@@ -21,69 +21,29 @@ def setup_elastic() -> bool:
             LOG.warning('Client is down')
             return False
 
-        if not client.indices.exists(CUSTOMSFORGE_INDEX):
-            LOG.debug('Initializing index template')
-            CustomsforgeDocument._index.as_template(CUSTOMSFORGE_TEMPLATE).save()
-    except ElasticsearchException as e:
-        return debug_ex(LOG, e, 'setup elastic')
+        if not client.indices.exists(elastic_settings.e_cf_index):
+            LOG.debug('Initializing index: ' + elastic_settings.e_cf_index)
+            CustomDLC.init()
+    except Exception as e:
+        return debug_ex(e, 'setup elastic', log=LOG)
+
+    return True
 
 
 # noinspection PyProtectedMember
 def purge_elastic():
     """
-    Utility function to cleanup index. Intended to be used while still developing.
+    Utility function to cleanup index. Intended to be used while developing or testing.
     """
     try:
-        LOG.warning('Deleting index template')
-        get_connection().indices.delete_template(CUSTOMSFORGE_TEMPLATE, ignore=[404])
-    except ElasticsearchException as e:
-        debug_ex(LOG, e, 'purge elastic')
-
-    try:
-        LOG.warning('Deleting index & its contents')
-        CustomsforgeDocument._index.delete(ignore=[404])
-    except ElasticsearchException as e:
-        debug_ex(LOG, e, 'purge elastic')
+        LOG.warning('Deleting index & its contents: ' + elastic_settings.e_cf_index)
+        CustomDLC._index.delete(ignore=[404])
+    except Exception as e:
+        debug_ex(e, 'purge elastic', log=LOG)
 
 
-class CustomsforgeDocument(Document):
-    last_time_saved = Date(required=True, default_timezone='UTC')
-    cdlc_link = Join(relations={'cdlc': 'link'})
-
-    @classmethod
-    def _matches(cls, hit):
-        return False
-
-    class Index:
-        name = CUSTOMSFORGE_INDEX
-        settings = {
-            'number_of_shards': 1,
-            'number_of_replicas': 0,
-        }
-
-    def save(self, **kwargs):
-        self.last_time_saved = datetime.now(timezone.utc)
-        return super(CustomsforgeDocument, self).save(**kwargs)
-
-
-class DirectLink(CustomsforgeDocument):
-    link = Keyword(required=True)
-
-    @classmethod
-    def _matches(cls, hit):
-        join = hit['_source']['cdlc_link']
-        return isinstance(join, dict) and join.get('name', None) == 'link'
-
-    @classmethod
-    def search(cls, **kwargs):
-        return cls._index.search(**kwargs).filter('term', cdlc_link='link')
-
-    def save(self, **kwargs):
-        self.meta.routing = self.cdlc_link.parent
-        return super(DirectLink, self).save(**kwargs)
-
-
-class CustomDLC(CustomsforgeDocument):
+# noinspection PyTypeChecker
+class CustomDLC(Document):
     artist = Text(required=True)
     title = Text(required=True)
     album = Text(required=True)
@@ -93,33 +53,49 @@ class CustomDLC(CustomsforgeDocument):
     platforms = Keyword(multi=True, required=True)
     has_dynamic_difficulty = Boolean(required=True)
     is_official = Boolean(required=True)
-    version_timestamp = Integer(required=True)
+    version_timestamp = Long(required=True)
     music_video = Keyword()
+    indirect_link = Keyword(required=True)
+
+    direct_link = Keyword()
 
     version_time = Date(required=True, default_timezone='UTC')
+    last_index_time = Date(required=True, default_timezone='UTC')
 
-    @classmethod
-    def _matches(cls, hit):
-        return hit['_source']['cdlc_link'] == 'cdlc'
+    from_auto_index = Boolean(required=True)
 
-    @classmethod
-    def search(cls, **kwargs):
-        return cls._index.search(**kwargs).filter('term', cdlc_link='cdlc')
+    class Index:
+        name = elastic_settings.e_cf_index
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
 
-    # noinspection PyTypeChecker
     def save(self, **kwargs):
-        self.cdlc_link = 'cdlc'
-        self.version_time = datetime.fromtimestamp(self.version_timestamp, timezone.utc)
-        return super(CustomDLC, self).save(**kwargs)
+        if not self.version_time:
+            self.version_time = datetime.fromtimestamp(self.version_timestamp, timezone.utc)
 
-    def add_link(self, link: str):
-        direct_link = DirectLink(
-            _routing=self.meta.id,
-            _index=self.meta.index,
-            cdlc_link={
-                'name': 'link',
-                'parent': self.meta.id
-            },
-            link=link
-        )
-        direct_link.save()
+        if not self.from_auto_index:
+            self.from_auto_index = False
+
+        self.last_index_time = datetime.now(timezone.utc)
+        return super().save(**kwargs)
+
+    def update(self, **kwargs):
+        self.last_index_time = datetime.now(timezone.utc)
+        return super().update(**kwargs)
+
+    @property
+    def full_title(self) -> str:
+        return self.artist + ' - ' + self.title
+
+    @property
+    def link(self) -> str:
+        return self.direct_link if self.direct_link else self.indirect_link
+
+
+def last_auto_index_time() -> Optional[int]:
+    s = CustomDLC.search().filter('term', from_auto_index=True)
+    s.aggs.metric('last_auto_index_time', A('max', field='version_timestamp'))
+    response = s.execute()
+    return response.aggs.last_auto_index_time.value

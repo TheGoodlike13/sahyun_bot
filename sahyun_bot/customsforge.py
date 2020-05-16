@@ -132,7 +132,7 @@ class CustomsForgeClient:
         :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
         but can become outdated; therefore, only estimate right before calling for dates
         """
-        if since <= EONS_AGO:
+        if not since or since <= EONS_AGO:
             return 0
 
         date_count = self.__date_count()
@@ -163,7 +163,7 @@ class CustomsForgeClient:
         try:
             r = call(url=url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except Exception as e:
-            return debug_ex(LOG, e, trying_to)
+            return debug_ex(e, trying_to, log=LOG)
 
         if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
             return r
@@ -200,7 +200,7 @@ class CustomsForgeClient:
                 yield first
                 yield from it
             except Exception as e:
-                return debug_ex(LOG, e, 'parse response of [{}] as JSON', call_params.get('trying_to'))
+                return debug_ex(e, 'parse response of [{}] as JSON', call_params.get('trying_to'), log=LOG)
 
             skip += batch
 
@@ -213,7 +213,7 @@ class CustomsForgeClient:
                 f = open(self.__cookie_jar_file, options)
             except Exception as e:
                 if trying_to:
-                    debug_ex(LOG, e, trying_to)
+                    debug_ex(e, trying_to, log=LOG)
             else:
                 with f:
                     return on_file(f)
@@ -282,8 +282,9 @@ class Parse:
 
     @staticmethod
     def cdlc(cdlc_json) -> dict:
+        _id = cdlc_json.get('id')
         return {
-            '_id': str(cdlc_json.get('id')),
+            '_id': str(_id),
             'artist': read(cdlc_json, 'artist'),
             'title': read(cdlc_json, 'title'),
             'album': read(cdlc_json, 'album'),
@@ -295,4 +296,5 @@ class Parse:
             'is_official': read_bool(cdlc_json, 'official'),
             'version_timestamp': cdlc_json.get('updated'),
             'music_video': read_link(cdlc_json, 'music_video'),
+            'indirect_link': DOWNLOAD_API.format(_id),
         }

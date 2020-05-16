@@ -51,10 +51,10 @@ def test_read_config():
 
     assert_that(read_config('section', 'missing')).is_none()
     assert_that(read_config('section', 'missing', fallback='not_anymore')).is_equal_to('not_anymore')
-    assert_that(read_config('section', 'string', fallback=10, convert=int)).is_equal_to(10)
+    assert_that(read_config('section', 'string', convert=int, fallback=10)).is_equal_to(10)
 
     assert_that(read_config('section', 'empty')).is_none()
     assert_that(read_config('section', 'empty', fallback='used')).is_equal_to('used')
     assert_that(read_config('section', 'blank', fallback='used')).is_equal_to('used')
-    assert_that(read_config('section', 'empty', allow_empty=True, fallback='ignored')).is_equal_to('')
-    assert_that(read_config('section', 'blank',  allow_empty=True, fallback='still_ignored')).is_equal_to('')
+    assert_that(read_config('section', 'empty', fallback='ignored', allow_empty=True)).is_equal_to('')
+    assert_that(read_config('section', 'blank', fallback='still_ignored', allow_empty=True)).is_equal_to('')
