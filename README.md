@@ -74,6 +74,10 @@ CookieFilename = filename for cookie storage; defaults to '.cookie_jar'; speeds 
 process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only;
 to avoid clashing with tests, '.cookie_jar_test' is automatically replaced with default value
 
+#### [elastic]
+
+Host = host used by elasticsearch client; defaults to localhost
+
 #### [system]
 
 HttpDebugMode = true if you want to print http headers and stuff; defaults to false

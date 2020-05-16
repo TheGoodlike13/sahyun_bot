@@ -55,6 +55,39 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "0.4.3"
 
 [[package]]
+category = "main"
+description = "Python client for Elasticsearch"
+name = "elasticsearch"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
+version = "7.7.0"
+
+[package.dependencies]
+certifi = "*"
+urllib3 = ">=1.21.1"
+
+[package.extras]
+develop = ["requests (>=2.0.0,<3.0.0)", "nose", "coverage", "mock", "pyyaml", "nosexcover", "sphinx (<1.7)", "sphinx-rtd-theme", "black", "jinja2"]
+docs = ["sphinx (<1.7)", "sphinx-rtd-theme"]
+requests = ["requests (>=2.4.0,<3.0.0)"]
+
+[[package]]
+category = "main"
+description = "Python client for Elasticsearch"
+name = "elasticsearch-dsl"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "7.2.0"
+
+[package.dependencies]
+elasticsearch = ">=7.0.0,<8.0.0"
+python-dateutil = "*"
+six = "*"
+
+[package.extras]
+develop = ["coverage (<5.0.0)", "mock", "pytest-cov", "pytest-mock (<3.0.0)", "pytest (>=3.0.0)", "pytz", "sphinx", "sphinx-rtd-theme"]
+
+[[package]]
 category = "dev"
 description = "A mocking library for requests."
 name = "httmock"
@@ -144,6 +177,17 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xm
 
 [[package]]
 category = "main"
+description = "Extensions to the standard Python datetime module"
+name = "python-dateutil"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+version = "2.8.1"
+
+[package.dependencies]
+six = ">=1.5"
+
+[[package]]
+category = "main"
 description = "Python HTTP for Humans."
 name = "requests"
 optional = false
@@ -161,7 +205,7 @@ security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python 2 and 3 compatibility utilities"
 name = "six"
 optional = false
@@ -190,7 +234,7 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "333d5007ac8a3e8c78226c5b6657302ec3282ab4caa3fc3cb314d02ddb4c80fd"
+content-hash = "7a6317daac582bf39b4fbd9b0ac6cf9d79676a7976925d6d243ef41d231e4da9"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -216,6 +260,14 @@ chardet = [
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
+]
+elasticsearch = [
+    {file = "elasticsearch-7.7.0-py2.py3-none-any.whl", hash = "sha256:eae591811e9bd82845ea22db3e891c30cad3d0f3e5dfd79cee80708872e5f626"},
+    {file = "elasticsearch-7.7.0.tar.gz", hash = "sha256:35de81968b78a1c708178773ccca56422661fc6e00905b81f48af8e8a9a2a6ba"},
+]
+elasticsearch-dsl = [
+    {file = "elasticsearch-dsl-7.2.0.tar.gz", hash = "sha256:4015c0d25a0a5df05cf50fe7f3464234c5b97f050c85697399d96d46b30e09a7"},
+    {file = "elasticsearch_dsl-7.2.0-py2.py3-none-any.whl", hash = "sha256:0eee35bdb10d7c1e5b6dd68d94da67e9c2e639c273c1c0c3f560e430b03dce45"},
 ]
 httmock = [
     {file = "httmock-1.3.0.tar.gz", hash = "sha256:e0bbaced224426bcd994a5f1c64ab60e0c923ea615825c53e6c0190b2a7341fe"},
@@ -247,6 +299,10 @@ pyparsing = [
 pytest = [
     {file = "pytest-5.4.2-py3-none-any.whl", hash = "sha256:95c710d0a72d91c13fae35dce195633c929c3792f54125919847fdcdf7caa0d3"},
     {file = "pytest-5.4.2.tar.gz", hash = "sha256:eb2b5e935f6a019317e455b6da83dd8650ac9ffd2ee73a7b657a30873d67a698"},
+]
+python-dateutil = [
+    {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
+    {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
 requests = [
     {file = "requests-2.23.0-py2.py3-none-any.whl", hash = "sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee"},

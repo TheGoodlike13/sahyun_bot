@@ -4,6 +4,8 @@ import logging.config
 import sys
 from typing import Any
 
+from elasticsearch_dsl import connections
+
 from sahyun_bot.customsforge import CustomsForgeClient, DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT, DEFAULT_COOKIE_FILE, \
     TEST_COOKIE_FILE
 from sahyun_bot.utils import config, read_config, parse_bool
@@ -24,6 +26,8 @@ c_timeout = read_config('customsforge', 'Timeout', fallback=DEFAULT_TIMEOUT, con
 c_jar = read_config('customsforge', 'CookieFilename', fallback=DEFAULT_COOKIE_FILE, allow_empty=True)
 c_jar = DEFAULT_COOKIE_FILE if c_jar == TEST_COOKIE_FILE else c_jar
 
+e_host = read_config('elastic', 'Host', fallback='localhost')
+
 
 # in this section we initialize all objects the bot will make use of, but avoid launching anything (e.g. connect to IRC)
 def init_module(module: Any, desc: str):
@@ -36,31 +40,42 @@ logging.info('Please check config.ini file if any module is unavailable')
 
 http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 
-client = CustomsForgeClient(api_key=c_api_key,
-                            batch_size=c_batch,
-                            timeout=c_timeout,
-                            cookie_jar_file=c_jar,
-                            username=c_user,
-                            password=c_pass) if c_api_key else None
-init_module(client, 'Customsforge client')
+cf = CustomsForgeClient(api_key=c_api_key,
+                        batch_size=c_batch,
+                        timeout=c_timeout,
+                        cookie_jar_file=c_jar,
+                        username=c_user,
+                        password=c_pass) if c_api_key else None
+init_module(cf, 'Customsforge client')
+
+es = connections.create_connection(hosts=[e_host]) if e_host else None
+init_module(es, 'Elasticsearch client')
 
 
 # in this section we launch all relevant modules into action, enabling bot functionality in full
 def run_main():
+    from sahyun_bot.elastic import setup_elastic
+
     logging.info('Bot launched')
+    setup_elastic()
 
 
 if __name__ == '__main__':
-    if sys.argv:
+    if len(sys.argv) == 1:
+        run_main()
+    else:
         # here we import all kinds of utilities so repl can be used more conveniently
 
         from sahyun_bot.customsforge import *
+        from sahyun_bot.elastic import *
         from sahyun_bot.utils import *
         # noinspection PyUnresolvedReferences
-        from datetime import *
+        from time import time
+        # noinspection PyUnresolvedReferences
+        from datetime import date, datetime
         # noinspection PyUnresolvedReferences
         from urllib.parse import *
         # noinspection PyUnresolvedReferences
         import html
-    else:
-        run_main()
+        # noinspection PyUnresolvedReferences
+        import os

@@ -3,7 +3,7 @@ import logging
 import pickle
 from datetime import date
 from threading import Lock
-from typing import Iterator, Optional, Callable, IO, Any
+from typing import Iterator, Optional, Callable, IO, Any, List
 from urllib.parse import urlparse, parse_qs
 
 from requests import Response
@@ -30,64 +30,6 @@ TEST_COOKIE_FILE = '.cookie_jar_test'
 
 EONS_AGO = date.fromisoformat('2010-01-01')       # this should pre-date even the oldest CDLC
 SOME_TIME_AGO = date.fromisoformat('2020-05-15')  # this should be in the past, but many older CDLCs should exist (1K+)
-
-
-def read(data: dict, key: str):
-    value = data.get(key)
-    return html.unescape(value.strip()) if value else ''
-
-
-def read_all(data: dict, key: str):
-    return [p.strip() for p in data.get(key).split(',') if p and not p.isspace()]
-
-
-def read_bool(data: dict, key: str):
-    return parse_bool(read(data, key))
-
-
-class CDLC:
-    def __init__(self, **data):
-        self.id = str(data.get('id'))
-        self.artist = read(data, 'artist')
-        self.title = read(data, 'title')
-        self.album = read(data, 'album')
-        self.author = read(data, 'member')
-        self.tuning = read(data, 'tuning')
-        self.parts = read_all(data, 'parts')
-        self.platforms = read_all(data, 'platforms')
-        self.has_dynamic_difficulty = read_bool(data, 'dd')
-        self.is_official = read_bool(data, 'official')
-        self.last_updated = data.get('updated')
-
-        self.__music_video_full = read(data, 'music_video')
-
-    @property
-    def music_video(self) -> Optional[str]:
-        try:
-            url_parts = urlparse(self.__music_video_full or '')
-            if 'youtube.com' in url_parts.netloc:
-                video_id = parse_qs(url_parts.query).get('v', None)
-                if video_id:
-                    return YOUTUBE_SHORT_LINK.format(video_id[0])
-            elif url_parts.scheme == 'http':
-                return self.__music_video_full[:4] + 's' + self.__music_video_full[4:]
-        except ValueError:
-            pass
-
-        return self.__music_video_full
-
-    @property
-    def download_link(self) -> Optional[str]:
-        return DOWNLOAD_API.format(self.id) if self.id else None
-
-    def __eq__(self, o: object) -> bool:
-        if not isinstance(o, __class__):
-            return NotImplemented
-
-        return vars(self) == vars(o)
-
-    def __hash__(self) -> int:
-        return hash(vars(self))
 
 
 class CustomsForgeClient:
@@ -160,7 +102,7 @@ class CustomsForgeClient:
 
         yield from remaining_lazy_dates
 
-    def cdlcs(self, since: date = EONS_AGO) -> Iterator[CDLC]:
+    def cdlcs(self, since: date = EONS_AGO) -> Iterator[dict]:
         for d in self.dates(since):
             yield from self.__lazy_all(trying_to='find CDLCs',
                                        call=WithRetry.get,
@@ -277,6 +219,45 @@ class CustomsForgeClient:
                     return on_file(f)
 
 
+class Verify:
+    @staticmethod
+    def batch_size(batch_size: int) -> bool:
+        return batch_size and 0 < batch_size <= DEFAULT_BATCH_SIZE
+
+    @staticmethod
+    def timeout(timeout: int) -> bool:
+        return timeout > 0
+
+
+def read(data: dict, key: str) -> str:
+    value = data.get(key)
+    return html.unescape(value.strip()) if value else ''
+
+
+def read_all(data: dict, key: str) -> List[str]:
+    return [p.strip() for p in data.get(key).split(',') if p and not p.isspace()]
+
+
+def read_bool(data: dict, key: str) -> bool:
+    return parse_bool(read(data, key))
+
+
+def read_link(data: dict, key: str) -> str:
+    link = read(data, key)
+    try:
+        url_parts = urlparse(link or '')
+        if 'youtube.com' in url_parts.netloc:
+            video_id = parse_qs(url_parts.query).get('v', None)
+            if video_id:
+                return YOUTUBE_SHORT_LINK.format(video_id[0])
+        elif url_parts.scheme == 'http':
+            return link[:4] + 's' + link[4:]
+    except ValueError:
+        pass
+
+    return link
+
+
 class Parse:
     @staticmethod
     def dates(dates_api_json) -> Iterator[str]:
@@ -292,19 +273,26 @@ class Parse:
         yield dates_api_json[1][0]['total']
 
     @staticmethod
-    def cdlcs(cdlc_by_date_api_json) -> Iterator[CDLC]:
+    def cdlcs(cdlc_by_date_api_json) -> Iterator[dict]:
         if not cdlc_by_date_api_json:
             return
 
-        for cdlc in cdlc_by_date_api_json:
-            yield CDLC(**cdlc)
-
-
-class Verify:
-    @staticmethod
-    def batch_size(batch_size: int) -> bool:
-        return batch_size and 0 < batch_size <= DEFAULT_BATCH_SIZE
+        for cdlc_json in cdlc_by_date_api_json:
+            yield Parse.cdlc(cdlc_json)
 
     @staticmethod
-    def timeout(timeout: int) -> bool:
-        return timeout > 0
+    def cdlc(cdlc_json) -> dict:
+        return {
+            '_id': str(cdlc_json.get('id')),
+            'artist': read(cdlc_json, 'artist'),
+            'title': read(cdlc_json, 'title'),
+            'album': read(cdlc_json, 'album'),
+            'author': read(cdlc_json, 'member'),
+            'tuning': read(cdlc_json, 'tuning'),
+            'parts': read_all(cdlc_json, 'parts'),
+            'platforms': read_all(cdlc_json, 'platforms'),
+            'has_dynamic_difficulty': read_bool(cdlc_json, 'dd'),
+            'is_official': read_bool(cdlc_json, 'official'),
+            'version_timestamp': cdlc_json.get('updated'),
+            'music_video': read_link(cdlc_json, 'music_video'),
+        }

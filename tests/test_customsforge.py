@@ -7,7 +7,7 @@ from assertpy import assert_that
 from httmock import all_requests, HTTMock
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE, CDLC
+from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE, Parse
 
 test_date = date.fromisoformat('2020-05-15')
 
@@ -91,14 +91,14 @@ def test_cdlcs(client):
         assert_that(list(client.cdlcs())).is_empty()
 
         client.login('user', 'pass')
-        assert_that(list(client.cdlcs())).is_length(2).contains(CDLC(**CDLC_JSON_1), CDLC(**CDLC_JSON_2))
-        assert_that(list(client.cdlcs(since=test_date))).is_length(1).contains(CDLC(**CDLC_JSON_2))
+        assert_that(list(client.cdlcs())).is_length(2).contains(Parse.cdlc(CDLC_JSON_1), Parse.cdlc(CDLC_JSON_2))
+        assert_that(list(client.cdlcs(since=test_date))).is_length(1).contains(Parse.cdlc(CDLC_JSON_2))
 
 
 def test_cdlc_parsing():
-    assert_cdlc_1(CDLC(**CDLC_JSON_1))
-    assert_cdlc_2(CDLC(**CDLC_JSON_2))
-    assert_cdlc_3(CDLC(**CDLC_JSON_3))
+    assert_cdlc_1(Parse.cdlc(CDLC_JSON_1))
+    assert_cdlc_2(Parse.cdlc(CDLC_JSON_2))
+    assert_cdlc_3(Parse.cdlc(CDLC_JSON_3))
 
 
 def assert_logged_in(client):
@@ -106,51 +106,54 @@ def assert_logged_in(client):
 
 
 def assert_cdlc_1(cdlc):
-    assert_that(cdlc.id).is_equal_to('3492')
-    assert_that(cdlc.artist).is_equal_to('Porno Graffiti')
-    assert_that(cdlc.title).is_equal_to('Hitori No Yoru(Great Teacher Onizuka)')
-    assert_that(cdlc.album).is_equal_to('Romantist Egoist')
-    assert_that(cdlc.author).is_equal_to('BMB')
-    assert_that(cdlc.tuning).is_equal_to('estandard')
-    assert_that(cdlc.parts).is_length(3).contains('lead', 'rhythm', 'bass')
-    assert_that(cdlc.platforms).is_length(2).contains('pc', 'mac')
-    assert_that(cdlc.has_dynamic_difficulty).is_equal_to(False)
-    assert_that(cdlc.is_official).is_equal_to(False)
-    assert_that(cdlc.last_updated).is_equal_to(1398197782)
-    assert_that(cdlc.music_video).is_equal_to('https://youtu.be/kDh3D2ewiNs')
-    assert_that(cdlc.download_link).is_equal_to('https://customsforge.com/process.php?id=3492')
+    assert_that(cdlc).is_length(12).contains_entry(
+        _id='3492',
+        artist='Porno Graffiti',
+        title='Hitori No Yoru(Great Teacher Onizuka)',
+        album='Romantist Egoist',
+        author='BMB',
+        tuning='estandard',
+        parts=['lead', 'rhythm', 'bass'],
+        platforms=['pc', 'mac'],
+        has_dynamic_difficulty=False,
+        is_official=False,
+        version_timestamp=1398197782,
+        music_video='https://youtu.be/kDh3D2ewiNs',
+    )
 
 
 def assert_cdlc_2(cdlc):
-    assert_that(cdlc.id).is_equal_to('8623')
-    assert_that(cdlc.artist).is_equal_to('Blur')
-    assert_that(cdlc.title).is_equal_to('Song 2')
-    assert_that(cdlc.album).is_equal_to('Blur')
-    assert_that(cdlc.author).is_equal_to('CustomsForge')
-    assert_that(cdlc.tuning).is_equal_to('estandard')
-    assert_that(cdlc.parts).is_length(3).contains('lead', 'bass', 'vocals')
-    assert_that(cdlc.platforms).is_length(4).contains('pc', 'mac', 'xbox360', 'ps3')
-    assert_that(cdlc.has_dynamic_difficulty).is_equal_to(True)
-    assert_that(cdlc.is_official).is_equal_to(True)
-    assert_that(cdlc.last_updated).is_equal_to(1318910400)
-    assert_that(cdlc.music_video).is_equal_to('https://youtu.be/SSbBvKaM6sk')
-    assert_that(cdlc.download_link).is_equal_to('https://customsforge.com/process.php?id=8623')
+    assert_that(cdlc).is_length(12).contains_entry(
+        _id='8623',
+        artist='Blur',
+        title='Song 2',
+        album='Blur',
+        author='CustomsForge',
+        tuning='estandard',
+        parts=['lead', 'bass', 'vocals'],
+        platforms=['pc', 'mac', 'xbox360', 'ps3'],
+        has_dynamic_difficulty=True,
+        is_official=True,
+        version_timestamp=1318910400,
+        music_video='https://youtu.be/SSbBvKaM6sk',
+    )
 
 
 def assert_cdlc_3(cdlc):
-    assert_that(cdlc.id).is_equal_to('49410')
-    assert_that(cdlc.artist).is_equal_to('Yellowcard')
-    assert_that(cdlc.title).is_equal_to('Hang You Up')
-    assert_that(cdlc.album).is_equal_to('When You\'re Through Thinking Say Yes')
-    assert_that(cdlc.author).is_equal_to('llfnv321')
-    assert_that(cdlc.tuning).is_equal_to('estandard')
-    assert_that(cdlc.parts).is_length(3).contains('lead', 'rhythm', 'vocals')
-    assert_that(cdlc.platforms).is_length(1).contains('pc')
-    assert_that(cdlc.has_dynamic_difficulty).is_equal_to(True)
-    assert_that(cdlc.is_official).is_equal_to(False)
-    assert_that(cdlc.last_updated).is_equal_to(1588013991)
-    assert_that(cdlc.music_video).is_equal_to('')
-    assert_that(cdlc.download_link).is_equal_to('https://customsforge.com/process.php?id=49410')
+    assert_that(cdlc).is_length(12).contains_entry(
+        _id='49410',
+        artist='Yellowcard',
+        title='Hang You Up',
+        album='When You\'re Through Thinking Say Yes',
+        author='llfnv321',
+        tuning='estandard',
+        parts=['lead', 'rhythm', 'vocals'],
+        platforms=['pc'],
+        has_dynamic_difficulty=True,
+        is_official=False,
+        version_timestamp=1588013991,
+        music_video='',
+    )
 
 
 @all_requests
