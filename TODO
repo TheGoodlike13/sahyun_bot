@@ -4,7 +4,6 @@ IRC
     if connection takes too long, restart
 
 ELASTIC
-    create explicit indexes
     automatically refresh data, as well as manual command
 
 TWITCH
