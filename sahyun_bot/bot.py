@@ -69,18 +69,9 @@ if __name__ == '__main__':
         run_main()
     else:
         # here we import all kinds of utilities so repl can be used more conveniently
-
+        # noinspection PyUnresolvedReferences
+        from urllib.parse import *
         from sahyun_bot.utils import *
         from sahyun_bot.elastic_settings import *
         from sahyun_bot.customsforge import *
         from sahyun_bot.elastic import *
-        # noinspection PyUnresolvedReferences
-        from time import time
-        # noinspection PyUnresolvedReferences
-        from datetime import date, datetime
-        # noinspection PyUnresolvedReferences
-        from urllib.parse import *
-        # noinspection PyUnresolvedReferences
-        import html
-        # noinspection PyUnresolvedReferences
-        import os

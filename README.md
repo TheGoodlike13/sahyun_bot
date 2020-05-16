@@ -89,12 +89,14 @@ about passing fields into multi-match queries
 RequestMatchCeiling = max amount of matches from a request; defaults to 3; any positive integer
 is allowed
 
-Explain = true if you want elasticsearch to explain itself, false otherwise; defaults to false;
-explanations will only be visible in DEBUG level, in the JSON responses themselves
+Explain = true if you want elasticsearch to explain itself; defaults to false;
+explanations will only be visible in DEBUG level, in the JSON responses
 
 #### [system]
 
-HttpDebugMode = true if you want to print http headers and stuff; defaults to false
+HttpDebugMode = true if you want to print http headers and stuff to console; defaults to false;
+the default logging config should make this obsolete, unless you really wanna see a lot of stuff
+in the console for some reason
 
 LoggingConfigFilename = filename which contains logging configuration; defaults to 'config_log_default.ini';
 if the defaults are not suitable for you, consider using 'config_log.ini' which is ignored by git
