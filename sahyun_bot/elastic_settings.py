@@ -2,7 +2,8 @@ from datetime import timezone, datetime
 
 from elasticsearch_dsl import Document, Date
 
-from sahyun_bot.utils import NON_EXISTENT, nuke_from_orbit
+from sahyun_bot.the_danger_zone import nuke_from_orbit
+from sahyun_bot.utils import NON_EXISTENT
 from sahyun_bot.utils_settings import parse_bool, parse_list, read_config
 
 DEFAULT_HOST = 'localhost'
