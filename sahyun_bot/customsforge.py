@@ -115,6 +115,16 @@ class CustomsForgeClient:
 
         return r.headers.get('Location', '')
 
+    def calculate_date_skip(self, since: date, date_count: int):
+        """
+        :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
+        but can become outdated; therefore, only estimate right before calling for dates
+        """
+        passed_since = self.__get_today() - since
+        skip_estimate = date_count - passed_since.days - 3
+        # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
+        return skip_estimate if skip_estimate > 0 else 0
+
     def __has_credentials(self, username: str, password: str):
         if username and password:
             self.__username = username
@@ -145,10 +155,6 @@ class CustomsForgeClient:
         yield from remaining_lazy_dates
 
     def __estimate_date_skip(self, since: date, session: Session) -> int:
-        """
-        :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
-        but can become outdated; therefore, only estimate right before calling for dates
-        """
         if not since or since <= EONS_AGO:
             return 0
 
@@ -156,10 +162,7 @@ class CustomsForgeClient:
         if not date_count:
             return 0
 
-        passed_since = self.__get_today() - since
-        skip_estimate = date_count - passed_since.days - 3
-        # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
-        return skip_estimate if skip_estimate > 0 else 0
+        return self.calculate_date_skip(since, date_count)
 
     def __date_count(self, session: Session) -> Optional[int]:
         date_count = self.__lazy_all(trying_to='total count of dates',

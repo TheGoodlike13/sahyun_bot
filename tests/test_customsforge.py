@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from assertpy import assert_that
 from httmock import HTTMock
 
@@ -93,3 +95,19 @@ def test_to_cdlc():
 
         snapshot_timestamp=1589556530,
     )
+
+
+def test_calculate_date_skip_continuous_release(cf):
+    # 1) CDLCs are produced every day
+    # 2) we ask for a fairly recent update
+    since = TEST_DATE - timedelta(days=5)
+    date_count = 100
+    assert_that(cf.calculate_date_skip(since, date_count)).is_equal_to(92)
+
+
+def test_calculate_date_skip_vacation(cf):
+    # 1) CDLCs *were* produced every day, but there was a 100 day break, followed by new release
+    # 2) we ask for update from before the break
+    since = TEST_DATE - timedelta(days=100)
+    date_count = 101
+    assert_that(cf.calculate_date_skip(since, date_count)).is_equal_to(0)
