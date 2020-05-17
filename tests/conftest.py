@@ -39,23 +39,20 @@ def working_test_elastic_client():
 # this fixture should be used in modules where changes are minimal and easy to track
 @pytest.fixture(scope='module')
 def es(working_test_elastic_client):
-    from sahyun_bot import elastic
-    try:
-        # if test server crashes half way, but comes back up quick, the next test should clean up before moving forward
-        if elastic.purge_elastic() and elastic.setup_elastic() and prepare_index():
-            yield working_test_elastic_client
-        else:
-            pytest.skip('Elasticsearch test server is down or incorrectly configured.')
-    finally:
-        elastic.purge_elastic()
+    yield from prepare_elastic(working_test_elastic_client)
 
 
 # this fixture should be used when your test bricks values used by other tests
 @pytest.fixture
 def es_fresh(working_test_elastic_client):
+    yield from prepare_elastic(working_test_elastic_client)
+
+
+def prepare_elastic(working_test_elastic_client):
     from sahyun_bot import elastic
     try:
-        if elastic.purge_elastic() and elastic.setup_elastic():
+        # if test server crashes half way, but comes back up quick, the next test should clean up before moving forward
+        if elastic.purge_elastic() and elastic.setup_elastic() and prepare_index():
             yield working_test_elastic_client
         else:
             pytest.skip('Elasticsearch test server is down or incorrectly configured.')

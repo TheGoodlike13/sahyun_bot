@@ -8,21 +8,21 @@ from tests.mock_customsforge import customsforge
 
 def test_loading_from_start(cf, es_fresh):
     with HTTMock(customsforge):
-        load(cf).result()
+        load(cf)
 
     assert_that([hit.link for hit in CustomDLC.search().filter('term', from_auto_index=True)])\
         .is_length(6)\
         .contains_only('magical_link')
 
 
-def test_loading_continued(cf, es):
+def test_loading_continued(cf, es_fresh):
     # pretend we loaded songs 2 days before TEST_DATE
     CustomDLC.get(49841).update(from_auto_index=True)
 
     with HTTMock(customsforge):
-        load(cf).result()
+        load(cf)
 
-    hits = list(CustomDLC.search().filter('term', from_auto_index=True).sort('snapshot_timestamp'))
+    hits = list(CustomDLC.search().filter('term', from_auto_index=True))
     assert_that(hits).is_length(3)
 
     for hit in hits:
