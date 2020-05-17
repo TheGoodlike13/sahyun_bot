@@ -8,7 +8,8 @@ from typing import Iterator, Optional, Callable, IO, Any, List
 from requests import Response
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, debug_ex, WithRetry, clean_link
+from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, WithRetry, clean_link
+from sahyun_bot.utils_settings import parse_bool, parse_list
 
 LOG = logging.getLogger(__name__.rpartition('.')[2])
 
@@ -41,7 +42,7 @@ class CustomsForgeClient:
                  get_today: Callable[[], date] = date.today):
         self.__api_key = api_key
         self.__batch_size = batch_size if Verify.batch_size(batch_size) else DEFAULT_BATCH_SIZE
-        self.__timeout = timeout if Verify.timeout(timeout) else DEFAULT_TIMEOUT
+        self.__timeout = timeout if timeout > 0 else DEFAULT_TIMEOUT
         self.__cookie_jar_file = cookie_jar_file
 
         self.__username = username
@@ -230,10 +231,6 @@ class Verify:
     def batch_size(batch_size: int) -> bool:
         return batch_size and 0 < batch_size <= DEFAULT_BATCH_SIZE
 
-    @staticmethod
-    def timeout(timeout: int) -> bool:
-        return timeout > 0
-
 
 class To:
     @staticmethod
@@ -292,7 +289,7 @@ def read(data: dict, key: str) -> str:
 
 
 def read_all(data: dict, key: str) -> List[str]:
-    return [p.strip() for p in data.get(key).split(',') if p and not p.isspace()]
+    return parse_list(read(data, key))
 
 
 def read_bool(data: dict, key: str) -> bool:

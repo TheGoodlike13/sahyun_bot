@@ -2,7 +2,7 @@ import logging.config
 
 from sahyun_bot import elastic_settings
 from sahyun_bot.customsforge import DEFAULT_BATCH_SIZE, DEFAULT_TIMEOUT, DEFAULT_COOKIE_FILE, TEST_COOKIE_FILE
-from sahyun_bot.utils import config, read_config, parse_bool
+from sahyun_bot.utils_settings import config, read_config, parse_bool
 
 config.read('config.ini')
 

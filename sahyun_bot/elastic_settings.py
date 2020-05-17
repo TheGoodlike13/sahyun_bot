@@ -2,7 +2,8 @@ from datetime import timezone, datetime
 
 from elasticsearch_dsl import Document, Date
 
-from sahyun_bot.utils import read_config, NON_EXISTENT, nuke_from_orbit, parse_bool, parse_list
+from sahyun_bot.utils import NON_EXISTENT, nuke_from_orbit
+from sahyun_bot.utils_settings import parse_bool, parse_list, read_config
 
 DEFAULT_HOST = 'localhost'
 DEFAULT_CUSTOMSFORGE_INDEX = 'cdlcs'
@@ -52,7 +53,7 @@ def init():
     e_req_max = read_config('elastic', 'RequestMatchCeiling', convert=int, fallback=DEFAULT_REQUEST_MATCH_CEILING)
     e_explain = read_config('elastic', 'Explain', convert=parse_bool, fallback=False)
 
-    e_req_max = e_req_max if Verify.limit(e_req_max) else DEFAULT_REQUEST_MATCH_CEILING
+    e_req_max = e_req_max if e_req_max > 0 else DEFAULT_REQUEST_MATCH_CEILING
 
     for config in [e_host, e_cf_index, e_req_fields, e_req_max, e_explain]:
         if config in TEST_ONLY_VALUES:
@@ -73,12 +74,6 @@ def init_test():
     e_req_max = DEFAULT_REQUEST_MATCH_CEILING
     e_explain = True
     e_refresh = True
-
-
-class Verify:
-    @staticmethod
-    def limit(limit: int) -> bool:
-        return limit > 0
 
 
 class BaseDoc(Document):
