@@ -18,5 +18,3 @@ WEIRD IDEAS
 
 
 All functionality should be optional when possible.
-
-Refactor utils into smaller packages
