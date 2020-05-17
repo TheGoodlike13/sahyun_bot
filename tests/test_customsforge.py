@@ -63,8 +63,11 @@ def test_cdlcs(cf):
         full_two_days = [cdlc.get('id') for cdlc in cf.cdlcs(since=before_test_date)]
         assert_that(full_two_days).contains(49874, 49886).is_length(2)
 
-        day_and_a_half = [cdlc.get('id') for cdlc in cf.cdlcs(since=before_test_date, since_exact=1589492792)]
-        assert_that(day_and_a_half).contains(49886).is_length(1)
+        two_days_exactly_on_top = [cdlc.get('id') for cdlc in cf.cdlcs(since=before_test_date, since_exact=1589492791)]
+        assert_that(two_days_exactly_on_top).contains(49874, 49886).is_length(2)
+
+        two_days_exactly_after = [cdlc.get('id') for cdlc in cf.cdlcs(since=before_test_date, since_exact=1589492792)]
+        assert_that(two_days_exactly_after).contains(49886).is_length(1)
 
 
 def test_direct_link(cf):

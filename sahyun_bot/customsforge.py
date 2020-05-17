@@ -91,11 +91,14 @@ class CustomsForgeClient:
         with self.__sessions.with_retry() as session:
             return self.__date_count(session=session) is not None
 
-    def dates(self, since: date = EONS_AGO) -> Iterator[str]:
+    def dates(self, since: date = None) -> Iterator[str]:
+        since = since or EONS_AGO
         with self.__sessions.with_retry() as session:
             yield from self.__dates(since, session)
 
-    def cdlcs(self, since: date = EONS_AGO, since_exact: int = 0) -> Iterator[dict]:
+    def cdlcs(self, since: date = None, since_exact: int = 0) -> Iterator[dict]:
+        since = since or EONS_AGO
+        since_exact = since_exact or 0
         with self.__sessions.with_retry() as session:
             for d in self.__dates(since, session):
                 lazy_cdlcs = self.__lazy_all(trying_to='find CDLCs',
@@ -154,7 +157,7 @@ class CustomsForgeClient:
         yield from skip_while(lazy_dates, lambda d: date.fromisoformat(d) < since)
 
     def __estimate_date_skip(self, since: date, session: Session) -> int:
-        if not since or since <= EONS_AGO:
+        if since <= EONS_AGO:
             return 0
 
         date_count = self.__date_count(session)
