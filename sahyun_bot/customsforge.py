@@ -8,7 +8,7 @@ from typing import Iterator, Optional, Callable, IO, Any, List
 from requests import Response, Session
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link
+from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link, skip_while
 from sahyun_bot.utils_session import SessionFactory
 from sahyun_bot.utils_settings import parse_bool, parse_list
 
@@ -28,7 +28,7 @@ DEFAULT_TIMEOUT = 100
 DEFAULT_COOKIE_FILE = '.cookie_jar'
 TEST_COOKIE_FILE = '.cookie_jar_test'
 
-EONS_AGO = date.fromisoformat('2010-01-01')       # this should pre-date even the oldest CDLC
+EONS_AGO = date.fromisoformat('2010-01-01')  # this should pre-date even the oldest CDLC
 
 
 class CustomsForgeClient:
@@ -95,14 +95,16 @@ class CustomsForgeClient:
         with self.__sessions.with_retry() as session:
             yield from self.__dates(since, session)
 
-    def cdlcs(self, since: date = EONS_AGO) -> Iterator[dict]:
+    def cdlcs(self, since: date = EONS_AGO, since_exact: int = 0) -> Iterator[dict]:
         with self.__sessions.with_retry() as session:
             for d in self.__dates(since, session):
-                yield from self.__lazy_all(trying_to='find CDLCs',
-                                           call=session.get,
-                                           url=CDLC_BY_DATE_API,
-                                           params={'filter': d},
-                                           convert=To.cdlcs)
+                lazy_cdlcs = self.__lazy_all(trying_to='find CDLCs',
+                                             call=session.get,
+                                             url=CDLC_BY_DATE_API,
+                                             params={'filter': d},
+                                             convert=To.cdlcs)
+
+                yield from skip_while(lazy_cdlcs, lambda c: c.get('snapshot_timestamp') < since_exact)
 
     def direct_link(self, cdlc_id: Any) -> str:
         url = DOWNLOAD_API.format(cdlc_id)
@@ -143,16 +145,13 @@ class CustomsForgeClient:
         return True
 
     def __dates(self, since: date, session: Session):
-        remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
-                                               call=session.get,
-                                               url=DATES_API,
-                                               convert=To.dates,
-                                               skip=self.__estimate_date_skip(since, session))
-        for d in remaining_lazy_dates:
-            if date.fromisoformat(d) >= since:
-                yield d
-                break
-        yield from remaining_lazy_dates
+        lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
+                                     call=session.get,
+                                     url=DATES_API,
+                                     convert=To.dates,
+                                     skip=self.__estimate_date_skip(since, session))
+
+        yield from skip_while(lazy_dates, lambda d: date.fromisoformat(d) < since)
 
     def __estimate_date_skip(self, since: date, session: Session) -> int:
         if not since or since <= EONS_AGO:

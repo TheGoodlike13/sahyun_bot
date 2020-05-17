@@ -57,7 +57,14 @@ def test_dates(cf):
 def test_cdlcs(cf):
     with HTTMock(customsforge):
         assert_that(list(cf.cdlcs())).is_length(6)
-        assert_that([cdlc.get('id') for cdlc in cf.cdlcs(since=TEST_DATE)]).contains(49886).is_length(1)
+
+        before_test_date = TEST_DATE - timedelta(days=1)
+
+        full_two_days = [cdlc.get('id') for cdlc in cf.cdlcs(since=before_test_date)]
+        assert_that(full_two_days).contains(49874, 49886).is_length(2)
+
+        day_and_a_half = [cdlc.get('id') for cdlc in cf.cdlcs(since=before_test_date, since_exact=1589492792)]
+        assert_that(day_and_a_half).contains(49886).is_length(1)
 
 
 def test_direct_link(cf):
