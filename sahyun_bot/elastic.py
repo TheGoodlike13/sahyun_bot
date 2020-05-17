@@ -28,15 +28,16 @@ def setup_elastic() -> bool:
 
 
 # noinspection PyProtectedMember
-def purge_elastic():
+def purge_elastic() -> bool:
     """
     Utility function to cleanup index. Intended to be used while developing or testing.
     """
     try:
         LOG.warning('Deleting index & its contents: ' + CustomDLC._index._name)
         CustomDLC._index.delete(ignore=[404])
+        return True
     except Exception as e:
-        debug_ex(e, 'purge elastic', log=LOG)
+        return debug_ex(e, 'purge elastic', log=LOG)
 
 
 # noinspection PyTypeChecker
