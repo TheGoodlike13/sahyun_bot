@@ -8,7 +8,7 @@ from httmock import all_requests, HTTMock
 from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge import CustomsForgeClient, MAIN_PAGE, LOGIN_PAGE, TEST_COOKIE_FILE, Parse
-from tests.test_values import *
+from tests.reusable import *
 
 test_date = date.fromisoformat('2020-05-15')
 

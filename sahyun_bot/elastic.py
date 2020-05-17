@@ -2,10 +2,11 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from elasticsearch_dsl import Document, Text, Keyword, Boolean, Long, Date, A
+from elasticsearch_dsl import Text, Keyword, Boolean, Long, Date, A
 from elasticsearch_dsl.connections import get_connection
 
 from sahyun_bot import elastic_settings
+from sahyun_bot.elastic_settings import BaseDoc
 from sahyun_bot.utils import debug_ex
 
 elastic_settings.ready_or_die()
@@ -16,15 +17,11 @@ LOG = logging.getLogger(__name__.rpartition('.')[2])
 # noinspection PyProtectedMember
 def setup_elastic() -> bool:
     try:
-        client = get_connection()
-        if not client.ping():
-            LOG.warning('Client is down')
-            return False
-
-        if not client.indices.exists(elastic_settings.e_cf_index):
-            LOG.debug('Initializing index: ' + elastic_settings.e_cf_index)
+        if not get_connection().indices.exists(CustomDLC._index._name):
+            LOG.debug('Initializing index: ' + CustomDLC._index._name)
             CustomDLC.init()
     except Exception as e:
+        LOG.warning('Could not setup elastic. Perhaps client is down?')
         return debug_ex(e, 'setup elastic', log=LOG)
 
     return True
@@ -36,14 +33,14 @@ def purge_elastic():
     Utility function to cleanup index. Intended to be used while developing or testing.
     """
     try:
-        LOG.warning('Deleting index & its contents: ' + elastic_settings.e_cf_index)
+        LOG.warning('Deleting index & its contents: ' + CustomDLC._index._name)
         CustomDLC._index.delete(ignore=[404])
     except Exception as e:
         debug_ex(e, 'purge elastic', log=LOG)
 
 
 # noinspection PyTypeChecker
-class CustomDLC(Document):
+class CustomDLC(BaseDoc):
     artist = Text(required=True)
     title = Text(required=True)
     album = Text(required=True)
@@ -53,14 +50,13 @@ class CustomDLC(Document):
     platforms = Keyword(multi=True, required=True)
     has_dynamic_difficulty = Boolean(required=True)
     is_official = Boolean(required=True)
+
     version_timestamp = Long(required=True)
-    music_video = Keyword()
-    indirect_link = Keyword(required=True)
-
-    direct_link = Keyword()
-
     version_time = Date(required=True, default_timezone='UTC')
-    last_index_time = Date(required=True, default_timezone='UTC')
+
+    indirect_link = Keyword(required=True)
+    direct_link = Keyword()
+    music_video = Keyword()
 
     from_auto_index = Boolean(required=True)
 
@@ -82,12 +78,7 @@ class CustomDLC(Document):
         if not self.from_auto_index:
             self.from_auto_index = False
 
-        self.last_index_time = datetime.now(timezone.utc)
-        return super().save(**kwargs)
-
-    def update(self, **kwargs):
-        self.last_index_time = datetime.now(timezone.utc)
-        return super().update(**kwargs)
+        return super(CustomDLC, self).save(**kwargs)
 
     @property
     def full_title(self) -> str:
