@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import re
-import time
 from typing import TypeVar, List
 from urllib.parse import urlparse, parse_qs
 
@@ -143,10 +142,6 @@ class WithRetry:
     def post(url: str, **kwargs) -> Response:
         with retry_session() as session:
             return session.post(url, **kwargs)
-
-
-class FormatterUTC(logging.Formatter):
-    converter = time.gmtime
 
 
 def nuke_from_orbit(reason: str):
