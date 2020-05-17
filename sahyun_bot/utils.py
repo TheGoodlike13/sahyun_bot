@@ -5,6 +5,7 @@ import re
 import time
 from configparser import ConfigParser
 from typing import Callable, Optional, TypeVar, List
+from urllib.parse import urlparse, parse_qs
 
 from requests import Session, Response, PreparedRequest
 from requests.adapters import HTTPAdapter
@@ -196,3 +197,21 @@ def nuke_from_orbit(reason: str):
     logging.critical('Forcing shutdown of the application. Reason: {}'.format(reason))
     # noinspection PyProtectedMember
     os._exit(1)
+
+
+YOUTUBE_SHORT_LINK = 'https://youtu.be/{}'
+
+
+def clean_link(link: str) -> str:
+    try:
+        url_parts = urlparse(link or '')
+        if 'youtube.com' in url_parts.netloc:
+            video_id = parse_qs(url_parts.query).get('v', None)
+            if video_id:
+                return YOUTUBE_SHORT_LINK.format(video_id[0])
+        elif url_parts.scheme == 'http':
+            return link[:4] + 's' + link[4:]
+    except ValueError:
+        pass
+
+    return link

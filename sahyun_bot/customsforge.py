@@ -4,24 +4,22 @@ import pickle
 from datetime import date
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any, List
-from urllib.parse import urlparse, parse_qs
 
 from requests import Response
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, debug_ex, WithRetry
+from sahyun_bot.utils import T, NON_EXISTENT, identity, parse_bool, debug_ex, WithRetry, clean_link
 
 LOG = logging.getLogger(__name__.rpartition('.')[2])
 
 MAIN_PAGE = 'http://customsforge.com/'
 LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
+CDLC_PAGE = 'http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-enabled-rs-2014-cdlc/{}-r{}'
 
 LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
 DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
 CDLC_BY_DATE_API = 'http://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
-
-YOUTUBE_SHORT_LINK = 'https://youtu.be/{}'
 
 DEFAULT_BATCH_SIZE = 100
 DEFAULT_TIMEOUT = 100
@@ -92,7 +90,7 @@ class CustomsForgeClient:
         remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
                                                call=WithRetry.get,
                                                url=DATES_API,
-                                               parse=Parse.dates,
+                                               convert=To.dates,
                                                skip=self.__estimate_date_skip(since))
 
         for d in remaining_lazy_dates:
@@ -108,9 +106,9 @@ class CustomsForgeClient:
                                        call=WithRetry.get,
                                        url=CDLC_BY_DATE_API,
                                        params={'filter': d},
-                                       parse=Parse.cdlcs)
+                                       convert=To.cdlcs)
 
-    def direct_link(self, cdlc_id: str) -> str:
+    def direct_link(self, cdlc_id: Any) -> str:
         url = DOWNLOAD_API.format(cdlc_id)
         r = self.__call('get direct link', WithRetry.get, url)
         if not r or not r.is_redirect:
@@ -156,7 +154,7 @@ class CustomsForgeClient:
         date_count = self.__lazy_all(trying_to='total count of dates',
                                      call=WithRetry.get,
                                      url=DATES_API,
-                                     parse=Parse.date_count,
+                                     convert=To.date_count,
                                      batch=1)
         return next(date_count, None)
 
@@ -184,7 +182,7 @@ class CustomsForgeClient:
         return self.__call(trying_to, call, url, try_login=False, **kwargs)
 
     def __lazy_all(self,
-                   parse: Callable[[Any], Iterator[T]],
+                   convert: Callable[[Any], Iterator[T]],
                    skip: int = 0,
                    batch: int = None,
                    **call_params) -> Iterator[T]:
@@ -200,7 +198,7 @@ class CustomsForgeClient:
                 break
 
             try:
-                it = parse(r.json())
+                it = convert(r.json())
                 first = next(it, NON_EXISTENT)
                 if first is NON_EXISTENT:
                     break
@@ -237,6 +235,57 @@ class Verify:
         return timeout > 0
 
 
+class To:
+    @staticmethod
+    def dates(dates_api_response) -> Iterator[str]:
+        date_groups = dates_api_response[0]
+        if not date_groups:
+            return
+
+        for date_group in date_groups:
+            yield date_group['grp']
+
+    @staticmethod
+    def date_count(dates_api_response) -> Iterator[str]:
+        yield dates_api_response[1][0]['total']
+
+    @staticmethod
+    def cdlcs(cdlcs_by_date) -> Iterator[dict]:
+        if not cdlcs_by_date:
+            return
+
+        for c in cdlcs_by_date:
+            yield To.cdlc(c)
+
+    @staticmethod
+    def cdlc(c) -> dict:
+        _id = c.get('id')
+        return {
+            '_id': str(_id),
+
+            'id': _id,
+            'artist': read(c, 'artist'),
+            'title': read(c, 'title'),
+            'album': read(c, 'album'),
+            'tuning': read(c, 'tuning'),
+            'instrument_info': read_all(c, 'instrument_info'),
+            'parts': read_all(c, 'parts'),
+            'platforms': read_all(c, 'platforms'),
+            'has_dynamic_difficulty': read_bool(c, 'dd'),
+            'is_official': read_bool(c, 'official'),
+
+            'author': read(c, 'member'),
+            'version': read(c, 'version'),
+
+            'download': DOWNLOAD_API.format(_id),
+            'info': CDLC_PAGE.format(read(c, 'furl'), _id),
+            'video': read_link(c, 'music_video'),
+            'art': 'https://i.imgur.com/YOA0laU.png',
+
+            'snapshot_timestamp': c.get('updated'),
+        }
+
+
 def read(data: dict, key: str) -> str:
     value = data.get(key)
     return html.unescape(value.strip()) if value else ''
@@ -251,58 +300,4 @@ def read_bool(data: dict, key: str) -> bool:
 
 
 def read_link(data: dict, key: str) -> str:
-    link = read(data, key)
-    try:
-        url_parts = urlparse(link or '')
-        if 'youtube.com' in url_parts.netloc:
-            video_id = parse_qs(url_parts.query).get('v', None)
-            if video_id:
-                return YOUTUBE_SHORT_LINK.format(video_id[0])
-        elif url_parts.scheme == 'http':
-            return link[:4] + 's' + link[4:]
-    except ValueError:
-        pass
-
-    return link
-
-
-class Parse:
-    @staticmethod
-    def dates(dates_api_json) -> Iterator[str]:
-        date_groups = dates_api_json[0]
-        if not date_groups:
-            return
-
-        for date_group in date_groups:
-            yield date_group['grp']
-
-    @staticmethod
-    def date_count(dates_api_json) -> Iterator[str]:
-        yield dates_api_json[1][0]['total']
-
-    @staticmethod
-    def cdlcs(cdlc_by_date_api_json) -> Iterator[dict]:
-        if not cdlc_by_date_api_json:
-            return
-
-        for cdlc_json in cdlc_by_date_api_json:
-            yield Parse.cdlc(cdlc_json)
-
-    @staticmethod
-    def cdlc(cdlc_json) -> dict:
-        _id = cdlc_json.get('id')
-        return {
-            '_id': str(_id),
-            'artist': read(cdlc_json, 'artist'),
-            'title': read(cdlc_json, 'title'),
-            'album': read(cdlc_json, 'album'),
-            'author': read(cdlc_json, 'member'),
-            'tuning': read(cdlc_json, 'tuning'),
-            'parts': read_all(cdlc_json, 'parts'),
-            'platforms': read_all(cdlc_json, 'platforms'),
-            'has_dynamic_difficulty': read_bool(cdlc_json, 'dd'),
-            'is_official': read_bool(cdlc_json, 'official'),
-            'version_timestamp': cdlc_json.get('updated'),
-            'music_video': read_link(cdlc_json, 'music_video'),
-            'indirect_link': DOWNLOAD_API.format(_id),
-        }
+    return clean_link(read(data, key))

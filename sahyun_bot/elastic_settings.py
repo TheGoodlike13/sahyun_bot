@@ -1,6 +1,6 @@
-from datetime import timezone
+from datetime import timezone, datetime
 
-from elasticsearch_dsl import Document, Date, datetime, Keyword
+from elasticsearch_dsl import Document, Date
 
 from sahyun_bot.utils import read_config, NON_EXISTENT, nuke_from_orbit, parse_bool, parse_list
 
@@ -82,27 +82,24 @@ class Verify:
 
 
 class BaseDoc(Document):
-    id = Keyword(required=True)
-    time_created = Date(required=True, default_timezone='UTC')
-    time_updated = Date(required=True, default_timezone='UTC')
+    first_index = Date(required=True, default_timezone='UTC')
+    last_index = Date(required=True, default_timezone='UTC')
 
     def delete(self, **kwargs):
         kwargs.setdefault('refresh', e_refresh)
         super().delete(**kwargs)
 
     def update(self, **kwargs):
-        self.time_updated = datetime.now(timezone.utc)
+        self.last_index = datetime.now(timezone.utc)
 
         kwargs.setdefault('refresh', e_refresh)
         return super().update(**kwargs)
 
     def save(self, **kwargs):
-        self.id = self.meta.id
+        self.last_index = datetime.now(timezone.utc)
 
-        self.time_updated = datetime.now(timezone.utc)
-
-        if not self.time_created:
-            self.time_created = self.time_updated
+        if not self.first_index:
+            self.first_index = self.last_index
 
         kwargs.setdefault('refresh', e_refresh)
         return super().save(**kwargs)

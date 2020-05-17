@@ -42,22 +42,28 @@ def purge_elastic() -> bool:
 
 # noinspection PyTypeChecker
 class CustomDLC(BaseDoc):
+    id = Long(required=True)
     artist = Text(required=True)
     title = Text(required=True)
     album = Text(required=True)
-    author = Text(required=True)
     tuning = Keyword(required=True)
+    instrument_info = Keyword(multi=True)
     parts = Keyword(multi=True, required=True)
     platforms = Keyword(multi=True, required=True)
     has_dynamic_difficulty = Boolean(required=True)
     is_official = Boolean(required=True)
 
-    version_timestamp = Long(required=True)
-    version_time = Date(required=True, default_timezone='UTC')
+    author = Keyword(required=True)
+    version = Keyword(required=True)
 
-    indirect_link = Keyword(required=True)
-    direct_link = Keyword()
-    music_video = Keyword()
+    direct_download = Keyword()
+    download = Keyword(required=True)
+    info = Keyword(required=True)
+    video = Keyword()
+    art = Keyword()
+
+    snapshot_timestamp = Long(required=True)
+    snapshot_time = Date(required=True, default_timezone='UTC')
 
     from_auto_index = Boolean(required=True)
 
@@ -73,8 +79,7 @@ class CustomDLC(BaseDoc):
         return cls._index.search(**kwargs).extra(explain=elastic_settings.e_explain)
 
     def save(self, **kwargs):
-        if not self.version_time:
-            self.version_time = datetime.fromtimestamp(self.version_timestamp, timezone.utc)
+        self.snapshot_time = datetime.fromtimestamp(self.snapshot_timestamp, timezone.utc)
 
         if not self.from_auto_index:
             self.from_auto_index = False
@@ -87,13 +92,13 @@ class CustomDLC(BaseDoc):
 
     @property
     def link(self) -> str:
-        return self.direct_link if self.direct_link else self.indirect_link
+        return self.direct_download if self.direct_download else self.download
 
 
 def last_auto_index_time() -> Optional[int]:
     s = CustomDLC.search().filter('term', from_auto_index=True)
-    s.aggs.metric('last_auto_index_time', A('max', field='version_timestamp'))
-    response = s.execute()
+    s.aggs.metric('last_auto_index_time', A('max', field='snapshot_timestamp'))
+    response = s[0:0].execute()
     return response.aggs.last_auto_index_time.value
 
 
