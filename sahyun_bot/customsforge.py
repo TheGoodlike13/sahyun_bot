@@ -29,7 +29,6 @@ DEFAULT_COOKIE_FILE = '.cookie_jar'
 TEST_COOKIE_FILE = '.cookie_jar_test'
 
 EONS_AGO = date.fromisoformat('2010-01-01')       # this should pre-date even the oldest CDLC
-SOME_TIME_AGO = date.fromisoformat('2020-05-15')  # this should be in the past, but many older CDLCs should exist (1K+)
 
 
 class CustomsForgeClient:
@@ -90,7 +89,7 @@ class CustomsForgeClient:
         :returns true if a simple call to customsforge succeeded (including login), false otherwise
         """
         with self.__sessions.with_retry() as session:
-            return self.__estimate_date_skip(since=SOME_TIME_AGO, session=session) > 0
+            return self.__date_count(session=session) is not None
 
     def dates(self, since: date = EONS_AGO) -> Iterator[str]:
         with self.__sessions.with_retry() as session:
