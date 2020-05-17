@@ -24,3 +24,5 @@ if __name__ == '__main__':
         from sahyun_bot.customsforge import *
         # noinspection PyUnresolvedReferences
         from sahyun_bot.elastic import *
+        # noinspection PyUnresolvedReferences
+        from sahyun_bot.the_loaderer import *
