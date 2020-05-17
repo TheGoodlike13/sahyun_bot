@@ -97,7 +97,8 @@ def test_to_cdlc():
     )
 
 
-def test_calculate_date_skip_continuous_release(cf):
+def test_continuous_release_for_calculate_date_skip(cf):
+    # scenario:
     # 1) CDLCs are produced every day
     # 2) we ask for a fairly recent update
     since = TEST_DATE - timedelta(days=5)
@@ -105,7 +106,8 @@ def test_calculate_date_skip_continuous_release(cf):
     assert_that(cf.calculate_date_skip(since, date_count)).is_equal_to(92)
 
 
-def test_calculate_date_skip_vacation(cf):
+def test_vacation_for_calculate_date_skip(cf):
+    # scenario:
     # 1) CDLCs *were* produced every day, but there was a 100 day break, followed by new release
     # 2) we ask for update from before the break
     since = TEST_DATE - timedelta(days=100)
