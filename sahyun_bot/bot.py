@@ -19,8 +19,6 @@ if __name__ == '__main__':
         # noinspection PyUnresolvedReferences
         from urllib.parse import *
         # noinspection PyUnresolvedReferences
-        from sahyun_bot.utils import *
-        # noinspection PyUnresolvedReferences
         from sahyun_bot.elastic_settings import *
         # noinspection PyUnresolvedReferences
         from sahyun_bot.customsforge import *

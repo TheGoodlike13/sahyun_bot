@@ -5,10 +5,11 @@ from datetime import date
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any, List
 
-from requests import Response
+from requests import Response, Session
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, WithRetry, clean_link
+from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link
+from sahyun_bot.utils_session import SessionFactory
 from sahyun_bot.utils_settings import parse_bool, parse_list
 
 LOG = logging.getLogger(__name__.rpartition('.')[2])
@@ -50,6 +51,7 @@ class CustomsForgeClient:
         self.__login_rejected = False
         self.__prevent_multiple_login_lock = Lock()
 
+        self.__sessions = SessionFactory(unsafe=['ips_password'])
         self.__cookies = RequestsCookieJar()
         self.__with_cookie_jar('rb', lambda f: self.__cookies.update(pickle.load(f)))
         # no error, since cookie file probably doesn't exist; we'll try to write it later and log any error then
@@ -68,7 +70,9 @@ class CustomsForgeClient:
                 'rememberMe': '1',
                 'referer': MAIN_PAGE,
             }
-            r = self.__call('login', WithRetry.post, LOGIN_API, data=form, cookies=None, try_login=False)
+            with self.__sessions.with_retry() as session:
+                r = self.__call('login', session.post, LOGIN_API, data=form, cookies=None, try_login=False)
+
             if not r:  # this indicates an error - repeated attempts may still succeed
                 return False
 
@@ -85,33 +89,28 @@ class CustomsForgeClient:
         """
         :returns true if a simple call to customsforge succeeded (including login), false otherwise
         """
-        return self.__estimate_date_skip(since=SOME_TIME_AGO) > 0
+        with self.__sessions.with_retry() as session:
+            return self.__estimate_date_skip(since=SOME_TIME_AGO, session=session) > 0
 
     def dates(self, since: date = EONS_AGO) -> Iterator[str]:
-        remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
-                                               call=WithRetry.get,
-                                               url=DATES_API,
-                                               convert=To.dates,
-                                               skip=self.__estimate_date_skip(since))
-
-        for d in remaining_lazy_dates:
-            if date.fromisoformat(d) >= since:
-                yield d
-                break
-
-        yield from remaining_lazy_dates
+        with self.__sessions.with_retry() as session:
+            yield from self.__dates(since, session)
 
     def cdlcs(self, since: date = EONS_AGO) -> Iterator[dict]:
-        for d in self.dates(since):
-            yield from self.__lazy_all(trying_to='find CDLCs',
-                                       call=WithRetry.get,
-                                       url=CDLC_BY_DATE_API,
-                                       params={'filter': d},
-                                       convert=To.cdlcs)
+        with self.__sessions.with_retry() as session:
+            for d in self.__dates(since, session):
+                yield from self.__lazy_all(trying_to='find CDLCs',
+                                           call=session.get,
+                                           url=CDLC_BY_DATE_API,
+                                           params={'filter': d},
+                                           convert=To.cdlcs)
 
     def direct_link(self, cdlc_id: Any) -> str:
         url = DOWNLOAD_API.format(cdlc_id)
-        r = self.__call('get direct link', WithRetry.get, url)
+
+        with self.__sessions.with_retry() as session:
+            r = self.__call('get direct link', session.get, url)
+
         if not r or not r.is_redirect:
             return ''
 
@@ -134,7 +133,19 @@ class CustomsForgeClient:
 
         return True
 
-    def __estimate_date_skip(self, since: date) -> int:
+    def __dates(self, since: date, session: Session):
+        remaining_lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
+                                               call=session.get,
+                                               url=DATES_API,
+                                               convert=To.dates,
+                                               skip=self.__estimate_date_skip(since, session))
+        for d in remaining_lazy_dates:
+            if date.fromisoformat(d) >= since:
+                yield d
+                break
+        yield from remaining_lazy_dates
+
+    def __estimate_date_skip(self, since: date, session: Session) -> int:
         """
         :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
         but can become outdated; therefore, only estimate right before calling for dates
@@ -142,7 +153,7 @@ class CustomsForgeClient:
         if not since or since <= EONS_AGO:
             return 0
 
-        date_count = self.__date_count()
+        date_count = self.__date_count(session)
         if not date_count:
             return 0
 
@@ -151,9 +162,9 @@ class CustomsForgeClient:
         # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
         return skip_estimate if skip_estimate > 0 else 0
 
-    def __date_count(self) -> Optional[int]:
+    def __date_count(self, session: Session) -> Optional[int]:
         date_count = self.__lazy_all(trying_to='total count of dates',
-                                     call=WithRetry.get,
+                                     call=session.get,
                                      url=DATES_API,
                                      convert=To.date_count,
                                      batch=1)

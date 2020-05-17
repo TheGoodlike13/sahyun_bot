@@ -28,6 +28,7 @@ def customsforge(url, request):
 
     return {
         'status_code': 404,
+        'reason': 'Not Found',
         'content': 'Unexpected URL',
     }
 
@@ -38,6 +39,7 @@ def login_mock(url, request):
 
     return {
         'status_code': 200,
+        'reason': 'OK',
         'content': 'Sign-in error page',
     }
 
@@ -80,6 +82,7 @@ def direct_link_mock(url, request):
 def values(content=None):
     return {
         'status_code': 200,
+        'reason': 'OK',
         'content': content,
     }
 
@@ -87,6 +90,7 @@ def values(content=None):
 def to_main_page():
     return {
         'status_code': 302,
+        'reason': 'Moved Temporarily',
         'content': 'Redirect to main page - login successful!',
         'headers': {
             'Set-Cookie': MOCK_SET_COOKIE,
@@ -98,6 +102,7 @@ def to_main_page():
 def to_login_page():
     return {
         'status_code': 302,
+        'reason': 'Moved Temporarily',
         'content': 'Redirect to login page - login is required!',
         'headers': {
             'Location': LOGIN_PAGE,
@@ -108,6 +113,7 @@ def to_login_page():
 def to_direct_link(link: str = ''):
     return {
         'status_code': 302,
+        'reason': 'Moved Temporarily',
         'content': 'Redirect to direct link - if one exists, that is!',
         'headers': {
             'Location': link,
