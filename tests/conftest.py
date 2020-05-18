@@ -29,8 +29,8 @@ def prepare_cdlc_data():
 def working_test_elastic_client():
     elastic_search = connections.create_connection(hosts=[elastic_settings.e_host])
 
-    from sahyun_bot import elastic
-    if elastic.purge_elastic():
+    from sahyun_bot import utils_elastic
+    if utils_elastic.purge_elastic():
         yield elastic_search
     else:
         pytest.skip('Cannot perform elastic tests! Please launch & configure an elasticsearch instance.')
@@ -49,15 +49,15 @@ def es_fresh(working_test_elastic_client):
 
 
 def prepare_elastic(working_test_elastic_client):
-    from sahyun_bot import elastic
+    from sahyun_bot import utils_elastic
     try:
         # if test server crashes half way, but comes back up quick, the next test should clean up before moving forward
-        if elastic.purge_elastic() and elastic.setup_elastic() and prepare_index():
+        if utils_elastic.purge_elastic() and utils_elastic.setup_elastic() and prepare_index():
             yield working_test_elastic_client
         else:
             pytest.skip('Elasticsearch test server is down or incorrectly configured.')
     finally:
-        elastic.purge_elastic()
+        utils_elastic.purge_elastic()
 
 
 def prepare_index() -> bool:

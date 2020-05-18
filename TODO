@@ -19,7 +19,13 @@ WEIRD IDEAS
 
 All functionality should be optional when possible.
 
-console should be WARN, bot.log INFO, requests DEBUG
+Allow to configure: worker threads, dump file (also, general cleanup)
+
+Replace str.format with f' strings: f'{something}'
+
+Retry on 403?
+
+console should be WARN, bot.log INFO, requests DEBUG; debug_ex prints to console when NOT silent, otherwise files?
 
 bot_modules should be re-written to be simpler & reusable from other modules
 Replace skip_while with itertools

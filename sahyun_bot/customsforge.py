@@ -1,5 +1,4 @@
 import html
-import logging
 import pickle
 from datetime import date
 from threading import Lock
@@ -9,10 +8,11 @@ from requests import Response, Session
 from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link, skip_while
+from sahyun_bot.utils_logging import get_logger
 from sahyun_bot.utils_session import SessionFactory
 from sahyun_bot.utils_settings import parse_bool, parse_list
 
-LOG = logging.getLogger(__name__.rpartition('.')[2].replace('_', ''))
+LOG = get_logger(__name__)
 
 MAIN_PAGE = 'http://customsforge.com/'
 LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'

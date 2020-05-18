@@ -1,8 +1,9 @@
-import logging
 import os
 from itertools import chain
 
-LOG = logging.getLogger(__name__.rpartition('.')[2].replace('_', ''))
+from sahyun_bot.utils_logging import get_logger
+
+LOG = get_logger(__name__)
 
 
 def nuke_from_orbit(reason: str):
@@ -11,34 +12,18 @@ def nuke_from_orbit(reason: str):
     os._exit(1)
 
 
-UTILITY_MODULES_TO_LOAD = [
-    'itertools.py',
-    'urllib.parse.py'
-]
-
-
-def should_be_loaded(m):
-    is_self = m == __name__.rpartition('.')[2]
-    is_python = m[-3:] == '.py'
-    is_private = m[:1] == '_'
-    is_essential = m[:3] == 'bot' or m[-12:] == '_settings.py'
-    return not is_self and is_python and not is_private and not is_essential
-
-
 if __name__ == '__main__':
     """
-    This main function is intended to be run as interactive shell.
-    It loads all modules into locals() so you can access them immediately, as well as some other utilities.
-    For a saner main() method, use bot.py
+    Main function for an interactive shell. Loads a bunch of utils into locals() so they can be used immediately.
+    Use bot.py for a sane main function.
     """
+    from sahyun_bot.modules import *
 
-    # first we manually load some essentials
-    from sahyun_bot.bot_modules import *
+    local_utils = [m[:-3] for m in os.listdir(os.path.dirname(__file__)) if m[:5] == 'utils']
+    other_utils = ['dictdiffer', 'itertools', 'urllib.parse']
 
-    # then we dynamically load the rest
-    for module in chain(os.listdir(os.path.dirname(__file__)), UTILITY_MODULES_TO_LOAD):
-        if should_be_loaded(module):
-            m = __import__(module[:-3], globals(), locals(), ['*'], 0)
-            for item in dir(m):
-                if item[:1] != '_' and item not in locals():
-                    locals()[item] = getattr(m, item)
+    for u in chain(local_utils, other_utils):
+        m = __import__(u, globals(), locals(), ['*'], 0)
+        for item in dir(m):
+            if item[:1] != '_' and item not in locals():
+                locals()[item] = getattr(m, item)

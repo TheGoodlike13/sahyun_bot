@@ -1,16 +1,12 @@
-import logging.config
+from sahyun_bot.modules import *
+from sahyun_bot.utils_logging import get_logger
 
-from sahyun_bot.bot_modules import *
-from sahyun_bot.elastic_settings import *
+LOG = get_logger(__name__)
 
 
 def run_main():
-    from sahyun_bot.elastic import setup_elastic
-
-    logging.info('Bot launched')
-    setup_elastic()
+    LOG.warning('Bot launched successfully.')
 
 
 if __name__ == '__main__':
-    logging.warning('Elastic index: %s', e_cf_index)
     run_main()

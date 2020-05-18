@@ -14,7 +14,16 @@ class FormatterUTC(Formatter):
     converter = time.gmtime
 
 
-HTTP_DUMP = logging.getLogger('dumhttp')
+def get_logger(module_name: str) -> logging.Logger:
+    left, colon, right = module_name.rpartition('.')
+    name = right if right else left
+    clear_name = name[5:] if name[:5] == 'utils' and name[5:] else name
+    terse_name = clear_name.replace('_', '')
+    return logging.getLogger(terse_name)
+
+
+HTTP_DUMP = logging.getLogger('httdump')
+HTTP_TRACE = logging.getLogger('httdump.trace')
 
 DEFAULT_MAX_DUMP = 50 * 2 ** 10
 
@@ -33,7 +42,7 @@ class HttpDump:
         HTTP_DUMP.info('\n'.join(self.to_basic_info(response)))
 
     def detailed(self, response: Response, *args, **kwargs):
-        HTTP_DUMP.debug('\n'.join(self.to_detailed_info(response)))
+        HTTP_TRACE.debug('\n'.join(self.to_detailed_info(response)))
 
     def to_basic_info(self, response) -> List[str]:
         lines = ['Basic HTTP call info:']

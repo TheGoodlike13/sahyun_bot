@@ -32,8 +32,7 @@ def test_loading_continued(cf, es_fresh):
 def test_load_links(cf, es_fresh):
     # TODO: this simulates the scenario where link was empty due to error - does not work because ES was miss-configured
     # CustomDLC.get(49841).update(direct_download='')
-
-    print(CustomDLC.get(49841).to_dict())
+    # print(CustomDLC.get(49841).to_dict())
 
     with HTTMock(customsforge):
         load_links(cf)

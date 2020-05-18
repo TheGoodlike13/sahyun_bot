@@ -1,19 +1,18 @@
 from datetime import timezone, datetime
+from typing import Optional
 
-from elasticsearch_dsl import Document, Date
+from elasticsearch_dsl import Document, Date, integer_types, ValidationException
 
 from sahyun_bot.the_danger_zone import nuke_from_orbit
 from sahyun_bot.utils import NON_EXISTENT
-from sahyun_bot.utils_settings import *
+from sahyun_bot.utils_settings import read_config, parse_bool, parse_list
 
 DEFAULT_HOST = 'localhost'
 DEFAULT_CUSTOMSFORGE_INDEX = 'cdlcs'
 
 DEFAULT_REQUEST_FIELDS = (
-    'artist^4',
-    'title^4',
-    'album^2',
-    'author',
+    'artist',
+    'title',
 )
 DEFAULT_REQUEST_MATCH_CEILING = 3
 
@@ -78,24 +77,39 @@ def init_test():
 
 
 class BaseDoc(Document):
-    first_index = Date(required=True, default_timezone='UTC')
-    last_index = Date(required=True, default_timezone='UTC')
+    @classmethod
+    def index_name(cls) -> Optional[str]:
+        # noinspection PyProtectedMember
+        return cls._index._name if cls._index else None
+
+    @classmethod
+    def mapping(cls) -> Optional[dict]:
+        return cls._doc_type.mapping.to_dict()
 
     def delete(self, **kwargs):
         kwargs.setdefault('refresh', e_refresh)
         super().delete(**kwargs)
 
     def update(self, **kwargs):
-        self.last_index = datetime.now(timezone.utc)
-
         kwargs.setdefault('refresh', e_refresh)
         return super().update(**kwargs)
 
     def save(self, **kwargs):
-        self.last_index = datetime.now(timezone.utc)
-
-        if not self.first_index:
-            self.first_index = self.last_index
-
         kwargs.setdefault('refresh', e_refresh)
         return super().save(**kwargs)
+
+
+class EpochSecond(Date):
+    def __init__(self, *args, **kwargs):
+        for param in ['format', 'default_timezone']:
+            if param in kwargs:
+                del kwargs[param]
+
+        kwargs['format'] = 'epoch_second'
+        super(EpochSecond, self).__init__(default_timezone=timezone.utc, *args, **kwargs)
+
+    def _deserialize(self, data):
+        if not isinstance(data, integer_types):
+            raise ValidationException('Could not parse epoch second from the value (%r)' % data)
+
+        return datetime.fromtimestamp(data, tz=timezone.utc)
