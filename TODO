@@ -18,3 +18,9 @@ WEIRD IDEAS
 
 
 All functionality should be optional when possible.
+
+console should be WARN, bot.log INFO, requests DEBUG
+
+bot_modules should be re-written to be simpler & reusable from other modules
+Replace skip_while with itertools
+Reindex - some fields got fucked
