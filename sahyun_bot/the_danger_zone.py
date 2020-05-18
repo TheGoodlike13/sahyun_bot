@@ -1,9 +1,12 @@
+import logging
 import os
 from itertools import chain
 
+LOG = logging.getLogger(__name__.rpartition('.')[2].replace('_', ''))
+
 
 def nuke_from_orbit(reason: str):
-    logging.critical('Forcing shutdown of the application. Reason: {}'.format(reason))
+    LOG.critical('Forcing shutdown of the application. Reason: {}'.format(reason))
     # noinspection PyProtectedMember
     os._exit(1)
 
@@ -31,7 +34,6 @@ if __name__ == '__main__':
 
     # first we manually load some essentials
     from sahyun_bot.bot_modules import *
-    from sahyun_bot.elastic_settings import *
 
     # then we dynamically load the rest
     for module in chain(os.listdir(os.path.dirname(__file__)), UTILITY_MODULES_TO_LOAD):

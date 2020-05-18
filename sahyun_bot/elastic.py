@@ -11,7 +11,7 @@ from sahyun_bot.utils import debug_ex
 
 elastic_settings.ready_or_die()
 
-LOG = logging.getLogger(__name__.rpartition('.')[2])
+LOG = logging.getLogger(__name__.rpartition('.')[2].replace('_', ''))
 
 
 # noinspection PyProtectedMember

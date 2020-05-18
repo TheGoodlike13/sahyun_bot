@@ -1,5 +1,4 @@
 import atexit
-import http.client
 import logging
 from typing import Any
 

@@ -12,7 +12,7 @@ from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link, sk
 from sahyun_bot.utils_session import SessionFactory
 from sahyun_bot.utils_settings import parse_bool, parse_list
 
-LOG = logging.getLogger(__name__.rpartition('.')[2])
+LOG = logging.getLogger(__name__.rpartition('.')[2].replace('_', ''))
 
 MAIN_PAGE = 'http://customsforge.com/'
 LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'

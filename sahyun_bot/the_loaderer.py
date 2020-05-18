@@ -8,7 +8,7 @@ from sahyun_bot.elastic import last_auto_index_time, CustomDLC
 BACKGROUND_WORKERS = ThreadPoolExecutor(6)
 
 
-LOG = logging.getLogger('theloaderer')
+LOG = logging.getLogger(__name__.rpartition('.')[2].replace('_', ''))
 
 
 def load(cf: CustomsForgeClient):
