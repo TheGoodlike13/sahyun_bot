@@ -1,3 +1,4 @@
+import http.client
 import logging.config
 
 from sahyun_bot import elastic_settings
@@ -13,6 +14,7 @@ logging.debug('                      NEW EXECUTION                      ')
 logging.debug('---------------------------------------------------------')
 
 s_debug = read_config('system', 'HttpDebugMode', convert=parse_bool, fallback=False)
+http.client.HTTPConnection.debuglevel = 1 if s_debug else 0
 
 c_api_key = read_config('customsforge', 'ApiKey')
 c_user = read_config('customsforge', 'Username')

@@ -4,7 +4,7 @@ from elasticsearch_dsl import Document, Date
 
 from sahyun_bot.the_danger_zone import nuke_from_orbit
 from sahyun_bot.utils import NON_EXISTENT
-from sahyun_bot.utils_settings import parse_bool, parse_list, read_config
+from sahyun_bot.utils_settings import *
 
 DEFAULT_HOST = 'localhost'
 DEFAULT_CUSTOMSFORGE_INDEX = 'cdlcs'
@@ -56,8 +56,8 @@ def init():
 
     e_req_max = e_req_max if e_req_max > 0 else DEFAULT_REQUEST_MATCH_CEILING
 
-    for config in [e_host, e_cf_index, e_req_fields, e_req_max, e_explain]:
-        if config in TEST_ONLY_VALUES:
+    for e in [e_host, e_cf_index, e_req_fields, e_req_max, e_explain]:
+        if e in TEST_ONLY_VALUES:
             nuke_from_orbit('configuration error - cannot use TEST values for REAL initialization')
 
 
