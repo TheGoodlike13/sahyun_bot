@@ -1,13 +1,14 @@
 import html
 import pickle
 from datetime import date
+from itertools import dropwhile
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any, List
 
 from requests import Response, Session
 from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link, skip_while
+from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link
 from sahyun_bot.utils_logging import get_logger
 from sahyun_bot.utils_session import SessionFactory
 from sahyun_bot.utils_settings import parse_bool, parse_list
@@ -107,7 +108,7 @@ class CustomsForgeClient:
                                              params={'filter': d},
                                              convert=To.cdlcs)
 
-                yield from skip_while(lazy_cdlcs, lambda c: c.get('snapshot_timestamp') < since_exact)
+                yield from dropwhile(lambda c: c.get('snapshot_timestamp') < since_exact, lazy_cdlcs)
 
     def direct_link(self, cdlc_id: Any) -> str:
         url = DOWNLOAD_API.format(cdlc_id)
@@ -154,7 +155,7 @@ class CustomsForgeClient:
                                      convert=To.dates,
                                      skip=self.__estimate_date_skip(since, session))
 
-        yield from skip_while(lazy_dates, lambda d: date.fromisoformat(d) < since)
+        yield from dropwhile(lambda d: date.fromisoformat(d) < since, lazy_dates)
 
     def __estimate_date_skip(self, since: date, session: Session) -> int:
         if since <= EONS_AGO:

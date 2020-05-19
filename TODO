@@ -32,6 +32,3 @@ Allow to configure: worker threads, dump file (also, general cleanup)
 Replace str.format with f' strings: f'{something}'
 
 Retry on 403?
-
-
-Replace skip_while with itertools

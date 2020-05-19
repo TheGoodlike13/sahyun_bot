@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, Iterator, Callable
+from typing import TypeVar
 from urllib.parse import urlparse, parse_qs
 
 # general purpose generic variable to be used in generic functions
@@ -49,19 +49,3 @@ def clean_link(link: str) -> str:
         pass
 
     return link or ''
-
-
-def skip_while(it: Iterator[T], condition: Callable[[T], bool] = always_false) -> Iterator[T]:
-    if not it:
-        return
-
-    if not isinstance(it, Iterator):
-        it = iter(it)
-
-    if condition:
-        for i in it:
-            if not condition(i):
-                yield i
-                break
-
-    yield from it
