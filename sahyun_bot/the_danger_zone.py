@@ -20,7 +20,7 @@ if __name__ == '__main__':
     from sahyun_bot.modules import *
 
     local_utils = [m[:-3] for m in os.listdir(os.path.dirname(__file__)) if m[:5] == 'utils']
-    other_utils = ['dictdiffer', 'itertools', 'urllib.parse']
+    other_utils = ['datetime', 'itertools', 'urllib.parse', 'dictdiffer']
 
     for u in chain(local_utils, other_utils):
         m = __import__(u, globals(), locals(), ['*'], 0)
