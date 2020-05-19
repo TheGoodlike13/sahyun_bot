@@ -114,9 +114,8 @@ class BaseDoc(Document):
 
 class EpochSecond(Date):
     def __init__(self, *args, **kwargs):
-        for param in ['format', 'default_timezone']:
-            if param in kwargs:
-                del kwargs[param]
+        if 'default_timezone' in kwargs:
+            del kwargs['default_timezone']
 
         kwargs['format'] = 'epoch_second'
         super().__init__(default_timezone=timezone.utc, *args, **kwargs)
