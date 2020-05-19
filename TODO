@@ -25,5 +25,3 @@ Allow to configure: worker threads, dump file (also, general cleanup)
 Refactor and cleanup the_loaderer - should be a class, logging, etc
 Review customsforge logging - add for user?
 Review elastic.py logging - add for user?
-
-Add doc to utilities at least

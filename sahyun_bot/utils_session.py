@@ -16,6 +16,12 @@ RETRY_ON_STATUS = frozenset(
 
 
 class SessionFactory:
+    """
+    Creates Session objects for use with the application. These objects will log HTTP information and retry requests.
+    Retry count is configurable.
+
+    All other kwargs will be passed into HttpDump.
+    """
     def __init__(self, retry_count: int = None, **dump_kwargs):
         self.__dump = HttpDump(**dump_kwargs)
         self.__retry_count = retry_count if retry_count and retry_count > 0 else DEFAULT_RETRY_COUNT

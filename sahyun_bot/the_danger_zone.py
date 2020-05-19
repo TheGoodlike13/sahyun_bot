@@ -7,6 +7,9 @@ LOG = get_logger(__name__)
 
 
 def nuke_from_orbit(reason: str):
+    """
+    Forcibly and immediately shuts down the application. To be used when data integrity is at risk.
+    """
     LOG.critical(f'Forcing shutdown of the application. Reason: {reason}')
     os._exit(1)
 

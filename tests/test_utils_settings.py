@@ -6,6 +6,7 @@ from sahyun_bot.utils_settings import config, parse_bool, parse_list, read_confi
 def test_parse_bool():
     assert_that(parse_bool).raises(ValueError).when_called_with('')
     assert_that(parse_bool('', fallback=True)).is_true()
+    assert_that(parse_bool('', fallback=False)).is_false()
 
     for t in ['1', 'yes', 'true', 'on', 'True']:
         assert_that(parse_bool(t)).is_true()

@@ -1,3 +1,8 @@
+"""
+Contains general utilities that can be used in many contexts.
+May also contain utilities that are too few to create a separate module for.
+"""
+
 import logging
 from typing import TypeVar
 from urllib.parse import urlparse, parse_qs
@@ -25,14 +30,13 @@ def always_false(o: T) -> bool:
 
 def debug_ex(e: Exception,
              trying_to: str = 'do something (check traceback)',
-             *args,
              log: logging.Logger = None,
              silent: bool = False):
     log = log or logging.root
     if silent:
-        log.debug('Error while trying to %s: %s: %s', trying_to.format(*args), type(e).__name__, e, exc_info=True)
+        log.debug('Error while trying to %s: %s: %s', trying_to, type(e).__name__, e, exc_info=True)
     else:
-        log.error('Error while trying to %s: %s: %s', trying_to.format(*args), type(e).__name__, e)
+        log.error('Error while trying to %s: %s: %s', trying_to, type(e).__name__, e)
         log.debug('Traceback:', exc_info=True)
 
 

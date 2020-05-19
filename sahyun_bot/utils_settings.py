@@ -13,26 +13,34 @@ config = ConfigParser()
 
 
 def parse_bool(s: str, fallback: bool = None) -> bool:
+    """
+    :returns true or false, using ConfigParser semantics
+    :raises ValueError if value cannot be parsed and no fallback is provided
+    """
     try:
         return config._convert_to_boolean(s)
     except ValueError:
-        if fallback:
+        if fallback is not None:
             return fallback
 
         raise
 
 
 def parse_list(s: str, convert: Callable[[str], T] = identity, fallback: List[T] = None) -> List[T]:
+    """
+    :returns list of values converted from comma separated substrings
+    :raises ValueError if value cannot be parsed and no fallback is provided
+    """
     if not s or s.isspace():
         return fallback or []
 
     try:
         return [convert(item.strip()) for item in s.split(',') if item and not item.isspace()]
-    except Exception:
+    except Exception as e:
         if fallback is not None:
             return fallback
 
-        raise
+        raise ValueError(f'Could not parse as comma separated list: {s}') from e
 
 
 def read_config(section: str,
@@ -47,5 +55,5 @@ def read_config(section: str,
     try:
         return convert(value.strip())
     except Exception as e:
-        debug_ex(e, 'convert config value [{}]->{}: {}', section, key, value, silent=True)
+        debug_ex(e, f'convert config value [{section}]->{key}: {value}', silent=True)
         return fallback

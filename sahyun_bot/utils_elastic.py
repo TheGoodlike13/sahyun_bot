@@ -15,10 +15,18 @@ DOCUMENTS = frozenset([
 
 
 def setup_elastic() -> bool:
+    """
+    Initializes all indexes if they do not yet exist. See set of documents to initialize above.
+    Also verifies if the mappings in the index match.
+    """
     return _with_elastic('setup', _setup)
 
 
 def purge_elastic() -> bool:
+    """
+    Deletes all indexes that are associated with this application. Intended for use with tests or while developing.
+    This will delete all data if used!
+    """
     return _with_elastic('purge', _purge)
 
 

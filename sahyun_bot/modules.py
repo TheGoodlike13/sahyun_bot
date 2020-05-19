@@ -1,3 +1,9 @@
+"""
+Creates instances of all singletons in the application. Can be considered the equivalent of a bean factory.
+Globally accessible only for the purposes of easy REPL usage.
+It should be imported by any module with __main__ method, which can then initiate the process of the application.
+"""
+
 import atexit
 from typing import Any
 

@@ -1,6 +1,6 @@
 import html
 import pickle
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from itertools import dropwhile
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any, List
@@ -33,6 +33,13 @@ EONS_AGO = date.fromisoformat('2010-01-01')  # this should pre-date even the old
 
 
 class CustomsForgeClient:
+    """
+    Implements customsforge API for CDLCs. (Should be) thread-safe.
+
+    To access the API, logging in is required. This is attempted exactly once for every API call that returns
+    a redirect indicating lack (or invalid) credentials. Cookies resulting from login can be stored to avoid
+    this process in subsequent executions.
+    """
     def __init__(self,
                  api_key: str,
                  batch_size: int = DEFAULT_BATCH_SIZE,
@@ -59,6 +66,16 @@ class CustomsForgeClient:
         self.__get_today = get_today
 
     def login(self, username: str = None, password: str = None) -> bool:
+        """
+        Tries to log in using given credentials. They are stored for future use (e.g. automatic re-log).
+
+        If no credentials are passed into the method, tries to use already stored credentials, if any.
+
+        If some cases it is possible to determine that login failed due to invalid credentials. In such cases
+        this method will avoid logging in until new credentials are passed into it.
+
+        :returns true if login succeeded, false otherwise
+        """
         with self.__prevent_multiple_login_lock:
             if not self.__has_credentials(username, password):
                 return False
@@ -93,13 +110,28 @@ class CustomsForgeClient:
             return self.__date_count(session=session) is not None
 
     def dates(self, since: date = None) -> Iterator[str]:
-        since = since or EONS_AGO
+        """
+        Generates all dates which had an updated CDLC, since the date given, in ascending order.
+        If no date is given, starts at the beginning.
+
+        The dates are returned in ISO format strings, intended to be used by other APIs.
+        """
         with self.__sessions.with_retry() as session:
             yield from self.__dates(since, session)
 
     def cdlcs(self, since: date = None, since_exact: int = 0) -> Iterator[dict]:
-        since = since or EONS_AGO
-        since_exact = since_exact or 0
+        """
+        Generates all CDLCs which are available in customsforge, since the date and/or exact time given.
+        Exact time takes precedence over the date, unless it is 0 (or negative).
+        If no date or exact time is given, starts at the beginning.
+
+        The order of CDLCs as they are returned in ascending with respect to the last time they were updated.
+        CDLCs are returned as dicts containing information, such as artist, title, id, link, etc.
+        Refer to To.cdlcs method for specifics.
+        """
+        since_exact = since_exact if since_exact and since_exact > 0 else 0
+        since = self.__estimate_date(since_exact) if since_exact else since
+
         with self.__sessions.with_retry() as session:
             for d in self.__dates(since, session):
                 lazy_cdlcs = self.__lazy_all(trying_to='find CDLCs',
@@ -111,15 +143,15 @@ class CustomsForgeClient:
                 yield from dropwhile(lambda c: c.get('snapshot_timestamp') < since_exact, lazy_cdlcs)
 
     def direct_link(self, cdlc_id: Any) -> str:
+        """
+        :returns link to the direct download of the CDLC with given id, if such exists, empty string otherwise
+        """
         url = DOWNLOAD_API.format(cdlc_id)
 
         with self.__sessions.with_retry() as session:
             r = self.__call('get direct link', session.get, url)
 
-        if not r or not r.is_redirect:
-            return ''
-
-        return r.headers.get('Location', '')
+        return r.headers.get('Location', '') if r and r.is_redirect else ''
 
     def calculate_date_skip(self, since: date, date_count: int):
         """
@@ -127,8 +159,8 @@ class CustomsForgeClient:
         but can become outdated; therefore, only estimate right before calling for dates
         """
         passed_since = self.__get_today() - since
-        skip_estimate = date_count - passed_since.days - 3
         # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
+        skip_estimate = date_count - passed_since.days - 3
         return skip_estimate if skip_estimate > 0 else 0
 
     def __has_credentials(self, username: str, password: str):
@@ -149,6 +181,8 @@ class CustomsForgeClient:
         return True
 
     def __dates(self, since: date, session: Session):
+        since = since or EONS_AGO
+
         lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
                                      call=session.get,
                                      url=DATES_API,
@@ -168,7 +202,8 @@ class CustomsForgeClient:
         return self.calculate_date_skip(since, date_count)
 
     def __estimate_date(self, epoch_seconds: int):
-        return datetime.fromtimestamp(epoch_seconds) - timedelta(days=1)
+        # we subtract one day to account for timezone shenanigans
+        return date.fromtimestamp(epoch_seconds) - timedelta(days=1)
 
     def __date_count(self, session: Session) -> Optional[int]:
         date_count = self.__lazy_all(trying_to='total count of dates',
@@ -226,7 +261,8 @@ class CustomsForgeClient:
                 yield first
                 yield from it
             except Exception as e:
-                return debug_ex(e, 'parse response of [{}] as JSON', call_params.get('trying_to'), log=LOG)
+                trying_to = call_params.get('trying_to')
+                return debug_ex(e, f'parse response of [{trying_to}] as JSON', log=LOG)
 
             skip += batch
 

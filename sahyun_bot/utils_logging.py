@@ -11,10 +11,21 @@ from sahyun_bot.utils import debug_ex
 
 
 class FormatterUTC(Formatter):
+    """
+    Formatter which uses UTC instead of local time. Useful for files that need to be shared across different timezones.
+    """
     converter = time.gmtime
 
 
 def get_logger(module_name: str) -> logging.Logger:
+    """
+    In normal applications, logger names match module names. However, this is no ordinary application.
+    We are logging to the console for the purpose of informing the user; using weird module names there is
+    detrimental. As a result, I've tried to shorten them and get rid of unnecessary characters so they appear
+    more natural and reasonable in the command line.
+
+    :returns name of logger for given module
+    """
     left, dot, right = module_name.rpartition('.')
     name = right if right else left
     clear_name = name[5:] if name[:5] == 'utils' and name[5:] else name
@@ -29,6 +40,15 @@ DEFAULT_MAX_DUMP = 50 * 2 ** 10
 
 
 class HttpDump:
+    """
+    Logging hook for HTTP requests. Set all(), basic() or detailed() as a hook to a Session object to use.
+
+    To avoid passwords from being logger, pass any form parameters they are associated with as unsafe.
+    This will cause these form parameters to be redacted from request logs.
+
+    To avoid dumping arbitrary large response bodies, pass maximum char length (for body) which will be replaced
+    with a generic message instead.
+    """
     def __init__(self, unsafe: List[str] = None, max_dump: int = None):
         self.__unsafe_form_params = unsafe or []
         self.__max_dump = max_dump if max_dump and max_dump > 0 else DEFAULT_MAX_DUMP

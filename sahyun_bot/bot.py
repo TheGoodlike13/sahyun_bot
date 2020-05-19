@@ -1,3 +1,7 @@
+"""
+Main module of the application. Launches the bot, begins listening to commands and executing them.
+"""
+
 from sahyun_bot.modules import *
 from sahyun_bot.utils_logging import get_logger
 
