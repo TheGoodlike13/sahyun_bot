@@ -26,8 +26,9 @@ def always_false(o: T) -> bool:
 def debug_ex(e: Exception,
              trying_to: str = 'do something (check traceback)',
              *args,
-             log: logging.Logger = logging.root,
+             log: logging.Logger = None,
              silent: bool = False):
+    log = log or logging.root
     if silent:
         log.debug('Error while trying to %s: %s: %s', trying_to.format(*args), type(e).__name__, e, exc_info=True)
     else:
