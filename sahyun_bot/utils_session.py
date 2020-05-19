@@ -11,7 +11,7 @@ RETRY_ON_METHOD = frozenset(
 )
 
 RETRY_ON_STATUS = frozenset(
-    [429, 500, 502, 503, 504]
+    [403, 429, 500, 502, 503, 504]
 )
 
 

@@ -30,5 +30,3 @@ Add doc to utilities at least
 Allow to configure: worker threads, dump file (also, general cleanup)
 
 Replace str.format with f' strings: f'{something}'
-
-Retry on 403?
