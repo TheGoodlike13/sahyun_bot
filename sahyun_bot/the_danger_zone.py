@@ -8,7 +8,6 @@ LOG = get_logger(__name__)
 
 def nuke_from_orbit(reason: str):
     LOG.critical(f'Forcing shutdown of the application. Reason: {reason}')
-    # noinspection PyProtectedMember
     os._exit(1)
 
 

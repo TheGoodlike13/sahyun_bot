@@ -46,5 +46,4 @@ def _setup(es):
 def _purge(es):
     for doc in DOCUMENTS:
         LOG.critical('Deleting index & its contents (if it exists): %s', doc.index_name())
-        # noinspection PyProtectedMember
         doc._index.delete(ignore=[404])

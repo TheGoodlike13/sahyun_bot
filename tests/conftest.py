@@ -66,7 +66,6 @@ def prepare_index() -> bool:
         for cdlc in MOCK_CDLC.values():
             CustomDLC(**To.cdlc(cdlc)).save(refresh=False)
 
-        # noinspection PyProtectedMember
         CustomDLC._index.refresh()
         return True
     except Exception as e:

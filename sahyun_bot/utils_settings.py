@@ -1,3 +1,9 @@
+"""
+Contains utilities which help with parsing settings & similar.
+
+This module contains a reference to a global config parser. Please initialize it before use.
+"""
+
 from configparser import ConfigParser
 from typing import Callable, Optional, List
 
@@ -8,7 +14,6 @@ config = ConfigParser()
 
 def parse_bool(s: str, fallback: bool = None) -> bool:
     try:
-        # noinspection PyProtectedMember
         return config._convert_to_boolean(s)
     except ValueError:
         if fallback:

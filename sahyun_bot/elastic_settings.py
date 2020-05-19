@@ -1,3 +1,13 @@
+"""
+Initializes settings for elastic.py.
+
+To make the index dynamic (which also allows to switch it out for tests), the value must be explicitly initialized
+by some other module. If this does not happen, and somebody attempts to load elastic.py, 'ready_or_die' will get
+executed which will shut down the application, thus preventing any shenanigans with the wrong parameters being used.
+
+At least in normal circumstances :)
+"""
+
 from datetime import timezone, datetime
 from typing import Optional
 
@@ -79,7 +89,6 @@ def init_test():
 class BaseDoc(Document):
     @classmethod
     def index_name(cls) -> Optional[str]:
-        # noinspection PyProtectedMember
         return cls._index._name if cls._index else None
 
     @classmethod
