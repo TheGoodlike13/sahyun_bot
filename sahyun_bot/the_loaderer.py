@@ -6,7 +6,7 @@ from typing import Iterator
 from elasticsearch_dsl.connections import get_connection
 
 from sahyun_bot.customsforge import CustomsForgeClient
-from sahyun_bot.elastic import last_auto_index_time, CustomDLC
+from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.utils_logging import get_logger
 
 BACKGROUND_WORKERS = ThreadPoolExecutor(6)
@@ -18,7 +18,7 @@ LOG = get_logger(__name__)
 def load(cf: CustomsForgeClient):
     work_queue = []
 
-    load_from = last_auto_index_time() or 0
+    load_from = CustomDLC.latest_auto_time() or 0
     load_from_date = datetime.fromtimestamp(load_from).date() - timedelta(days=1)
     for cdlc in cf.cdlcs(since=load_from_date, since_exact=load_from):
         c = CustomDLC(from_auto_index=True, **cdlc)
