@@ -40,6 +40,16 @@ To launch the bot, use 'run.bat'. To play around with the library instead, use '
 The latter should configure all relevant objects, but not actually launch the bot itself.
 Both files assume 'install.bat' was already called before.
 
+### Logging
+
+Messages that should appear to the user will be logged under WARNING. Messages that provide basic
+information that the user may not need will be logged under INFO. Messages that provide detailed
+information will be logged under DEBUG.
+
+The logger names are derived by eliminating all '_' from the module name. Also, any 'utils_X' module
+shares its logger name with 'X' module for simplicity. This is done to ensure a shortened logger
+name is viably represented in console (see logging configuration).
+
 ### Configuration
 
 All configuration should be put into 'config.ini' file. This file should be in the working
@@ -99,4 +109,4 @@ the default logging config should make this obsolete, unless you really wanna se
 in the console for some reason
 
 LoggingConfigFilename = filename which contains logging configuration; defaults to 'config_log_default.ini';
-if the defaults are not suitable for you, consider using 'config_log.ini' which is ignored by git
+if the defaults are not suitable for you, consider making 'config_log.ini' which is ignored by git
