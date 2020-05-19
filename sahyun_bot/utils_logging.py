@@ -15,7 +15,7 @@ class FormatterUTC(Formatter):
 
 
 def get_logger(module_name: str) -> logging.Logger:
-    left, colon, right = module_name.rpartition('.')
+    left, dot, right = module_name.rpartition('.')
     name = right if right else left
     clear_name = name[5:] if name[:5] == 'utils' and name[5:] else name
     terse_name = clear_name.replace('_', '')
