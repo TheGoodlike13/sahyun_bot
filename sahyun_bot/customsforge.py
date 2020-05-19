@@ -271,11 +271,11 @@ class To:
 
     @staticmethod
     def cdlc(c) -> dict:
-        _id = c.get('id')
+        cdlc_id = c.get('id')
         return {
-            '_id': str(_id),
+            '_id': str(cdlc_id),
 
-            'id': _id,
+            'id': cdlc_id,
             'artist': read(c, 'artist'),
             'title': read(c, 'title'),
             'album': read(c, 'album'),
@@ -289,8 +289,8 @@ class To:
             'author': read(c, 'member'),
             'version': read(c, 'version'),
 
-            'download': DOWNLOAD_API.format(_id),
-            'info': CDLC_PAGE.format(read(c, 'furl'), _id),
+            'download': DOWNLOAD_API.format(cdlc_id),
+            'info': CDLC_PAGE.format(read(c, 'furl'), cdlc_id),
             'video': read_link(c, 'music_video'),
             'art': 'https://i.imgur.com/YOA0laU.png',
 
