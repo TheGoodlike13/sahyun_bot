@@ -19,6 +19,8 @@ WEIRD IDEAS
 
 All functionality should be optional when possible.
 
+elastic instructions in readme or install.bat? readme better imo
+
 Refactor and cleanup the_loaderer - should be a class, logging, etc
 Review customsforge logging - add for user?
 Review elastic.py logging - add for user?

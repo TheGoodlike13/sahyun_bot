@@ -36,7 +36,7 @@ described in guides & documentation of python or its tools. In some cases, infor
 post was used:
 https://www.reddit.com/r/pycharm/comments/elga2z/using_pycharm_for_poetrybased_projects/
 
-To launch the bot, use 'run.bat'. To play around with the library instead, use 'repl.bat'.
+To launch the bot, use 'run.bat'. To play around with the modules instead, use 'repl.bat'.
 The latter should configure all relevant objects, but not actually launch the bot itself.
 Both files assume 'install.bat' was already called before.
 
@@ -100,7 +100,7 @@ RequestMatchCeiling = max amount of matches from a request; defaults to 3; any p
 is allowed
 
 Explain = true if you want elasticsearch to explain itself; defaults to false;
-explanations will only be visible in DEBUG level, in the JSON responses
+explanations will only be visible in the JSON responses, usually DEBUG level logs
 
 #### [system]
 
