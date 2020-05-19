@@ -23,5 +23,3 @@ elastic instructions in readme or install.bat? readme better imo
 
 Allow to configure: worker threads, dump file (also, general cleanup)
 Refactor and cleanup the_loaderer - should be a class, logging, etc
-Review customsforge logging - add for user?
-Review elastic.py logging - add for user?

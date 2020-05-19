@@ -95,6 +95,10 @@ class BaseDoc(Document):
     def mapping(cls) -> Optional[dict]:
         return cls._doc_type.mapping.to_dict()
 
+    @classmethod
+    def search(cls, **kwargs):
+        return super().search(**kwargs).extra(explain=e_explain)
+
     def delete(self, **kwargs):
         kwargs.setdefault('refresh', e_refresh)
         super().delete(**kwargs)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional, List
 
 from elasticsearch_dsl import Text, Keyword, Boolean, Long, A
@@ -44,10 +46,6 @@ class CustomDLC(BaseDoc):
             'number_of_replicas': 0,
         }
 
-    @classmethod
-    def search(cls, **kwargs):
-        return super().search(**kwargs).extra(explain=elastic_settings.e_explain)
-
     @property
     def full_title(self) -> str:
         return self.artist + ' - ' + self.title
@@ -56,24 +54,24 @@ class CustomDLC(BaseDoc):
     def link(self) -> str:
         return self.direct_download if self.direct_download else self.download
 
+    @classmethod
+    def latest_auto_time(cls) -> Optional[int]:
+        """
+        When indexing, it is imperative that any automatic process sets the 'from_auto_index' flag. This way the process
+        can know which CDLCs came from it. We can use this knowledge to find the timestamp stored with the CDLC to
+        continue the process from where it finished last time.
 
-def last_auto_index_time() -> Optional[int]:
-    """
-    When indexing, it is imperative that any automatic process sets the 'from_auto_index' flag. This way the process
-    can know which CDLCs came from it. We can use this knowledge to find the timestamp stored with the CDLC to
-    continue the process from where it finished last time.
+        :returns timestamp which can be used to resume automatic indexing
+        """
+        s = CustomDLC.search().filter('term', from_auto_index=True)
+        s.aggs.metric('latest_auto_time', A('max', field='snapshot_timestamp'))
+        response = s[0:0].execute()
+        return response.aggs.latest_auto_time.value
 
-    :returns timestamp which can be used to resume automatic indexing
-    """
-    s = CustomDLC.search().filter('term', from_auto_index=True)
-    s.aggs.metric('last_auto_index_time', A('max', field='snapshot_timestamp'))
-    response = s[0:0].execute()
-    return response.aggs.last_auto_index_time.value
-
-
-def request(query: str) -> List[CustomDLC]:
-    """
-    :returns CDLCs that loosely match the search query, in order of relevance, starting with highest
-    """
-    s = CustomDLC.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
-    return list(s[:elastic_settings.e_req_max])
+    @classmethod
+    def request(cls, query: str) -> List[CustomDLC]:
+        """
+        :returns CDLCs that loosely match the search query, in order of relevance, starting with highest
+        """
+        s = CustomDLC.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
+        return list(s[:elastic_settings.e_req_max])

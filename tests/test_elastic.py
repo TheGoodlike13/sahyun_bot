@@ -1,6 +1,6 @@
 from assertpy import assert_that
 
-from sahyun_bot.elastic import CustomDLC, last_auto_index_time, request
+from sahyun_bot.elastic import CustomDLC
 
 
 def test_properties(es):
@@ -16,16 +16,16 @@ def test_properties(es):
 
 
 def test_last_auto_index_time(es):
-    assert_that(last_auto_index_time()).is_none()
+    assert_that(CustomDLC.latest_auto_time()).is_none()
 
     CustomDLC.get('49706').update(from_auto_index=True)
 
-    assert_that(last_auto_index_time()).is_equal_to(1589092730)
+    assert_that(CustomDLC.latest_auto_time()).is_equal_to(1589092730)
 
 
 def test_request(es):
-    assert_that(request('definitely not here')).is_empty()
+    assert_that(CustomDLC.request('definitely not here')).is_empty()
 
-    cdlcs = request('paradise')
+    cdlcs = CustomDLC.request('paradise')
     assert_that(cdlcs).is_length(1)
     assert_that(cdlcs[0].full_title).is_equal_to('ZUN - Paradise ~ Deep Mountain')
