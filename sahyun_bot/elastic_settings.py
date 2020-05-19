@@ -106,7 +106,7 @@ class EpochSecond(Date):
                 del kwargs[param]
 
         kwargs['format'] = 'epoch_second'
-        super(EpochSecond, self).__init__(default_timezone=timezone.utc, *args, **kwargs)
+        super().__init__(default_timezone=timezone.utc, *args, **kwargs)
 
     def _deserialize(self, data):
         if not isinstance(data, integer_types):

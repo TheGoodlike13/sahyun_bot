@@ -46,7 +46,7 @@ class CustomDLC(BaseDoc):
 
     @classmethod
     def search(cls, **kwargs):
-        return cls._index.search(**kwargs).extra(explain=elastic_settings.e_explain)
+        return super().search(**kwargs).extra(explain=elastic_settings.e_explain)
 
     @property
     def full_title(self) -> str:
