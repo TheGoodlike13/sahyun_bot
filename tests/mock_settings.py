@@ -9,12 +9,12 @@ MOCK_COOKIE_VALUE = 'login_value'
 MOCK_COOKIE_DOMAIN = '.customsforge.com'
 MOCK_COOKIE_PATH = '/'
 MOCK_COOKIE = MOCK_COOKIE_KEY + '=' + MOCK_COOKIE_VALUE
-MOCK_SET_COOKIE = '{}; path={}; domain={}; httponly'.format(MOCK_COOKIE, MOCK_COOKIE_PATH, MOCK_COOKIE_DOMAIN)
+MOCK_SET_COOKIE = f'{MOCK_COOKIE}; path={MOCK_COOKIE_PATH}; domain={MOCK_COOKIE_DOMAIN}; httponly'
 
 VALID_LOGIN_FORM = frozenset([
-    'ips_username={}'.format(MOCK_USER),
-    'ips_password={}'.format(MOCK_PASS),
-    'auth_key={}'.format(MOCK_API_KEY),
+    f'ips_username={MOCK_USER}',
+    f'ips_password={MOCK_PASS}',
+    f'auth_key={MOCK_API_KEY}',
 ])
 
 TEST_DATE = date.fromisoformat('2020-05-15')

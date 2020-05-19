@@ -42,7 +42,7 @@ def clean_link(link: str) -> str:
         if 'youtube.com' in url_parts.netloc:
             video_id = parse_qs(url_parts.query).get('v', None)
             if video_id:
-                return 'https://youtu.be/{}'.format(video_id[0])
+                return f'https://youtu.be/{video_id[0]}'
         elif url_parts.scheme == 'http':
             return link[:4] + 's' + link[4:]
     except ValueError:

@@ -72,7 +72,7 @@ def cdlcs_mock(url, request):
 
 def direct_link_mock(url, request):
     for date_str, cdlc in MOCK_CDLC.items():
-        id_param = 'id={}'.format(cdlc.get('id'))
+        id_param = f'id={cdlc.get("id")}'
         if id_param in url.query:
             return to_direct_link('magical_link')
 

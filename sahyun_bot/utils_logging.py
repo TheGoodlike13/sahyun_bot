@@ -65,10 +65,11 @@ class HttpDump:
         return lines
 
     def __collect_basic(self, r: Response, lines: List[str]):
-        lines.append('> {} {}'.format(r.request.method, r.request.url))
+        lines.append(f'> {r.request.method} {r.request.url}')
 
-        location = ' redirects to [{}]'.format(r.headers.get('Location', '')) if r.is_redirect else ''
-        lines.append('< {} {}{} (took ~{}s)'.format(r.status_code, r.reason, location, r.elapsed))
+        location = r.headers.get('Location', '')
+        location = f' redirects to [{location}]' if r.is_redirect else ''
+        lines.append(f'< {r.status_code} {r.reason}{location} (took ~{r.elapsed}s)')
 
     def __collect_detailed(self, r: Response, lines: List[str]):
         self.__collect_detailed_request(r.request, lines)
@@ -78,15 +79,15 @@ class HttpDump:
         lines.append('')
 
     def __collect_detailed_request(self, r: PreparedRequest, lines: List[str]):
-        lines.append('> {} {}'.format(r.method, r.url))
+        lines.append(f'> {r.method} {r.url}')
 
         for key, value in r.headers.items():
-            lines.append('> {}: {}'.format(key, value))
+            lines.append(f'> {key}: {value}')
 
         if not r.body:
             return lines.append('> EMPTY <')
 
-        lines.append('{}'.format(self.__safe_body(r.body)))
+        lines.append(f'{self.__safe_body(r.body)}')
 
     def __safe_body(self, body: str):
         for unsafe_param in self.__unsafe_form_params:
@@ -95,15 +96,15 @@ class HttpDump:
         return body
 
     def __to_pattern(self, unsafe_param: str) -> str:
-        return r'({}=)([^&]+)'.format(unsafe_param)
+        return fr'({unsafe_param}=)([^&]+)'
 
     def __collect_detailed_response(self, r: Response, lines: List[str]):
-        lines.append('~ {}s elapsed'.format(r.elapsed))
+        lines.append(f'~ {r.elapsed}s elapsed')
         lines.append('')
 
-        lines.append('< {} {}'.format(r.status_code, r.reason))
+        lines.append(f'< {r.status_code} {r.reason}')
         for key, value in r.headers.items():
-            lines.append('< {}: {}'.format(key, value))
+            lines.append(f'< {key}: {value}')
 
         if not r.text:
             return lines.append('< EMPTY >')
@@ -117,4 +118,4 @@ class HttpDump:
                 return debug_ex(e, 'parsing JSON response body', silent=True)
 
         size = len(r.text)
-        lines.append(r.text if size <= self.__max_dump else '< RESPONSE BODY TOO LARGE ({} bytes) >'.format(size))
+        lines.append(r.text if size <= self.__max_dump else f'< RESPONSE BODY TOO LARGE ({size} bytes) >')
