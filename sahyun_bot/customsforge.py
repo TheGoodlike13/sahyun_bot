@@ -1,6 +1,6 @@
 import html
 import pickle
-from datetime import date
+from datetime import date, datetime, timedelta
 from itertools import dropwhile
 from threading import Lock
 from typing import Iterator, Optional, Callable, IO, Any, List
@@ -166,6 +166,9 @@ class CustomsForgeClient:
             return 0
 
         return self.calculate_date_skip(since, date_count)
+
+    def __estimate_date(self, epoch_seconds: int):
+        return datetime.fromtimestamp(epoch_seconds) - timedelta(days=1)
 
     def __date_count(self, session: Session) -> Optional[int]:
         date_count = self.__lazy_all(trying_to='total count of dates',

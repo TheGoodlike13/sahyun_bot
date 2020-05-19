@@ -28,7 +28,6 @@ HTTP_TRACE = logging.getLogger('httdump.trace')
 DEFAULT_MAX_DUMP = 50 * 2 ** 10
 
 
-# noinspection PyMethodMayBeStatic
 class HttpDump:
     def __init__(self, unsafe: List[str] = None, max_dump: int = None):
         self.__unsafe_form_params = unsafe or []
