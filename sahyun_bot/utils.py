@@ -7,11 +7,9 @@ import logging
 from typing import TypeVar
 from urllib.parse import urlparse, parse_qs
 
-# general purpose generic variable to be used in generic functions
-T = TypeVar('T')
+T = TypeVar('T')  # general purpose generic variable to be used in generic functions
 
-# if next(it, NON_EXISTENT) is NON_EXISTENT: <do stuff if 'it' was empty>
-NON_EXISTENT = object()
+NON_EXISTENT = object()  # if next(it, NON_EXISTENT) is NON_EXISTENT: <do stuff if 'it' was empty>
 
 
 def identity(o: T) -> T:
@@ -53,3 +51,14 @@ def clean_link(link: str) -> str:
         pass
 
     return link or ''
+
+
+class Closeable:
+    """
+    To avoid making errors in the method signatures, just extend this class for objects that can be used as context.
+    """
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args):
+        pass

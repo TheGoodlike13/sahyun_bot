@@ -5,13 +5,12 @@ It should be imported by any module with __main__ method, which can then initiat
 """
 
 import atexit
-from typing import Any
 
 from elasticsearch_dsl import connections
 
 from sahyun_bot.bot_settings import *
-from sahyun_bot.customsforge import CustomsForgeClient
 from sahyun_bot.elastic_settings import *
+from sahyun_bot.the_loaderer import *
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
@@ -37,3 +36,6 @@ init_module(cf, 'Customsforge client')
 es = connections.create_connection(hosts=[e_host]) if e_host else None
 if init_module(es, 'Elasticsearch client'):
     LOG.warning('Using CDLC index: [%s]', e_cf_index)
+
+tl = TheLoaderer(cf)
+init_module(tl, 'The loaderer')

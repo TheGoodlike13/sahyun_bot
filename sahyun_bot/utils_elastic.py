@@ -36,7 +36,7 @@ def _with_elastic(do: str, action: Callable[[Elasticsearch], None]) -> bool:
         return True
     except Exception as e:
         LOG.warning('Could not %s elastic. Perhaps client is down?', do)
-        return debug_ex(e, f'{do} elastic', log=LOG, silent=True)
+        return debug_ex(e, f'{do} elastic', LOG, silent=True)
 
 
 def _setup(es):

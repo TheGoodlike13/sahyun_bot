@@ -55,6 +55,13 @@ class CustomDLC(BaseDoc):
         return self.direct_download if self.direct_download else self.download
 
     @classmethod
+    def earliest_non_index(cls) -> Optional[int]:
+        s = cls.search().exclude('term', from_auto_index=True)
+        s.aggs.metric('earliest_non_index', A('min', field='snapshot_timestamp'))
+        response = s[0:0].execute()
+        return response.aggs.earliest_non_index.value
+
+    @classmethod
     def latest_auto_time(cls) -> Optional[int]:
         """
         When indexing, it is imperative that any automatic process sets the 'from_auto_index' flag. This way the process
@@ -63,7 +70,12 @@ class CustomDLC(BaseDoc):
 
         :returns timestamp which can be used to resume automatic indexing
         """
-        s = CustomDLC.search().filter('term', from_auto_index=True)
+        ceiling = cls.earliest_non_index()
+
+        s = cls.search().filter('term', from_auto_index=True)
+        if ceiling:
+            s = s.filter('range', snapshot_timestamp={'lte': ceiling})
+
         s.aggs.metric('latest_auto_time', A('max', field='snapshot_timestamp'))
         response = s[0:0].execute()
         return response.aggs.latest_auto_time.value
@@ -73,5 +85,5 @@ class CustomDLC(BaseDoc):
         """
         :returns CDLCs that loosely match the search query, in order of relevance, starting with highest
         """
-        s = CustomDLC.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
+        s = cls.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
         return list(s[:elastic_settings.e_req_max])

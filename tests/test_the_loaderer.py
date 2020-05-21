@@ -1,41 +1,45 @@
+import pytest
 from assertpy import assert_that
 from httmock import HTTMock
 
 from sahyun_bot.elastic import CustomDLC
-from sahyun_bot.the_loaderer import load, load_links
+from sahyun_bot.the_loaderer import TheLoaderer
 from tests.mock_customsforge import customsforge
 
 
-def test_loading_from_start(cf, es_fresh):
+@pytest.fixture
+def tl(cf, es_fresh):
+    return TheLoaderer(cf)
+
+
+def test_loading_from_start(tl):
     with HTTMock(customsforge):
-        load(cf)
+        tl.load()
 
     assert_that([hit.link for hit in CustomDLC.search().filter('term', from_auto_index=True)])\
         .is_length(6)\
         .contains_only('magical_link')
 
 
-def test_loading_continued(cf, es_fresh):
-    # pretend we loaded songs 2 days before TEST_DATE
-    CustomDLC.get(49841).update(from_auto_index=True)
+def test_loading_continued(tl):
+    # pretend we loaded cdlcs 2 days before TEST_DATE
+    for cdlc_id in ['49706', '12990', '49792', '49841']:
+        CustomDLC(_id=cdlc_id).update(from_auto_index=True)
 
     with HTTMock(customsforge):
-        load(cf)
+        tl.load()
 
-    hits = list(CustomDLC.search().filter('term', from_auto_index=True))
+    hits = list(CustomDLC.search().filter('term', from_auto_index=True).filter('term', direct_download='magical_link'))
+    # the only updated cdlcs are from the last two days (one each), and the latest cdlc before
     assert_that(hits).is_length(3)
 
-    for hit in hits:
-        assert_that(hit.link).is_equal_to('magical_link')
 
-
-def test_load_links(cf, es_fresh):
-    # TODO: this simulates the scenario where link was empty due to error - does not work because ES was miss-configured
-    # CustomDLC.get(49841).update(direct_download='')
-    # print(CustomDLC.get(49841).to_dict())
+def test_load_links(tl):
+    # this simulates the scenario where link was empty due to error
+    CustomDLC(_id='49841').update(direct_download='')
 
     with HTTMock(customsforge):
-        load_links(cf)
+        tl.load_links()
 
     assert_that([hit.link for hit in CustomDLC.search()])\
         .is_length(6)\

@@ -1,4 +1,3 @@
-import os
 from itertools import chain
 
 from sahyun_bot.utils_logging import get_logger

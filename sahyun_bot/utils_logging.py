@@ -134,7 +134,7 @@ class HttpDump:
         except Exception as e:
             if 'json' in r.headers.get('Content-Type', ''):
                 lines.append('< COULD NOT PARSE JSON BODY >')
-                return debug_ex(e, 'parsing JSON response body', silent=True)
+                return debug_ex(e, 'parsing JSON response body', HTTP_DUMP, silent=True)
 
         size = len(r.text)
         lines.append(r.text if size <= self.__max_dump else f'< RESPONSE BODY TOO LARGE ({size} bytes) >')

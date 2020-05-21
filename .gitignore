@@ -9,3 +9,5 @@
 .cookie_jar_test
 config.ini
 config_log.ini
+
+dump.json

@@ -129,7 +129,7 @@ class CustomsForgeClient:
         CDLCs are returned as dicts containing information, such as artist, title, id, link, etc.
         Refer to To.cdlcs method for specifics.
         """
-        since_exact = since_exact if since_exact and since_exact > 0 else 0
+        since_exact = since_exact or 0
         since = self.__estimate_date(since_exact) if since_exact else since
 
         with self.__sessions.with_retry() as session:
@@ -203,7 +203,7 @@ class CustomsForgeClient:
 
     def __estimate_date(self, epoch_seconds: int):
         # we subtract one day to account for timezone shenanigans
-        return date.fromtimestamp(epoch_seconds) - timedelta(days=1)
+        return date.fromtimestamp(epoch_seconds) - timedelta(days=1) if epoch_seconds > 0 else EONS_AGO
 
     def __date_count(self, session: Session) -> Optional[int]:
         date_count = self.__lazy_all(trying_to='total count of dates',
@@ -224,7 +224,7 @@ class CustomsForgeClient:
         try:
             r = call(url=url, timeout=self.__timeout, allow_redirects=False, **kwargs)
         except Exception as e:
-            return debug_ex(e, trying_to, log=LOG)
+            return debug_ex(e, trying_to, LOG)
 
         if not try_login or not r.is_redirect or not r.headers.get('Location', '') == LOGIN_PAGE:
             return r
@@ -262,7 +262,7 @@ class CustomsForgeClient:
                 yield from it
             except Exception as e:
                 trying_to = call_params.get('trying_to')
-                return debug_ex(e, f'parse response of [{trying_to}] as JSON', log=LOG)
+                return debug_ex(e, f'parse response of [{trying_to}] as JSON', LOG)
 
             skip += batch
 
@@ -275,7 +275,7 @@ class CustomsForgeClient:
                 f = open(self.__cookie_jar_file, options)
             except Exception as e:
                 if trying_to:
-                    debug_ex(e, trying_to, log=LOG)
+                    debug_ex(e, trying_to, LOG)
             else:
                 with f:
                     return on_file(f)

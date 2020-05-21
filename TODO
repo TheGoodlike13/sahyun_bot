@@ -21,5 +21,6 @@ All functionality should be optional when possible.
 
 elastic instructions in readme or install.bat? readme better imo
 
-Allow to configure: worker threads, dump file (also, general cleanup)
-Refactor and cleanup the_loaderer - should be a class, logging, etc
+Allow to configure: worker threads
+
+Remove _id from cdlc, add during load instead
