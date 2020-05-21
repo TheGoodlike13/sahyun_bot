@@ -142,7 +142,7 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         s = CustomDLC.search()
         timestamp_range = {'gte': start_from}
         if self.__continuous:
-            s = s.filter('term', from_auto_index=True).sort('snapshot_timestamp')
+            s = s.filter('term', from_auto_index=True).sort('snapshot_timestamp').params(preserve_order=True)
             timestamp_range['lte'] = self.start_from()
 
         if start_from:
