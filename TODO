@@ -21,6 +21,5 @@ All functionality should be optional when possible.
 
 elastic instructions in readme or install.bat? readme better imo
 
+More logging in TheLoaderer
 Allow to configure: worker threads
-
-Remove _id from cdlc, add during load instead

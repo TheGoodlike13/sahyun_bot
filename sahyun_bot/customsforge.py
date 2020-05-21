@@ -313,8 +313,6 @@ class To:
     def cdlc(c) -> dict:
         cdlc_id = c.get('id')
         return {
-            '_id': str(cdlc_id),
-
             'id': cdlc_id,
             'artist': read(c, 'artist'),
             'title': read(c, 'title'),

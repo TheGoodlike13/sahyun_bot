@@ -64,7 +64,8 @@ def prepare_index() -> bool:
     from sahyun_bot.elastic import CustomDLC
     try:
         for cdlc in MOCK_CDLC.values():
-            CustomDLC(**To.cdlc(cdlc)).save(refresh=False)
+            cdlc_id = str(cdlc.get('id', ''))
+            CustomDLC(_id=cdlc_id, **To.cdlc(cdlc)).save(refresh=False)
 
         CustomDLC._index.refresh()
         return True

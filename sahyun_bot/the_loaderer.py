@@ -149,7 +149,6 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
             if self.__continuous:
                 cdlc[CONTINUOUS_FROM] = start_from or 0
 
-            cdlc['_id'] = hit.meta.id
             yield cdlc
 
     def to_direct_link(self, cdlc_id: Any) -> str:
@@ -163,7 +162,8 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         continuous_from = cdlc.pop(CONTINUOUS_FROM, None)
         is_continuous = self.__continuous and continuous_from is not None and continuous_from <= self.start_from()
 
-        c = CustomDLC(from_auto_index=is_continuous, **cdlc)
+        cdlc_id = str(cdlc.get('id', ''))
+        c = CustomDLC(_id=cdlc_id, from_auto_index=is_continuous, **cdlc)
         c.save()
         return None if c.direct_download else c
 
@@ -184,7 +184,8 @@ class ElasticIndexUpdateOnly(Destination):
     def update(self, from_write: Any, direct_link: str):
         cdlc = from_write
         if direct_link:
-            CustomDLC(**cdlc).update(direct_download=direct_link)
+            cdlc_id = str(cdlc.get('id', ''))
+            CustomDLC(_id=cdlc_id).update(direct_download=direct_link)
 
 
 class FileDump(Source, Destination):

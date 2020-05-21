@@ -82,8 +82,6 @@ def test_to_cdlc():
     info_link = 'http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-enabled-rs-2014-cdlc/' \
                 'paradise-deep-mountain-r49886'
     assert_that(To.cdlc(MOCK_CDLC[str(TEST_DATE)])).contains_entry(
-        _id='49886',
-
         id=49886,
         artist='ZUN',
         title='Paradise ~ Deep Mountain',
