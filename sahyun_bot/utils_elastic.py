@@ -1,3 +1,4 @@
+import webbrowser
 from typing import Callable
 
 from elasticsearch import Elasticsearch
@@ -47,7 +48,7 @@ def _setup(es):
             if mapping_on_server != doc.mapping():
                 LOG.critical('Mapping mismatch for %s! Using this index may produce unpredictable results!', index)
         else:
-            LOG.warning('Initializing index: %s', index)
+            LOG.warning('Initializing index: %s.', index)
             doc.init()
 
 
