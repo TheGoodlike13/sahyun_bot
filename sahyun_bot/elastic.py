@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, List
+from typing import Optional, Iterator
 
 from elasticsearch_dsl import Text, Keyword, Boolean, Long, A
 
@@ -81,9 +81,11 @@ class CustomDLC(BaseDoc):
         return response.aggs.latest_auto_time.value
 
     @classmethod
-    def request(cls, query: str) -> List[CustomDLC]:
+    def request(cls, query: str) -> Iterator[CustomDLC]:
         """
-        :returns CDLCs that loosely match the search query, in order of relevance, starting with highest
+        :returns CDLCs that loosely match the search query, in order of descending relevance
         """
         s = cls.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
-        return list(s[:elastic_settings.e_req_max])
+        for hit in s[:elastic_settings.e_req_max]:
+            LOG.warning('Found CDLC <%s>: <%s>', hit.full_title, hit.link)
+            yield hit

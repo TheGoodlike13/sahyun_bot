@@ -31,6 +31,18 @@ def purge_elastic() -> bool:
     return _with_elastic('purge', _purge)
 
 
+def links(query: str):
+    """
+    Searches for matching CDLCs in the index and opens any found links in the browser.
+    """
+    results = CustomDLC.request(query)
+    if results:
+        for hit in results:
+            webbrowser.open(hit.link, new=2)
+    else:
+        LOG.warning('No CDLCs matching <%s> were found.')
+
+
 def _with_elastic(do: str, action: Callable[[Elasticsearch], None]) -> bool:
     try:
         action(get_connection())
