@@ -87,7 +87,7 @@ class HttpDump:
         lines.append(f'> {r.request.method} {r.request.url}')
 
         location = r.headers.get('Location', '')
-        location = f' redirects to [{location}]' if r.is_redirect else ''
+        location = f' redirects to <{location}>' if r.is_redirect else ''
         lines.append(f'< {r.status_code} {r.reason}{location} (took ~{r.elapsed}s)')
 
     def __collect_detailed(self, r: Response, lines: List[str]):

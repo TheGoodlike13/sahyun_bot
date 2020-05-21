@@ -140,7 +140,7 @@ class CustomsForgeClient:
                                              params={'filter': d},
                                              convert=To.cdlcs)
 
-                yield from dropwhile(lambda c: c.get('snapshot_timestamp') < since_exact, lazy_cdlcs)
+                yield from dropwhile(lambda c: c['snapshot_timestamp'] < since_exact, lazy_cdlcs)
 
     def direct_link(self, cdlc_id: Any) -> str:
         """
@@ -261,8 +261,8 @@ class CustomsForgeClient:
                 yield first
                 yield from it
             except Exception as e:
-                trying_to = call_params.get('trying_to')
-                return debug_ex(e, f'parse response of [{trying_to}] as JSON', LOG)
+                trying_to = call_params['trying_to']
+                return debug_ex(e, f'parse response of <{trying_to}> as JSON', LOG)
 
             skip += batch
 
@@ -311,7 +311,7 @@ class To:
 
     @staticmethod
     def cdlc(c) -> dict:
-        cdlc_id = c.get('id')
+        cdlc_id = c['id']
         return {
             'id': cdlc_id,
             'artist': read(c, 'artist'),
@@ -332,12 +332,12 @@ class To:
             'video': read_link(c, 'music_video'),
             'art': 'https://i.imgur.com/YOA0laU.png',
 
-            'snapshot_timestamp': c.get('updated'),
+            'snapshot_timestamp': c['updated'],
         }
 
 
 def read(data: dict, key: str) -> str:
-    value = data.get(key)
+    value = data[key]
     return html.unescape(value.strip()) if value else ''
 
 

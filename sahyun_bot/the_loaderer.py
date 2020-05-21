@@ -13,6 +13,7 @@ import json
 import os
 import shutil
 from concurrent.futures.thread import ThreadPoolExecutor
+from datetime import datetime, timezone
 from itertools import dropwhile
 from pathlib import Path
 from queue import Queue, Empty
@@ -105,6 +106,8 @@ class Customsforge(Source, DirectLinkSource):
         self.__cf = cf
 
     def read_all(self, start_from: int = None) -> Iterator[dict]:
+        LOG.warning('Loading Customsforge CDLCs from %s', loading_from(start_from))
+
         for cdlc in self.__cf.cdlcs(since_exact=start_from):
             cdlc[CONTINUOUS_FROM] = start_from or 0
             yield cdlc
@@ -134,6 +137,8 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         self.__start_from = CustomDLC.latest_auto_time() if self.__continuous else None
 
     def read_all(self, start_from: int = None) -> Iterator[dict]:
+        LOG.warning('Loading elastic index CDLCs from %s (%s)', loading_from(start_from), self.__describe_mode())
+
         s = CustomDLC.search()
         timestamp_range = {'gte': start_from}
         if self.__continuous:
@@ -162,15 +167,20 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         continuous_from = cdlc.pop(CONTINUOUS_FROM, None)
         is_continuous = self.__continuous and continuous_from is not None and continuous_from <= self.start_from()
 
-        cdlc_id = str(cdlc.get('id', ''))
+        cdlc_id = str(cdlc.get('id', None))
         c = CustomDLC(_id=cdlc_id, from_auto_index=is_continuous, **cdlc)
         c.save()
+        LOG.warning('Indexed CDLC #%s', cdlc_id)
         return None if c.direct_download else c
 
     def update(self, from_write: Any, direct_link: str):
         c = from_write
         if direct_link:
             c.update(direct_download=direct_link)
+            LOG.warning('Indexed direct link for CDLC #%s', c.id)
+
+    def __describe_mode(self):
+        return 'only continuous' if self.__continuous else 'both continuous and not'
 
 
 class ElasticIndexUpdateOnly(Destination):
@@ -178,14 +188,14 @@ class ElasticIndexUpdateOnly(Destination):
     Special Destination implementation which only updates links. Useless for anything else, I suppose.
     """
     def try_write(self, cdlc: dict) -> Any:
-        direct_link = cdlc.get('direct_download', '')
-        return None if direct_link and not direct_link.isspace() else cdlc
+        direct_link = cdlc.get('direct_download', None)
+        return None if direct_link and not direct_link.isspace() else cdlc.get('id', None)
 
     def update(self, from_write: Any, direct_link: str):
-        cdlc = from_write
-        if direct_link:
-            cdlc_id = str(cdlc.get('id', ''))
-            CustomDLC(_id=cdlc_id).update(direct_download=direct_link)
+        cdlc_id = from_write
+        if cdlc_id and direct_link:
+            CustomDLC(_id=str(cdlc_id)).update(direct_download=direct_link)
+            LOG.warning('Indexed direct link for CDLC #%s', cdlc_id)
 
 
 class FileDump(Source, Destination):
@@ -217,7 +227,7 @@ class FileDump(Source, Destination):
         try:
             f = open(self.__file, 'rb')
         except Exception as e:
-            debug_ex(e, f'read file [{self.__file}]', LOG, silent=True)
+            debug_ex(e, f'read file <{self.__file}>', LOG, silent=True)
         else:
             with f:
                 self.__contents = json.load(f)
@@ -235,10 +245,11 @@ class FileDump(Source, Destination):
                     self.__temp_dump.write(']')
 
                 shutil.copy(self.__temp_dump.name, self.__file)
+                LOG.warning('CDLC JSON dump file ready: %s', self.__file)
             except Exception as e:
                 LOG.error('Writing to file [%s] failed. Please check temp file if it still exists: %s',
                           self.__file, self.__temp_dump.name)
-                return debug_ex(e, f'write from temp to file [{self.__file}]', LOG, silent=True)
+                return debug_ex(e, f'write from temp to file <{self.__file}>', LOG, silent=True)
 
             try:
                 os.remove(self.__temp_dump.name)
@@ -246,6 +257,7 @@ class FileDump(Source, Destination):
                 debug_ex(e, f'clean up temp file {self.__temp_dump.name}', LOG, silent=True)
 
     def read_all(self, start_from: int = None) -> Iterator[dict]:
+        LOG.warning('Loading JSON file CDLCs from %s', loading_from(start_from))
         yield from dropwhile(lambda c: c.get('snapshot_timestamp', 0) < start_from, self.__contents)
 
     def start_from(self) -> Optional[int]:
@@ -349,7 +361,7 @@ class TheLoaderer:
                 for cdlc in src.read_all(dest.start_from()):
                     c = dest.try_write(cdlc)
                     if c is not None:
-                        work = p.submit(self.__update, links, cdlc.get('id', ''), dest, c)
+                        work = p.submit(self.__update, links, cdlc.get('id', None), dest, c)
                         work_queue.append(work)
 
                 for item in work_queue:
@@ -403,3 +415,7 @@ class TheLoaderer:
             return FileDump(o)
 
         return o
+
+
+def loading_from(start):
+    return datetime.fromtimestamp(start, tz=timezone.utc) if start and start > 0 else 'beginning'
