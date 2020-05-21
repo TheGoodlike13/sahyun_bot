@@ -40,6 +40,15 @@ To launch the bot, use 'run.bat'. To play around with the modules instead, use '
 The latter should configure all relevant objects, but not actually launch the bot itself.
 Both files assume 'install.bat' was already called before.
 
+### Elasticsearch
+
+For data storage, Elasticsearch is used. This is because we require somewhat advanced search
+functionality. Since we already need to use it, it seems meaningless to use another data
+storage solution, in particular because no advanced relation-like logic is expected.
+
+As long as Elasticsearch is running and reachable, the bot will configure the required
+indexes and mappings. You can control the specifics via configuration.
+
 ### Logging
 
 Messages that should appear to the user will be logged under WARNING. Messages that provide basic
