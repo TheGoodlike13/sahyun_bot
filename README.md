@@ -102,6 +102,11 @@ is allowed
 Explain = true if you want elasticsearch to explain itself; defaults to false;
 explanations will only be visible in the JSON responses, usually DEBUG level logs
 
+#### [load]
+
+MaxWorkers = amount of background threads that assist with loading CDLCs; defaults to 8;
+any positive integer is allowed
+
 #### [system]
 
 HttpDebugMode = true if you want to print http headers and stuff to console; defaults to false;

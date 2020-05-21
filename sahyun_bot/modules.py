@@ -11,6 +11,7 @@ from elasticsearch_dsl import connections
 from sahyun_bot.bot_settings import *
 from sahyun_bot.elastic_settings import *
 from sahyun_bot.the_loaderer import *
+from sahyun_bot.the_loaderer_settings import *
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
@@ -37,5 +38,5 @@ es = connections.create_connection(hosts=[e_host]) if e_host else None
 if init_module(es, 'Elasticsearch client'):
     LOG.warning('Using CDLC index: [%s]', e_cf_index)
 
-tl = TheLoaderer(cf)
+tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')

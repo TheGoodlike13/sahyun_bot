@@ -24,13 +24,13 @@ from elasticsearch import Elasticsearch
 
 from sahyun_bot.customsforge import CustomsForgeClient
 from sahyun_bot.elastic import CustomDLC
+from sahyun_bot.the_loaderer_settings import DEFAULT_MAX_THREADS
 from sahyun_bot.utils import debug_ex, Closeable
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
 
 CONTINUOUS_FROM = 'continuous_from'
-DEFAULT_MAX_THREADS = 8
 
 CUSTOMSFORGE_STR = frozenset([
     'cf',
