@@ -10,8 +10,8 @@ TODO
 
 ## Permissions
 
-CustomsForge does not allow bots to access their API, unless given explicit permission.
-This bot's use of CustomsForge API has been officially approved with the condition that the
+Customsforge does not allow bots to access their API, unless given explicit permission.
+This bot's use of Customsforge API has been officially approved with the condition that the
 source code is made public on Github.
 
 If you want to access their API using this bot (or build your own), please contact them and ask:
