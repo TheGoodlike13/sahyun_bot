@@ -324,7 +324,7 @@ class TheLoaderer:
         :param links: DirectLinkSource implementation or an object that can be resolved to one
 
         Resolution logic is the same as in TheLoaderer#load, with one exception: src is never used as
-        stand-in for links, as it is assumed ElasticIndex does not have any.
+        stand-in for links, as it is assumed ElasticIndex does not have the ones we need.
         """
         self.load(ElasticIndex(continuous=False), ElasticIndexUpdateOnly(), links or self.__cf_source)
 
