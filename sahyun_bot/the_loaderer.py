@@ -268,7 +268,8 @@ class FileDump(Source, Destination):
         return self.__start_from
 
     def try_write(self, cdlc: dict) -> Any:
-        if 'direct_download' in cdlc:
+        direct_link = cdlc.get('direct_download', '')
+        if direct_link and not direct_link.isspace():
             self.__write_queue.put(cdlc)
             return None
 
