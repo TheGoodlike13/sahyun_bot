@@ -22,7 +22,7 @@ class SessionFactory:
 
     All other kwargs will be passed into HttpDump.
     """
-    def __init__(self, retry_count: int = None, **dump_kwargs):
+    def __init__(self, retry_count: int = DEFAULT_RETRY_COUNT, **dump_kwargs):
         self.__dump = HttpDump(**dump_kwargs)
         self.__retry_count = retry_count if retry_count and retry_count > 0 else DEFAULT_RETRY_COUNT
 

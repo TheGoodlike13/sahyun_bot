@@ -49,7 +49,7 @@ class HttpDump:
     To avoid dumping arbitrary large response bodies, pass maximum char length (for body) which will be replaced
     with a generic message instead.
     """
-    def __init__(self, unsafe: List[str] = None, max_dump: int = None):
+    def __init__(self, unsafe: List[str] = None, max_dump: int = DEFAULT_MAX_DUMP):
         self.__unsafe_form_params = unsafe or []
         self.__max_dump = max_dump if max_dump and max_dump > 0 else DEFAULT_MAX_DUMP
 

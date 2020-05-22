@@ -19,7 +19,7 @@ from pathlib import Path
 from queue import Queue, Empty
 from tempfile import NamedTemporaryFile
 from threading import Thread, Event
-from typing import Iterator, Any, Optional, IO
+from typing import Iterator, Any, IO
 
 from elasticsearch import Elasticsearch
 
@@ -47,7 +47,7 @@ ELASTIC_STR = frozenset([
 
 
 class Source(Closeable):
-    def read_all(self, start_from: int = None) -> Iterator[dict]:
+    def read_all(self, start_from: int = 0) -> Iterator[dict]:
         """
         Generates all CDLCs since given time of update (or beginning, if not given).
         Time is given in epoch seconds.
@@ -67,12 +67,12 @@ class DirectLinkSource:
 
 
 class Destination(Closeable):
-    def start_from(self) -> Optional[int]:
+    def start_from(self) -> int:
         """
         To avoid loading continuous sources from beginning, this value is used as optimization.
-        :returns time, in epoch seconds, which should be passed into Source#read_all
+        :returns time, in epoch seconds, which should be passed into Source#read_all; 0 means from beginning
         """
-        return None
+        return 0
 
     def try_write(self, cdlc: dict) -> Any:
         """
@@ -105,7 +105,7 @@ class Customsforge(Source, DirectLinkSource):
     def __init__(self, cf: CustomsForgeClient):
         self.__cf = cf
 
-    def read_all(self, start_from: int = None) -> Iterator[dict]:
+    def read_all(self, start_from: int = 0) -> Iterator[dict]:
         LOG.warning('Loading Customsforge CDLCs from %s.', loading_from(start_from))
 
         for cdlc in self.__cf.cdlcs(since_exact=start_from):
@@ -136,7 +136,7 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
     def __enter__(self):
         self.__start_from = CustomDLC.latest_auto_time() if self.__continuous else None
 
-    def read_all(self, start_from: int = None) -> Iterator[dict]:
+    def read_all(self, start_from: int = 0) -> Iterator[dict]:
         LOG.warning('Loading elastic index CDLCs from %s (%s).', loading_from(start_from), self.__describe_mode())
 
         s = CustomDLC.search()
@@ -160,7 +160,7 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         c = CustomDLC.get(cdlc_id, ignore=[404])
         return c.direct_download if c else None
 
-    def start_from(self) -> Optional[int]:
+    def start_from(self) -> int:
         return self.__start_from or 0
 
     def try_write(self, cdlc: dict) -> Any:
@@ -209,7 +209,7 @@ class FileDump(Source, Destination):
 
     The file is overwritten during dumping, so be careful to not delete existing dumps, etc.
     """
-    def __init__(self, file, start_from: int = None):
+    def __init__(self, file, start_from: int = 0):
         self.__file = file
         self.__start_from = start_from
         self.__contents = []
@@ -260,11 +260,11 @@ class FileDump(Source, Destination):
             except Exception as e:
                 debug_ex(e, f'clean up temp file {self.__temp_dump.name}', LOG, silent=True)
 
-    def read_all(self, start_from: int = None) -> Iterator[dict]:
+    def read_all(self, start_from: int = 0) -> Iterator[dict]:
         LOG.warning('Loading JSON file CDLCs from %s.', loading_from(start_from))
         yield from dropwhile(lambda c: c.get('snapshot_timestamp', 0) < start_from, self.__contents)
 
-    def start_from(self) -> Optional[int]:
+    def start_from(self) -> int:
         return self.__start_from
 
     def try_write(self, cdlc: dict) -> Any:
@@ -422,5 +422,5 @@ class TheLoaderer:
         return o
 
 
-def loading_from(start):
+def loading_from(start: int):
     return datetime.fromtimestamp(start, tz=timezone.utc) if start and start > 0 else 'beginning'
