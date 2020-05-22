@@ -239,13 +239,17 @@ class FileDump(Source, Destination):
         self.__is_done.set()
         self.__writer.join()
 
+        if self.__is_broken.is_set():
+            LOG.error('An error occurred while trying to write to temp file.')
+
         if self.__temp_dump:
             try:
                 with self.__temp_dump:
                     self.__temp_dump.write(']')
 
-                shutil.copy(self.__temp_dump.name, self.__file)
-                LOG.warning('CDLC JSON dump file ready: %s.', self.__file)
+                if not self.__is_broken.is_set():
+                    shutil.copy(self.__temp_dump.name, self.__file)
+                    LOG.warning('CDLC JSON dump file ready: %s.', self.__file)
             except Exception as e:
                 LOG.error('Writing to file [%s] failed. Please check temp file if it still exists: %s',
                           self.__file, self.__temp_dump.name)
