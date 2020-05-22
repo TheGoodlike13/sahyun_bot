@@ -21,7 +21,7 @@ CDLC_PAGE = 'http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-en
 
 LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
 DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
-CDLC_BY_DATE_API = 'http://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
+CDLC_BY_DATE_API = 'https://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
 
 DEFAULT_BATCH_SIZE = 100
