@@ -174,7 +174,7 @@ class CustomsForgeClient:
             return False
 
         if not self.__username and not self.__password:
-            LOG.info('No credentials have been provided.')
+            LOG.error('No credentials have been provided.')
             self.__login_rejected = True
             return False
 
