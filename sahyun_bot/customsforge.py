@@ -330,7 +330,7 @@ class To:
             'download': DOWNLOAD_API.format(cdlc_id),
             'info': CDLC_PAGE.format(read(c, 'furl'), cdlc_id),
             'video': read_link(c, 'music_video'),
-            'art': 'https://i.imgur.com/YOA0laU.png',
+            'art': read_link(c, 'album_art'),
 
             'snapshot_timestamp': c['updated'],
         }

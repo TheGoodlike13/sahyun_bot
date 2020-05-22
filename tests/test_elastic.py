@@ -1,4 +1,5 @@
 from assertpy import assert_that
+from elasticsearch import NotFoundError
 
 from sahyun_bot.elastic import CustomDLC
 
@@ -40,3 +41,11 @@ def test_request(es):
     cdlcs = list(CustomDLC.request('paradise'))
     assert_that(cdlcs).is_length(1)
     assert_that(cdlcs[0].full_title).is_equal_to('ZUN - Paradise ~ Deep Mountain')
+
+
+def test_partial_update_for_non_existent_document(es):
+    try:
+        CustomDLC(_id='100000').update(id=100000)
+        assert False  # exception should be thrown!
+    except NotFoundError:
+        assert_that(CustomDLC.get('100000', ignore=[404])).is_none()

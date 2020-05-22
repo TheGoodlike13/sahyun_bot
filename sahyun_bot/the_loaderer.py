@@ -21,7 +21,7 @@ from tempfile import NamedTemporaryFile
 from threading import Thread, Event
 from typing import Iterator, Any, IO
 
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError
 
 from sahyun_bot.customsforge import CustomsForgeClient
 from sahyun_bot.elastic import CustomDLC
@@ -198,6 +198,25 @@ class ElasticIndexUpdateOnly(Destination):
             LOG.warning('Indexed direct link for CDLC #%s.', cdlc_id)
 
 
+class ElasticAbsolution(Destination):
+    """
+    Very special Destination which fixes the one time programming error I committed. See TheLoaderer#fix_sin_against_art
+    """
+    def try_write(self, cdlc: dict) -> Any:
+        cdlc_id = str(cdlc.get('id', None))
+        art = cdlc.get('art', '')
+        try:
+            CustomDLC(_id=cdlc_id).update(art=art)
+        except NotFoundError as e:
+            LOG.warning('Art update failed for CDLC #%s, probably because it has not been loaded yet.', cdlc_id)
+            debug_ex(e, 'fix my sins', LOG, silent=True)
+
+        return None
+
+    def update(self, from_write: Any, direct_link: str):
+        raise NotImplementedError('This method should never be called because try_write always returns None.')
+
+
 class FileDump(Source, Destination):
     """
     File for CDLC dumping (or reading) as JSON.
@@ -315,6 +334,12 @@ class TheLoaderer:
         self.__cf_source = Customsforge(cf) if cf else None
         self.__es_index = ElasticIndex()
         self.__max_threads = max_threads if max_threads and max_threads > 0 else DEFAULT_MAX_THREADS
+
+    def fix_sin_against_art(self):
+        """
+        Fixes a programming error I made. Instead of loading each CDLC's art link, I loaded a constant...
+        """
+        self.load(self.__cf_source, ElasticAbsolution())
 
     def load_links(self, links=None):
         """
