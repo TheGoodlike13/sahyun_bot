@@ -251,7 +251,7 @@ class FileDump(Source, Destination):
                     shutil.copy(self.__temp_dump.name, self.__file)
                     LOG.warning('CDLC JSON dump file ready: %s.', self.__file)
             except Exception as e:
-                LOG.error('Writing to file [%s] failed. Please check temp file if it still exists: %s',
+                LOG.error('Writing to file <%s> failed. Please check temp file if it still exists: %s',
                           self.__file, self.__temp_dump.name)
                 return debug_ex(e, f'write from temp to file <{self.__file}>', LOG, silent=True)
 

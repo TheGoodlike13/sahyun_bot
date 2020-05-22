@@ -36,7 +36,7 @@ init_module(cf, 'Customsforge client')
 
 es = connections.create_connection(hosts=[e_host]) if e_host else None
 if init_module(es, 'Elasticsearch client'):
-    LOG.warning('Using CDLC index: [%s].', e_cf_index)
+    LOG.warning('Using CDLC index: <%s>.', e_cf_index)
 
 tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')
