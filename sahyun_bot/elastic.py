@@ -87,5 +87,4 @@ class CustomDLC(BaseDoc):
         """
         s = cls.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
         for hit in s[:elastic_settings.e_req_max]:
-            LOG.warning('Found CDLC <%s>: <%s>', hit.full_title, hit.link)
             yield hit

@@ -1,8 +1,9 @@
 import webbrowser
-from typing import Callable
+from typing import Callable, FrozenSet, List
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.connections import get_connection
+from tldextract import extract
 
 from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.utils import debug_ex
@@ -31,16 +32,44 @@ def purge_elastic() -> bool:
     return _with_elastic('purge', _purge)
 
 
-def links(query: str):
+def find(query: str) -> List[CustomDLC]:
+    """
+    Searches for matching CDLCs in the index.
+    """
+    result = list(CustomDLC.request(query))
+    if not result:
+        LOG.warning('No CDLCs matching <%s> were found.', query)
+
+    for hit in result:
+        LOG.warning('Found CDLC <%s>: <%s>', hit.full_title, hit.link)
+
+    return result
+
+
+def browse(query: str):
     """
     Searches for matching CDLCs in the index and opens any found links in the browser.
     """
-    results = CustomDLC.request(query)
-    if results:
-        for hit in results:
-            webbrowser.open(hit.link, new=2)
-    else:
-        LOG.warning('No CDLCs matching <%s> were found.')
+    for hit in find(query):
+        webbrowser.open(hit.link, new=2, autoraise=False)
+
+
+def domains() -> FrozenSet[str]:
+    """
+    :returns set of domains for all links in the current index.
+    """
+    return frozenset(extract(hit.link).registered_domain for hit in CustomDLC.search().scan())
+
+
+def domain_example(domain: str) -> str:
+    cdlc = next((hit for hit in CustomDLC.search().scan() if extract(hit.link).registered_domain == domain), None)
+
+    if cdlc:
+        LOG.warning('Found CDLC #%s <%s>', cdlc.id, cdlc.full_title)
+        return cdlc.link
+
+    LOG.warning('No example for domain <%s> found.', domain)
+    return ''
 
 
 def _with_elastic(do: str, action: Callable[[Elasticsearch], None]) -> bool:
