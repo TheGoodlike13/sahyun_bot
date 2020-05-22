@@ -55,11 +55,11 @@ class CustomDLC(BaseDoc):
         return self.direct_download if self.direct_download else self.download
 
     @classmethod
-    def earliest_non_index(cls) -> Optional[int]:
+    def earliest_not_auto(cls) -> Optional[int]:
         s = cls.search().exclude('term', from_auto_index=True)
-        s.aggs.metric('earliest_non_index', A('min', field='snapshot_timestamp'))
+        s.aggs.metric('earliest_not_auto', A('min', field='snapshot_timestamp'))
         response = s[0:0].execute()
-        return response.aggs.earliest_non_index.value
+        return response.aggs.earliest_not_auto.value
 
     @classmethod
     def latest_auto_time(cls) -> Optional[int]:
@@ -70,7 +70,7 @@ class CustomDLC(BaseDoc):
 
         :returns timestamp which can be used to resume automatic indexing
         """
-        ceiling = cls.earliest_non_index()
+        ceiling = cls.earliest_not_auto()
 
         s = cls.search().filter('term', from_auto_index=True)
         if ceiling:
