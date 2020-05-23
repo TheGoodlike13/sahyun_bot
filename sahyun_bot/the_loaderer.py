@@ -352,7 +352,6 @@ class TheLoaderer:
                  cf: CustomsForgeClient = None,
                  max_threads: int = DEFAULT_MAX_THREADS):
         self.__cf_source = Customsforge(cf) if cf else None
-        self.__es_index = ElasticIndex()
         self.__max_threads = max_threads if max_threads and max_threads > 0 else DEFAULT_MAX_THREADS
 
     def log_weird_links(self):
@@ -435,7 +434,7 @@ class TheLoaderer:
         return LOG.error('Could not be coerce Source: %s', src)
 
     def __coerce_destination(self, dest) -> Destination:
-        dest = self.__coerce(dest, self.__es_index)
+        dest = self.__coerce(dest, ElasticIndex())
         if isinstance(dest, Destination):
             return dest
 
@@ -456,14 +455,14 @@ class TheLoaderer:
             return Customsforge(o)
 
         if isinstance(o, Elasticsearch):
-            return self.__es_index
+            return ElasticIndex()
 
         if isinstance(o, str):
             if o.lower() in CUSTOMSFORGE_STR:
                 return self.__cf_source
 
             if o.lower() in ELASTIC_STR:
-                return self.__es_index
+                return ElasticIndex()
 
             return FileDump(o)
 
