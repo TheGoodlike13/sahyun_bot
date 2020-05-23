@@ -6,13 +6,13 @@ from sahyun_bot.utils_logging import HttpDump
 
 DEFAULT_RETRY_COUNT = 3
 
-RETRY_ON_METHOD = frozenset(
-    ['HEAD', 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'TRACE']
-)
+RETRY_ON_METHOD = frozenset([
+    'HEAD', 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'TRACE'
+])
 
-RETRY_ON_STATUS = frozenset(
-    [403, 429, 500, 502, 503, 504]
-)
+RETRY_ON_STATUS = frozenset([
+    403, 429, 500, 502, 503, 504
+])
 
 
 class SessionFactory:
@@ -28,7 +28,7 @@ class SessionFactory:
 
     def with_retry(self, session: Session = None):
         session = session or Session()
-        session.hooks["response"] = [self.__dump.all]
+        session.hooks['response'] = [self.__dump.all]
 
         retry = Retry(
             total=self.__retry_count,
