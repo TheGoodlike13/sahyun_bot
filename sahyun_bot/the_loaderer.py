@@ -218,7 +218,7 @@ class ElasticAbsolution(Destination):
         raise NotImplementedError('This method should never be called because try_write always returns None.')
 
 
-class ElasticWeirdness(ElasticIndexUpdateOnly):
+class ElasticWeirdness(Destination):
     """
     Special Destination which prints CDLCs which have weird links to the user. Lookup is not performed, as it is
     intended as a review.
