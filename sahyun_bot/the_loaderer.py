@@ -140,13 +140,14 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
     def read_all(self, start_from: int = 0) -> Iterator[dict]:
         LOG.warning('Loading elastic index CDLCs from %s (%s).', loading_from(start_from), self.__describe_mode())
 
+        timestamp_range = {'gte': start_from} if start_from else {}
+
         s = CustomDLC.search()
-        timestamp_range = {'gte': start_from}
         if self.__continuous:
             s = s.filter('term', from_auto_index=True).sort('snapshot_timestamp').params(preserve_order=True)
             timestamp_range['lte'] = self.start_from()
 
-        if start_from:
+        if timestamp_range:
             s = s.filter('range', snapshot_timestamp=timestamp_range)
 
         for hit in s.scan():
