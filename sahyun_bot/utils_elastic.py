@@ -1,5 +1,5 @@
 import webbrowser
-from typing import Callable, FrozenSet, List
+from typing import Callable, FrozenSet, List, Iterator
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.connections import get_connection
@@ -62,14 +62,18 @@ def domains() -> FrozenSet[str]:
 
 
 def domain_example(domain: str) -> str:
-    cdlc = next((hit for hit in CustomDLC.search().scan() if extract(hit.link).registered_domain == domain), None)
+    link = next(domain_all(domain), '')
+    if not link:
+        LOG.warning('No example for domain <%s> found.', domain)
 
-    if cdlc:
-        LOG.warning('Found CDLC #%s <%s>', cdlc.id, cdlc.full_title)
-        return cdlc.link
+    return link
 
-    LOG.warning('No example for domain <%s> found.', domain)
-    return ''
+
+def domain_all(domain: str) -> Iterator[str]:
+    for hit in CustomDLC.search().scan():
+        if extract(hit.link).registered_domain == domain:
+            LOG.warning('Found CDLC #%s <%s>', hit.id, hit.full_title)
+            yield hit.link
 
 
 def _with_elastic(do: str, action: Callable[[Elasticsearch], None]) -> bool:
