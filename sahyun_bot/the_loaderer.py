@@ -425,6 +425,9 @@ class TheLoaderer:
 
     def __update(self, links: DirectLinkSource, c_id, dest: Destination, c):
         direct_link = links.to_direct_link(c_id) if c_id else ''
+        if direct_link and not extract(direct_link).registered_domain:
+            LOG.warning('Strange link detected for CDLC #%s: <%s>', c_id, direct_link)
+
         dest.update(c, direct_link)
 
     def __coerce_source(self, src) -> Source:
