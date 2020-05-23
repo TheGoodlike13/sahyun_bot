@@ -201,7 +201,7 @@ class CustomsForgeClient:
 
         return self.calculate_date_skip(since, date_count)
 
-    def __estimate_date(self, epoch_seconds: int):
+    def __estimate_date(self, epoch_seconds: int) -> date:
         # we subtract one day to account for timezone shenanigans
         return date.fromtimestamp(epoch_seconds) - timedelta(days=1) if epoch_seconds > 0 else EONS_AGO
 
