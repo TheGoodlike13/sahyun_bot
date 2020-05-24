@@ -116,6 +116,18 @@ explanations will only be visible in the JSON responses, usually DEBUG level log
 MaxWorkers = amount of background threads that assist with loading CDLCs; defaults to 8;
 any positive integer is allowed
 
+#### [irc]
+
+Nick = bot username, account on twitch
+
+Token = oauth token for the bot account; equivalent to password for IRC
+
+Channels = comma separated list of channels to join automatically; defaults to empty list;
+do not use '#', as it can break the values
+
+MaxWorkers = amount of background threads that performs commands; defaults to 8;
+any positive integer is allowed
+
 #### [system]
 
 HttpDebugMode = true if you want to print http headers and stuff to console; defaults to false;

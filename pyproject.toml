@@ -27,6 +27,7 @@ elasticsearch-dsl = "^7.2.0"
 requests_toolbelt = "^0.9.1"
 dictdiffer = "^0.8.1"
 tldextract = "^2.2.2"
+pydle = "^0.9.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -160,6 +160,20 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "1.8.1"
 
 [[package]]
+category = "main"
+description = "A compact, flexible and standards-abiding IRC library for Python 3."
+name = "pydle"
+optional = false
+python-versions = ">=3.5"
+version = "0.9.3"
+
+[package.extras]
+coverage = ["pytest-cov"]
+docs = ["sphinx-rtd-theme"]
+sasl = ["pure-sasl (>=0.1.6)"]
+tests = ["pytest"]
+
+[[package]]
 category = "dev"
 description = "Python parsing module"
 name = "pyparsing"
@@ -285,7 +299,7 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "d72144630a0e7d8adec42de6fb18a10a6d62cda5c169f62a79a2be6de26bdda0"
+content-hash = "9dec896e0a14af2fc1ba9c50b8b06cf1a0cce2db57d3aacaa67081e2df065110"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -346,6 +360,9 @@ pluggy = [
 py = [
     {file = "py-1.8.1-py2.py3-none-any.whl", hash = "sha256:c20fdd83a5dbc0af9efd622bee9a5564e278f6380fffcacc43ba6f43db2813b0"},
     {file = "py-1.8.1.tar.gz", hash = "sha256:5e27081401262157467ad6e7f851b7aa402c5852dbcb3dae06768434de5752aa"},
+]
+pydle = [
+    {file = "pydle-0.9.3-py3-none-any.whl", hash = "sha256:b2d40b76f3f98c49f4ca0753af9cf672d758843455359d27875f70e18facf4c9"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},

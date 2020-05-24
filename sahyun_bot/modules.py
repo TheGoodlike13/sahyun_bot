@@ -41,3 +41,13 @@ if init_module(es, 'Elasticsearch client'):
 
 tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')
+
+tc = TheCommander(cf=cf, es=es, tl=tl)
+init_module(tc, 'The commander')
+
+bot = botyun(tc=tc,
+             nickname=i_nick,
+             token=i_token,
+             channels=i_channels,
+             max_threads=i_max) if i_nick and i_token else None
+init_module(bot, 'IRC bot')

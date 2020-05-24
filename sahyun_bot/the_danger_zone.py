@@ -2,7 +2,7 @@ from itertools import chain
 
 from sahyun_bot.utils_logging import get_logger
 
-LOG = get_logger(__name__)
+LOG = get_logger('thedangerzone')  # __name__ becomes main
 
 
 def nuke_from_orbit(reason: str):
