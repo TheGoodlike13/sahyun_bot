@@ -8,7 +8,7 @@ from elasticsearch_dsl import connections
 from requests.cookies import RequestsCookieJar
 
 from sahyun_bot import elastic_settings
-from sahyun_bot.customsforge import To, CustomsForgeClient, TEST_COOKIE_FILE
+from sahyun_bot.customsforge import To, CustomsforgeClient, TEST_COOKIE_FILE
 from sahyun_bot.utils import debug_ex
 from tests.mock_settings import *
 
@@ -75,7 +75,7 @@ def prepare_index() -> bool:
 
 @pytest.fixture
 def cf():
-    return CustomsForgeClient(api_key=MOCK_API_KEY,
+    return CustomsforgeClient(api_key=MOCK_API_KEY,
                               batch_size=1,
                               username=MOCK_USER,
                               password=MOCK_PASS,
@@ -85,7 +85,7 @@ def cf():
 
 @pytest.fixture
 def cf_off():
-    return CustomsForgeClient(api_key=MOCK_API_KEY,
+    return CustomsforgeClient(api_key=MOCK_API_KEY,
                               batch_size=1,
                               cookie_jar_file=None,
                               get_today=lambda: TEST_DATE)
@@ -99,7 +99,7 @@ def cf_cookies():
     with open(TEST_COOKIE_FILE, 'wb') as jar:
         pickle.dump(cookies, jar)
 
-    yield CustomsForgeClient(api_key='key',
+    yield CustomsforgeClient(api_key='key',
                              batch_size=1,
                              cookie_jar_file=TEST_COOKIE_FILE,
                              get_today=lambda: TEST_DATE)

@@ -27,7 +27,7 @@ from typing import Iterator, Any, IO
 from elasticsearch import Elasticsearch, NotFoundError
 from tldextract import extract
 
-from sahyun_bot.customsforge import CustomsForgeClient
+from sahyun_bot.customsforge import CustomsforgeClient
 from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.the_loaderer_settings import DEFAULT_MAX_THREADS
 from sahyun_bot.utils import debug_ex, Closeable
@@ -106,7 +106,7 @@ class Customsforge(Source, DirectLinkSource):
     """
     The prime source for CDLC data. Always continuous.
     """
-    def __init__(self, cf: CustomsForgeClient):
+    def __init__(self, cf: CustomsforgeClient):
         self.__cf = cf
 
     def read_all(self, start_from: int = 0) -> Iterator[dict]:
@@ -353,7 +353,7 @@ class FileDump(Source, Destination):
 
 class TheLoaderer:
     def __init__(self,
-                 cf: CustomsForgeClient = None,
+                 cf: CustomsforgeClient = None,
                  max_threads: int = DEFAULT_MAX_THREADS):
         self.__cf_source = Customsforge(cf) if cf else None
         self.__max_threads = max_threads if max_threads and max_threads > 0 else DEFAULT_MAX_THREADS
@@ -458,7 +458,7 @@ class TheLoaderer:
         if not o:
             return fallback
 
-        if isinstance(o, CustomsForgeClient):
+        if isinstance(o, CustomsforgeClient):
             return Customsforge(o)
 
         if isinstance(o, Elasticsearch):

@@ -32,7 +32,7 @@ TEST_COOKIE_FILE = '.cookie_jar_test'
 EONS_AGO = date.fromisoformat('2010-01-01')  # this should pre-date even the oldest CDLC
 
 
-class CustomsForgeClient:
+class CustomsforgeClient:
     """
     Implements customsforge API for CDLCs. (Should be) thread-safe.
 
