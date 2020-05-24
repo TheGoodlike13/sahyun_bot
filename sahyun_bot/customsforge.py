@@ -8,6 +8,7 @@ from typing import Iterator, Optional, Callable, IO, Any, List
 from requests import Response, Session
 from requests.cookies import RequestsCookieJar
 
+from sahyun_bot.customsforge_settings import *
 from sahyun_bot.utils import T, NON_EXISTENT, identity, debug_ex, clean_link
 from sahyun_bot.utils_logging import get_logger
 from sahyun_bot.utils_session import SessionFactory
@@ -23,11 +24,6 @@ LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=l
 DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
 CDLC_BY_DATE_API = 'https://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
-
-DEFAULT_BATCH_SIZE = 100
-DEFAULT_TIMEOUT = 100
-DEFAULT_COOKIE_FILE = '.cookie_jar'
-TEST_COOKIE_FILE = '.cookie_jar_test'
 
 EONS_AGO = date.fromisoformat('2010-01-01')  # this should pre-date even the oldest CDLC
 
