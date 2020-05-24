@@ -25,7 +25,7 @@ class TheCommander:
                     if not self.__is_abstract(command_class_name):
                         self.__create_and_cache(command_class, **beans)
 
-    def execute(self, sender: str, message: str, respond: ResponseHook):
+    def execute(self, sender: str, message: str, respond: ResponseHook) -> ResponseHook:
         """
         Parses a message by some sender. If it is an available command, executes it.
 
@@ -47,6 +47,8 @@ class TheCommander:
             except Exception as e:
                 respond.to_sender('Unexpected error occurred. Please try later.')
                 debug_ex(e, f'executing <{command}>', LOG)
+
+        return respond
 
     def __is_command_class(self, item) -> bool:
         return inspect.isclass(item) and issubclass(item, Command)

@@ -10,6 +10,7 @@ from requests.cookies import RequestsCookieJar
 from sahyun_bot import elastic_settings
 from sahyun_bot.customsforge import To, CustomsforgeClient, TEST_COOKIE_FILE
 from sahyun_bot.utils import debug_ex
+from tests.mock_irc import ResponseMock
 from tests.mock_settings import *
 
 elastic_settings.init_test()
@@ -106,3 +107,8 @@ def cf_cookies():
 
     if os.path.exists(TEST_COOKIE_FILE):
         os.remove(TEST_COOKIE_FILE)
+
+
+@pytest.fixture
+def hook():
+    return ResponseMock()
