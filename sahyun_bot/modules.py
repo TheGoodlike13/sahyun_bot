@@ -8,7 +8,9 @@ import atexit
 from elasticsearch_dsl import connections
 
 from sahyun_bot.bot_settings import *
+from sahyun_bot.commander import TheCommander
 from sahyun_bot.elastic_settings import *
+from sahyun_bot.irc_bot import botyun
 from sahyun_bot.the_loaderer import *
 from sahyun_bot.the_loaderer_settings import *
 from sahyun_bot.utils_logging import get_logger
@@ -25,7 +27,7 @@ def init_module(module: Any, desc: str):
 
 LOG.warning('Please check config.ini file if any module is unavailable.')
 
-cf = CustomsForgeClient(api_key=c_api_key,
+cf = CustomsforgeClient(api_key=c_api_key,
                         batch_size=c_batch,
                         timeout=c_timeout,
                         cookie_jar_file=c_jar,
