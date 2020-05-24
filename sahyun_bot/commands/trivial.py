@@ -14,4 +14,4 @@ class Time(Command):
     """
     def execute(self, nick: str, params: str) -> List[str]:
         now = datetime.utcnow().isoformat(sep=' ', timespec='seconds')
-        return [f'{nick}: The time is now {now} UTC.']
+        return [f'{nick}: The time is now {now} UTC']
