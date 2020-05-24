@@ -18,5 +18,3 @@ WEIRD IDEAS
 
 
 All functionality should be optional when possible.
-
-Write tests for commonly used Source and Destination impls
