@@ -12,7 +12,6 @@ assumed that the CDLC data inside these is authentic.
 Loading CDLC data manually or through implementations that do not adhere to the contract can ruin the integrity
 of the underlying data by breaking assumptions. For that reason, avoid using bootleg implementations or forged files.
 """
-
 import json
 import os
 import shutil

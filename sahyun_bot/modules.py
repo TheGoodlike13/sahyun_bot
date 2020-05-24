@@ -3,7 +3,6 @@ Creates instances of all singletons in the application. Can be considered the eq
 Globally accessible only for the purposes of easy REPL usage.
 It should be imported by any module with __main__ method, which can then initiate the process of the application.
 """
-
 import atexit
 
 from elasticsearch_dsl import connections

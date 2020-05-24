@@ -3,7 +3,6 @@ Contains utilities which help with parsing settings & similar.
 
 This module contains a reference to a global config parser. Please initialize it before use.
 """
-
 from configparser import ConfigParser
 from typing import Callable, Optional, List
 

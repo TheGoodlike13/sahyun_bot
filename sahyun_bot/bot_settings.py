@@ -1,7 +1,6 @@
 """
 Initializes configuration for the bot. Should only be imported by modules.py.
 """
-
 import http.client
 import logging.config
 

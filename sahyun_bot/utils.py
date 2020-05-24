@@ -2,7 +2,6 @@
 Contains general utilities that can be used in many contexts.
 May also contain utilities that are too few to create a separate module for.
 """
-
 import logging
 from typing import TypeVar
 from urllib.parse import urlparse, parse_qs

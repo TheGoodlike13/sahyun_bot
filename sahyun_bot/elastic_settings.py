@@ -7,7 +7,6 @@ executed which will shut down the application, thus preventing any shenanigans w
 
 At least in normal circumstances :)
 """
-
 from datetime import timezone, datetime
 from typing import Optional
 
