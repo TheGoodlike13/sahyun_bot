@@ -1,6 +1,10 @@
 """
 Loads CDLC data from one format to another while preserving continuity.
 
+Continuity in this context simply means that CDLC data is read or written in an orderly fashion. This order
+is defined by 'snapshot_timestamp', i.e. the last time the CDLC data was updated. As long as the data is
+processed in this order, we can be sure we have all the data up to some timestamp, and resume from there.
+
 This module provides implementations for the purposes of this application, but any implementation of Source,
 Destination or DirectLinkSource are OK, as long as they adhere to the requirements for continuity. It is
 assumed that the CDLC data inside these is authentic.
