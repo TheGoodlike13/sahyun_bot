@@ -1,8 +1,3 @@
-IRC
-    connect on start
-    reconnect automatically or on command
-    if connection takes too long, restart
-
 ELASTIC
     automatically refresh data, as well as manual command
 
@@ -15,6 +10,3 @@ COMMANDS
 WEIRD IDEAS
     DL the CDLC automatically?
     Place it in the correct folder?
-
-
-All functionality should be optional when possible.
