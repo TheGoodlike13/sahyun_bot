@@ -1,11 +1,33 @@
+import os
+import pickle
 from datetime import timedelta
 
+import pytest
 from assertpy import assert_that
 from httmock import HTTMock
+from requests.cookies import RequestsCookieJar
 
-from sahyun_bot.customsforge import To
+from sahyun_bot.customsforge import To, CustomsforgeClient
+from sahyun_bot.customsforge_settings import TEST_COOKIE_FILE
 from tests.mock_customsforge import server_down, customsforge
 from tests.mock_settings import *
+
+
+@pytest.fixture
+def cf_cookies():
+    cookies = RequestsCookieJar()
+    cookies.set(MOCK_COOKIE_KEY, MOCK_COOKIE_VALUE, domain=MOCK_COOKIE_DOMAIN, path=MOCK_COOKIE_PATH)
+
+    with open(TEST_COOKIE_FILE, 'wb') as jar:
+        pickle.dump(cookies, jar)
+
+    yield CustomsforgeClient(api_key='key',
+                             batch_size=1,
+                             cookie_jar_file=TEST_COOKIE_FILE,
+                             get_today=lambda: TEST_DATE)
+
+    if os.path.exists(TEST_COOKIE_FILE):
+        os.remove(TEST_COOKIE_FILE)
 
 
 def test_server_down(cf, cf_off):

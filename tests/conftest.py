@@ -1,14 +1,12 @@
 import json
 import os
-import pickle
 from pathlib import Path
 
 import pytest
 from elasticsearch_dsl import connections
-from requests.cookies import RequestsCookieJar
 
 from sahyun_bot import elastic_settings
-from sahyun_bot.customsforge import To, CustomsforgeClient, TEST_COOKIE_FILE
+from sahyun_bot.customsforge import To, CustomsforgeClient
 from sahyun_bot.utils import debug_ex
 from tests.mock_irc import ResponseMock
 from tests.mock_settings import *
@@ -90,23 +88,6 @@ def cf_off():
                               batch_size=1,
                               cookie_jar_file=None,
                               get_today=lambda: TEST_DATE)
-
-
-@pytest.fixture
-def cf_cookies():
-    cookies = RequestsCookieJar()
-    cookies.set(MOCK_COOKIE_KEY, MOCK_COOKIE_VALUE, domain=MOCK_COOKIE_DOMAIN, path=MOCK_COOKIE_PATH)
-
-    with open(TEST_COOKIE_FILE, 'wb') as jar:
-        pickle.dump(cookies, jar)
-
-    yield CustomsforgeClient(api_key='key',
-                             batch_size=1,
-                             cookie_jar_file=TEST_COOKIE_FILE,
-                             get_today=lambda: TEST_DATE)
-
-    if os.path.exists(TEST_COOKIE_FILE):
-        os.remove(TEST_COOKIE_FILE)
 
 
 @pytest.fixture
