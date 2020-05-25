@@ -52,3 +52,10 @@ class Command:
         :param respond: callback to allow responding to the command
         """
         raise NotImplementedError
+
+    def executest(self, user: str, args: str, respond: ResponseHook) -> ResponseHook:
+        """
+        Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
+        """
+        self.execute(user, args, respond)
+        return respond
