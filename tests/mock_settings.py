@@ -1,5 +1,7 @@
 from datetime import date
 
+from httmock import all_requests
+
 MOCK_USER = 'user'
 MOCK_PASS = 'pass'
 MOCK_API_KEY = 'key'
@@ -19,3 +21,8 @@ VALID_LOGIN_FORM = frozenset([
 
 TEST_DATE = date.fromisoformat('2020-05-15')
 MOCK_CDLC = {}
+
+
+@all_requests
+def server_down(url, request):
+    raise Exception('Failure as expected')

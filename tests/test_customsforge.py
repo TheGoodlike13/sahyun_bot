@@ -9,7 +9,7 @@ from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge import To, CustomsforgeClient
 from sahyun_bot.customsforge_settings import TEST_COOKIE_FILE
-from tests.mock_customsforge import server_down, customsforge
+from tests.mock_customsforge import customsforge
 from tests.mock_settings import *
 
 

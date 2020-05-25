@@ -1,12 +1,5 @@
-from httmock import all_requests
-
 from sahyun_bot.customsforge import MAIN_PAGE, LOGIN_PAGE
 from tests.mock_settings import *
-
-
-@all_requests
-def server_down(url, request):
-    raise Exception('Failure as expected')
 
 
 @all_requests
