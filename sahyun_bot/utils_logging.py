@@ -50,7 +50,7 @@ class HttpDump:
     with a generic message instead.
     """
     def __init__(self, unsafe: List[str] = None, max_dump: int = DEFAULT_MAX_DUMP):
-        self.__unsafe_form_params = unsafe or []
+        self.__unsafe_params = unsafe or []
         self.__max_dump = max_dump if max_dump and max_dump > 0 else DEFAULT_MAX_DUMP
 
     def all(self, response: Response, *args, **kwargs):
@@ -84,7 +84,7 @@ class HttpDump:
         return lines
 
     def __collect_basic(self, r: Response, lines: List[str]):
-        lines.append(f'> {r.request.method} {r.request.url}')
+        lines.append(f'> {r.request.method} {self.__safe(r.request.url)}')
 
         location = r.headers.get('Location', '')
         location = f' redirects to <{location}>' if r.is_redirect else ''
@@ -98,7 +98,7 @@ class HttpDump:
         lines.append('')
 
     def __collect_detailed_request(self, r: PreparedRequest, lines: List[str]):
-        lines.append(f'> {r.method} {r.url}')
+        lines.append(f'> {r.method} {self.__safe(r.url)}')
 
         for key, value in r.headers.items():
             lines.append(f'> {key}: {value}')
@@ -106,13 +106,13 @@ class HttpDump:
         if not r.body:
             return lines.append('> EMPTY <')
 
-        lines.append(f'{self.__safe_body(r.body)}')
+        lines.append(f'{self.__safe(r.body)}')
 
-    def __safe_body(self, body: str):
-        for unsafe_param in self.__unsafe_form_params:
-            body = re.sub(self.__to_pattern(unsafe_param), r'\g<1>REDACTED', body)
+    def __safe(self, s: str):
+        for unsafe_param in self.__unsafe_params:
+            s = re.sub(self.__to_pattern(unsafe_param), r'\g<1>REDACTED', s)
 
-        return body
+        return s
 
     def __to_pattern(self, unsafe_param: str) -> str:
         return fr'({unsafe_param}=)([^&]+)'
