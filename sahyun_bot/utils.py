@@ -60,4 +60,7 @@ class Closeable:
         pass
 
     def __exit__(self, *args):
+        self.close()
+
+    def close(self):
         pass

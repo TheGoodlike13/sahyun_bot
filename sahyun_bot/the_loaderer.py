@@ -278,7 +278,7 @@ class FileDump(Source, Destination):
 
         self.__writer.start()
 
-    def __exit__(self, *args):
+    def close(self):
         self.__is_done.set()
         self.__writer.join()
 

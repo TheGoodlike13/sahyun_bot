@@ -9,7 +9,7 @@ class ResponseMock(ResponseHook, Closeable):
         self.__all_to_sender = []
         self.__all_to_channel = []
 
-    def __exit__(self, *args):
+    def close(self):
         self.__all_to_sender.clear()
         self.__all_to_channel.clear()
 
