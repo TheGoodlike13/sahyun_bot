@@ -61,6 +61,7 @@ call curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get
 call "%USERPROFILE%\.poetry\bin\poetry" run python -m pip install --upgrade pip setuptools wheel
 call "%USERPROFILE%\.poetry\bin\poetry" install
 for /f "tokens=*" %%a in ('"%USERPROFILE%\.poetry\bin\poetry" env info --path') do set poetry_env=%%a
+call rd "%poetry_env%\Lib\site-packages\tests" /s /q
 if not exist "config.ini" call xcopy empty_config.ini config.ini* /q
 
 
