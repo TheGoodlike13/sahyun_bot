@@ -2,7 +2,7 @@ import html
 import pickle
 from datetime import date, timedelta
 from itertools import dropwhile
-from threading import Lock
+from threading import RLock
 from typing import Iterator, Optional, Callable, IO, Any, List
 
 from requests import Response, Session
@@ -52,7 +52,7 @@ class CustomsforgeClient:
         self.__username = username
         self.__password = password
         self.__login_rejected = False
-        self.__prevent_multiple_login_lock = Lock()
+        self.__prevent_multiple_login_lock = RLock()
 
         self.__sessions = SessionFactory(unsafe=['ips_password'])
         self.__cookies = RequestsCookieJar()
