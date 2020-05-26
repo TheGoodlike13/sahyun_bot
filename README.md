@@ -93,6 +93,12 @@ CookieFilename = filename for cookie storage; defaults to '.cookie_jar'; speeds 
 process for subsequent launches of the bot; IF EMPTY - cookies are only stored in memory only;
 to avoid clashing with tests, '.cookie_jar_test' is automatically replaced with default value
 
+#### [twitch]
+
+ClientId = client id for accessing twitch API
+
+Secret = client secret for accessing twitch API
+
 #### [elastic]
 
 Host = host used by elasticsearch client; defaults to localhost; localhost is also used for tests

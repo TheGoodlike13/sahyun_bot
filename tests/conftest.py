@@ -7,7 +7,9 @@ from elasticsearch_dsl import connections
 
 from sahyun_bot import elastic_settings
 from sahyun_bot.customsforge import To, CustomsforgeClient
+from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.utils import debug_ex
+from sahyun_bot.utils_settings import read_config, config
 from tests.mock_irc import ResponseMock
 from tests.mock_settings import *
 
@@ -21,6 +23,20 @@ def prepare_cdlc_data():
         date_str = p.name[5:-5]
         with p.open() as f:
             MOCK_CDLC[date_str] = json.load(f)
+
+
+# we use the real twitch API in our tests, which should give great guarantees for it working
+@pytest.fixture(scope='session')
+def twitchy():
+    config.read('config.ini')
+    client_id = read_config('twitch', 'ClientId')
+    client_secret = read_config('twitch', 'Secret')
+    if not client_id or not client_secret:
+        pytest.skip('Cannot perform twitch tests! Please include twitch client id & secret in config.ini file.')
+
+    api = Twitchy(client_id, client_secret)
+    yield api
+    api.close()
 
 
 # in most cases the server is either up or down for all tests; if it's down at the start, let's just assume it's down

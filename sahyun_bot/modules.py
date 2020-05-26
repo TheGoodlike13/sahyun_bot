@@ -13,6 +13,8 @@ from sahyun_bot.elastic_settings import *
 from sahyun_bot.irc_bot import botyun
 from sahyun_bot.the_loaderer import *
 from sahyun_bot.the_loaderer_settings import *
+from sahyun_bot.twitchy import Twitchy
+from sahyun_bot.twitchy_settings import *
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
@@ -34,6 +36,9 @@ cf = CustomsforgeClient(api_key=c_api_key,
                         username=c_user,
                         password=c_pass) if c_api_key else None
 init_module(cf, 'Customsforge client')
+
+tw = Twitchy(client_id=t_id, client_secret=t_secret) if t_id and t_secret else None
+init_module(tw, 'Twitch API')
 
 es = connections.create_connection(hosts=[e_host]) if e_host else None
 if init_module(es, 'Elasticsearch client'):

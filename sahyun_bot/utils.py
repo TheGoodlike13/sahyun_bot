@@ -6,6 +6,8 @@ import logging
 from typing import TypeVar
 from urllib.parse import urlparse, parse_qs
 
+from cachetools import TTLCache
+
 T = TypeVar('T')  # general purpose generic variable to be used in generic functions
 
 NON_EXISTENT = object()  # if next(it, NON_EXISTENT) is NON_EXISTENT: <do stuff if 'it' was empty>
@@ -64,3 +66,15 @@ class Closeable:
 
     def close(self):
         pass
+
+
+class NonelessCache(TTLCache):
+    """
+    TTLCache which does not store None values and returns None if a value is missing
+    """
+    def __setitem__(self, key, value, **kwargs):
+        if value is not None:
+            super().__setitem__(key, value, **kwargs)
+
+    def __missing__(self, key):
+        return None

@@ -28,6 +28,8 @@ requests_toolbelt = "^0.9.1"
 dictdiffer = "^0.8.1"
 tldextract = "^2.2.2"
 pydle = "^0.9.3"
+cachetools = "^4.1.0"
+twitch-python = "^0.0.18"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

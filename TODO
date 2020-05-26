@@ -10,3 +10,5 @@ COMMANDS
 WEIRD IDEAS
     DL the CDLC automatically?
     Place it in the correct folder?
+
+Add Union types to CDLC id queries, as they support str & int
