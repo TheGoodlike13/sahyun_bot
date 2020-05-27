@@ -83,7 +83,7 @@ class Users(ElasticAware):
 
                     is_follower = self.__tw.is_following(self.__streamer, user_id)
                     live = UserRank.FLWR if is_follower else UserRank.VWR
-                    duration = timedelta(minutes=5) if is_follower else timedelta(seconds=10)
+                    duration = timedelta(minutes=5) if is_follower else timedelta(seconds=5)
                     self.__rank_cache.set(user_id, {'rank': live}, duration=duration)
                     return live
                 except Exception as e:
