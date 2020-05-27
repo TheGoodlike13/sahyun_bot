@@ -52,27 +52,29 @@ class Twitchy(Closeable):
 
     def get_id(self, nick_or_id: str) -> str:
         """
-        :returns coerces given nick or twitch id into twitch id
-        :raises ValueError if no such twitch user exists
+        :returns coerces given nick or twitch id into twitch id; None if not possible
         """
-        with self.__user_id_lock:
-            user_id = self.__user_id_cache.get(nick_or_id)
-            if not user_id:
-                user_id = self.__call(self.__get_user_id, nick_or_id)
-                self.__user_id_cache.update({nick_or_id: user_id, user_id: user_id})
+        try:
+            with self.__user_id_lock:
+                user_id = self.__user_id_cache.get(nick_or_id)
+                if not user_id:
+                    user_id = self.__call(self.__get_user_id, nick_or_id)
+                    self.__user_id_cache.update({nick_or_id: user_id, user_id: user_id})
 
-            if not user_id:
-                raise ValueError(f'Twitch could not find user: <{nick_or_id}>')
-
-            return user_id
+                return user_id
+        except Exception as e:
+            return debug_ex(e, f'find twitch user id for <{nick_or_id}>', LOG)
 
     def is_following(self, streamer: str, viewer: str) -> bool:
         """
         :param streamer: nick or id of a streamer
         :param viewer: nick or id of a viewer
         :returns true if viewer is following the streamer, false otherwise
+        :raises Exception: if call to twitch fails
         """
-        return self.__call(self.__is_following, self.get_id(streamer), self.get_id(viewer))
+        s_id = self.get_id(streamer)
+        v_id = self.get_id(viewer)
+        return s_id and v_id and self.__call(self.__is_following, s_id, v_id)
 
     def __acquire_authorized_api(self) -> Helix:
         self.__bearer_token = self.__acquire_token()
