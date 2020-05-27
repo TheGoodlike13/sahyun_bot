@@ -37,7 +37,8 @@ cf = CustomsforgeClient(api_key=c_api_key,
                         cookie_jar_file=c_jar,
                         username=c_user,
                         password=c_pass) if c_api_key else None
-init_module(cf, 'Customsforge client')
+if init_module(cf, 'Customsforge client'):
+    init_module(c_jar, 'Cookie jar for customsforge')
 
 tw = Twitchy(client_id=t_id, client_secret=t_secret) if t_id and t_secret else None
 init_module(tw, 'Twitch API')
