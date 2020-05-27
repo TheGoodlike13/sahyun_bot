@@ -15,6 +15,7 @@ of the underlying data by breaking assumptions. For that reason, avoid using boo
 import json
 import os
 import shutil
+from concurrent.futures import Future
 from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime, timezone
 from itertools import dropwhile
@@ -22,7 +23,7 @@ from pathlib import Path
 from queue import Queue, Empty
 from tempfile import NamedTemporaryFile
 from threading import Thread, Event
-from typing import Iterator, Any, IO, Union
+from typing import Iterator, Any, IO, Union, List
 
 from elasticsearch import Elasticsearch, NotFoundError
 from tldextract import extract
@@ -256,7 +257,7 @@ class FileDump(Source, Destination):
     def __init__(self, file, start_from: int = 0):
         self.__file = file
         self.__start_from = start_from
-        self.__contents = []
+        self.__contents: List[dict] = []
 
         self.__write_queue = Queue()
         self.__writer = Thread(target=self.__write_from_queue)
@@ -421,7 +422,7 @@ class TheLoaderer(ElasticAware):
         links = self.__coerce_links(src, links)
 
         if src and dest and links:
-            work_queue = []
+            work_queue: List[Future] = []
 
             with src, dest, ThreadPoolExecutor(self.__max_threads) as p:
                 for cdlc in src.read_all(dest.start_from()):

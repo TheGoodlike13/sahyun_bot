@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Iterator, List
 
 from sahyun_bot.commander_settings import ResponseHook
 from sahyun_bot.utils import Closeable
@@ -6,8 +6,8 @@ from sahyun_bot.utils import Closeable
 
 class ResponseMock(ResponseHook, Closeable):
     def __init__(self):
-        self.__all_to_sender = []
-        self.__all_to_channel = []
+        self.__all_to_sender: List[str] = []
+        self.__all_to_channel: List[str] = []
 
     def close(self):
         self.__all_to_sender.clear()

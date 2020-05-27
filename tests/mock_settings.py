@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Dict
 
 from httmock import all_requests
 
@@ -20,7 +21,7 @@ VALID_LOGIN_FORM = frozenset([
 ])
 
 TEST_DATE = date.fromisoformat('2020-05-15')
-MOCK_CDLC = {}
+MOCK_CDLC: Dict[str, dict] = {}
 
 
 @all_requests
