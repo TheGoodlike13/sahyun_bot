@@ -11,9 +11,13 @@ LOG = get_logger('bot')  # __name__ becomes main
 
 def run_main():
     LOG.warning('Launching bot...')
-    us.set_use_elastic(setup_elastic())
+    setup_elastic(us, tl)
     bot.launch_in_own_thread()
     setup_console(tc)
+    print_error_warning()
+
+
+def print_error_warning():
     LOG.warning('---------------------------------------------------------')
     LOG.warning('Event loop error may follow, but you can ignore it.')
     LOG.warning('WindowsSelectorEventLoopPolicy is missing sometimes.')

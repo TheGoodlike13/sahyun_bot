@@ -31,6 +31,7 @@ from sahyun_bot.customsforge import CustomsforgeClient
 from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.the_loaderer_settings import DEFAULT_MAX_THREADS
 from sahyun_bot.utils import debug_ex, Closeable
+from sahyun_bot.utils_elastic import ElasticAware
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
@@ -351,10 +352,13 @@ class FileDump(Source, Destination):
         return self.__temp_dump
 
 
-class TheLoaderer:
+class TheLoaderer(ElasticAware):
     def __init__(self,
                  cf: CustomsforgeClient = None,
-                 max_threads: int = DEFAULT_MAX_THREADS):
+                 max_threads: int = DEFAULT_MAX_THREADS,
+                 use_elastic: bool = False):
+        super().__init__(use_elastic)
+
         self.__cf_source = Customsforge(cf) if cf else None
         self.__max_threads = max_threads if max_threads and max_threads > 0 else DEFAULT_MAX_THREADS
 
@@ -408,6 +412,9 @@ class TheLoaderer:
         src: Customsforge
         dest: ElasticIndex
         links: src if it implements DirectLinkSource, otherwise Customsforge
+
+        In all cases, if src, dest or links is a known implementation that relies on elastic, they will not be used
+        when elastic is disabled.
         """
         src = self.__coerce_source(src)
         dest = self.__coerce_destination(dest)
@@ -434,25 +441,33 @@ class TheLoaderer:
         dest.update(c, direct_link)
 
     def __coerce_source(self, src) -> Source:
-        src = self.__coerce(src, self.__cf_source)
+        src = self.__coerce_and_check_elastic(src, self.__cf_source)
         if isinstance(src, Source):
             return src
 
         return LOG.error('Could not be coerce Source: %s', src)
 
     def __coerce_destination(self, dest) -> Destination:
-        dest = self.__coerce(dest, ElasticIndex())
+        dest = self.__coerce_and_check_elastic(dest, ElasticIndex())
         if isinstance(dest, Destination):
             return dest
 
         return LOG.error('Could not be coerce Destination: %s', dest)
 
     def __coerce_links(self, src, links) -> DirectLinkSource:
-        links = self.__coerce(links, src if isinstance(src, DirectLinkSource) else self.__cf_source)
+        links = self.__coerce_and_check_elastic(links, src if isinstance(src, DirectLinkSource) else self.__cf_source)
         if isinstance(links, DirectLinkSource):
             return links
 
         return LOG.error('Could not be coerce DirectLinkSource: %s', links)
+
+    def __coerce_and_check_elastic(self, o, fallback):
+        o = self.__coerce(o, fallback)
+        coerced_name = type(o).__name__
+        if self.use_elastic or coerced_name[:7] != 'Elastic':
+            return o
+
+        return LOG.warning('Cannot use <%s> because elastic is disabled.', coerced_name)
 
     def __coerce(self, o, fallback):
         if not o:

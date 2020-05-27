@@ -7,6 +7,7 @@ from sahyun_bot.elastic import ManualUserRank
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.users_settings import UserRank, User
 from sahyun_bot.utils import debug_ex
+from sahyun_bot.utils_elastic import ElasticAware
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
@@ -19,17 +20,15 @@ TRANSIENT_RANKS = frozenset([
 ])
 
 
-class Users:
-    def __init__(self, streamer: str, tw: Twitchy = None, use_elastic: bool = False):
+class Users(ElasticAware):
+    def __init__(self, streamer: str, tw: Twitchy = None, use_elastic: bool = None):
+        super().__init__(use_elastic)
+
         self.__streamer = streamer.lower()
         self.__tw = tw
-        self.__use_elastic = use_elastic
 
         self.__rank_cache = Cache()
         self.__rank_lock = RLock()
-
-    def set_use_elastic(self, use: bool):
-        self.__use_elastic = use
 
     def get(self, nick: str) -> User:
         """
@@ -67,7 +66,7 @@ class Users:
         if nick == self.__streamer:
             return UserRank.ADMIN
 
-        if user_id and self.__use_elastic:
+        if user_id and self.use_elastic:
             try:
                 manual = ManualUserRank.get(user_id)
                 if manual:

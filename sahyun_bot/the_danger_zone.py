@@ -20,7 +20,8 @@ if __name__ == '__main__':
     Use bot.py for a sane main function.
     """
     from sahyun_bot.modules import *
-    us.set_use_elastic(True)
+    from sahyun_bot.utils_elastic import setup_elastic_usage
+    setup_elastic_usage(us, tl, use_elastic=True)
 
     local_utils = [m[:-3] for m in os.listdir(os.path.dirname(__file__)) if m[:5] == 'utils']
     other_utils = ['datetime', 'itertools', 'urllib.parse', 'dictdiffer']

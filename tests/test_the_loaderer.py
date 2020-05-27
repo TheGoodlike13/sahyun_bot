@@ -9,7 +9,7 @@ from tests.mock_customsforge import customsforge
 
 @pytest.fixture
 def tl(cf, es_fresh):
-    return TheLoaderer(cf)
+    return TheLoaderer(cf, use_elastic=True)
 
 
 def test_loading_from_start(tl):

@@ -17,17 +17,33 @@ DOCUMENTS = frozenset([
 ])
 
 
+class ElasticAware:
+    def __init__(self, use_elastic: bool = False):
+        self.use_elastic = use_elastic
+
+    def set_use_elastic(self, use: bool):
+        LOG.warning('Elastic is %sabled for %s.', 'en' if use else 'dis', type(self).__name__)
+        self.use_elastic = use
+
+
 def print_elastic_indexes():
     for doc in DOCUMENTS:
         LOG.warning('Using %s index: <%s>.', doc.__name__, doc.index_name())
 
 
-def setup_elastic() -> bool:
+def setup_elastic(*modules: ElasticAware) -> bool:
     """
     Initializes all indexes if they do not yet exist. See set of documents to initialize above.
     Also verifies if the mappings in the index match.
     """
-    return _with_elastic('setup', _setup)
+    is_setup = _with_elastic('setup', _setup)
+    setup_elastic_usage(*modules, use_elastic=is_setup)
+    return is_setup
+
+
+def setup_elastic_usage(*modules: ElasticAware, use_elastic: bool):
+    for m in modules:
+        m.set_use_elastic(use_elastic)
 
 
 def purge_elastic() -> bool:
