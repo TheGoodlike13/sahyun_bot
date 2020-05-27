@@ -1,4 +1,4 @@
-from asyncio import run_coroutine_threadsafe, new_event_loop
+from asyncio import run_coroutine_threadsafe, new_event_loop, Task, AbstractEventLoop, set_event_loop_policy
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List
 
@@ -50,7 +50,10 @@ class botyun(pydle.Client):
 
     def close(self):
         if self.eventloop and not isinstance(self.eventloop, str):
-            self.eventloop.call_soon_threadsafe(self.eventloop.stop)
+            for task in Task.all_tasks(self.eventloop):
+                task.cancel()
+
+            run_coroutine_threadsafe(self.disconnect(expected=True), self.eventloop).result()
 
         self.__pool.shutdown()
 
@@ -60,7 +63,16 @@ class botyun(pydle.Client):
 
     def __launch(self):
         try:
+            # noinspection PyUnresolvedReferences
+            from asyncio import WindowsSelectorEventLoopPolicy       # it can be found in windows, sometimes
+            set_event_loop_policy(WindowsSelectorEventLoopPolicy())  # prevents an error on closing the loop
+        except Exception as e:
+            debug_ex(e, 'set a less error prone event loop policy', LOG, silent=True)
+
+        try:
+            self.own_eventloop = True
             self.eventloop = new_event_loop()
+            self.eventloop.set_exception_handler(self.__handle_exception)
             self.run(
                 hostname=TWITCH_IRC,
                 port=TWITCH_IRC_PORT,
@@ -72,3 +84,9 @@ class botyun(pydle.Client):
         except Exception as e:
             LOG.warning('IRC bot launch failed.')
             debug_ex(e, 'launching IRC bot', LOG)
+
+    def __handle_exception(self, loop: AbstractEventLoop, context: dict):
+        message = context['message']
+        e = context.get('exception', None)
+        e = e if e else RuntimeError('Unspecified exception in event loop')
+        debug_ex(e, f'do something in event loop that ended like this: <{message}>', LOG)

@@ -10,7 +10,11 @@ def setup_console(tc: TheCommander):
 
     hook = ToConsole()
     while True:
-        tc.execute('_console', input('>>> '), hook)
+        line = input('>>> ')
+        if line == 'exit()':
+            break
+
+        tc.execute('_console', line, hook)
 
 
 class ToConsole(ResponseHook):

@@ -14,6 +14,19 @@ def run_main():
     us.set_use_elastic(setup_elastic())
     bot.launch_in_own_thread()
     setup_console(tc)
+    LOG.warning('---------------------------------------------------------')
+    LOG.warning('Event loop error may follow, but you can ignore it.')
+    LOG.warning('WindowsSelectorEventLoopPolicy is missing sometimes.')
+    LOG.warning('No, it is not the Python version, it was added with 3.7.')
+    LOG.warning('Apparently, it would fix the problem.')
+    LOG.warning('At least that is what somebody on the internet said.')
+    LOG.warning('Well, they also said to ignore all errors on close.')
+    LOG.warning('I have not found a way to do that.')
+    LOG.warning('Must have been a lie.')
+    LOG.warning('Well, know that it was worse. Like, way worse.')
+    LOG.warning('We are talking multiple pages of errors worse.')
+    LOG.warning('I have done my best.')
+    LOG.warning('---------------------------------------------------------')
 
 
 if __name__ == '__main__':
