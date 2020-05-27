@@ -15,6 +15,8 @@ from sahyun_bot.the_loaderer import *
 from sahyun_bot.the_loaderer_settings import *
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.twitchy_settings import *
+from sahyun_bot.users import Users
+from sahyun_bot.utils_elastic import print_elastic_indexes
 from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
@@ -40,19 +42,22 @@ init_module(cf, 'Customsforge client')
 tw = Twitchy(client_id=t_id, client_secret=t_secret) if t_id and t_secret else None
 init_module(tw, 'Twitch API')
 
+us = Users(streamer=i_streamer, tw=tw)
+init_module(us, 'User factory')
+
 es = connections.create_connection(hosts=[e_host]) if e_host else None
 if init_module(es, 'Elasticsearch client'):
-    LOG.warning('Using CDLC index: <%s>.', e_cf_index)
+    print_elastic_indexes()
 
 tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')
 
-tc = TheCommander(cf=cf, es=es, tl=tl)
+tc = TheCommander(cf=cf, tw=tw, us=us, es=es, tl=tl)
 init_module(tc, 'The commander')
 
 bot = botyun(tc=tc,
              nickname=i_nick,
              token=i_token,
-             channels=i_channels,
+             channels=[i_streamer] if i_streamer else [],
              max_threads=i_max) if i_nick and i_token else None
 init_module(bot, 'IRC bot')

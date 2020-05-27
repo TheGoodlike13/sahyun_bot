@@ -11,7 +11,7 @@ LOG = get_logger('bot')  # __name__ becomes main
 
 def run_main():
     LOG.warning('Launching bot...')
-    setup_elastic()
+    us.set_use_elastic(setup_elastic())
     bot.launch_in_own_thread()
     setup_console(tc)
 

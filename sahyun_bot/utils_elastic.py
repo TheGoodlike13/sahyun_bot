@@ -5,7 +5,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch_dsl.connections import get_connection
 from tldextract import extract
 
-from sahyun_bot.elastic import CustomDLC
+from sahyun_bot.elastic import CustomDLC, ManualUserRank
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_logging import get_logger
 
@@ -13,7 +13,13 @@ LOG = get_logger(__name__)
 
 DOCUMENTS = frozenset([
     CustomDLC,
+    ManualUserRank,
 ])
+
+
+def print_elastic_indexes():
+    for doc in DOCUMENTS:
+        LOG.warning('Using %s index: <%s>.', doc.__name__, doc.index_name())
 
 
 def setup_elastic() -> bool:

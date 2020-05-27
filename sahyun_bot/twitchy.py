@@ -78,7 +78,7 @@ class Twitchy(Closeable):
         self.__bearer_token = self.__acquire_token()
         self.__api = Helix(client_id=self.__client_id,
                            client_secret=self.__client_secret,
-                           bearer_token=self.__bearer_token)
+                           bearer_token=f'bearer {self.__bearer_token}')
         return self.__api
 
     def __acquire_token(self) -> str:

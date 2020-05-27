@@ -6,6 +6,7 @@ from elasticsearch_dsl import Text, Keyword, Boolean, Long, A
 
 from sahyun_bot import elastic_settings
 from sahyun_bot.elastic_settings import BaseDoc, EpochSecond
+from sahyun_bot.users_settings import UserRank
 from sahyun_bot.utils_logging import get_logger
 
 elastic_settings.ready_or_die()
@@ -88,3 +89,22 @@ class CustomDLC(BaseDoc):
         s = cls.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
         for hit in s[:elastic_settings.e_req_max]:
             yield hit
+
+
+class ManualUserRank(BaseDoc):
+    rank_name = Keyword(required=True)
+
+    class Index:
+        name = elastic_settings.e_rank_index
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    def set_rank(self, rank: UserRank):
+        self.rank_name = rank.name
+        return self.save()
+
+    @property
+    def rank(self) -> Optional[UserRank]:
+        return UserRank[self.rank_name] if self.rank_name else None

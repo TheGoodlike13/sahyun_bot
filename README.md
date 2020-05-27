@@ -128,8 +128,8 @@ Nick = bot username, account on twitch
 
 Token = oauth token for the bot account; equivalent to password for IRC
 
-Channels = comma separated list of channels to join automatically; defaults to empty list;
-do not use '#', as it can break the values
+Channel = channel to join automatically; this channel will be considered the ADMIN for this bot;
+do not use '#', i.e. 'sahyun', not '#sahyun'
 
 MaxWorkers = amount of background threads that performs commands; defaults to 8;
 any positive integer is allowed

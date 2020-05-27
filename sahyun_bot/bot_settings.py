@@ -7,7 +7,7 @@ import logging.config
 from sahyun_bot import elastic_settings
 from sahyun_bot.customsforge_settings import *
 from sahyun_bot.irc_bot_settings import *
-from sahyun_bot.utils_settings import config, read_config, parse_bool, parse_list
+from sahyun_bot.utils_settings import config, read_config, parse_bool
 
 config.read('config.ini')
 
@@ -31,7 +31,7 @@ c_jar = DEFAULT_COOKIE_FILE if c_jar == TEST_COOKIE_FILE else c_jar
 i_nick = read_config('irc', 'Nick')
 i_token = read_config('irc', 'Token')
 # noinspection PyTypeChecker
-i_channels = read_config('irc', 'Channels', convert=parse_list, fallback=[])
+i_streamer = read_config('irc', 'Channel', fallback='')
 i_max = read_config('irc', 'MaxWorkers', convert=int, fallback=MAX_CONCURRENT_COMMANDS)
 
 elastic_settings.init()

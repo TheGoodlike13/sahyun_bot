@@ -8,6 +8,7 @@ from elasticsearch_dsl import connections
 from sahyun_bot import elastic_settings
 from sahyun_bot.customsforge import To, CustomsforgeClient
 from sahyun_bot.twitchy import Twitchy
+from sahyun_bot.users_settings import UserRank
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_settings import read_config, config
 from tests.mock_irc import ResponseMock
@@ -76,13 +77,15 @@ def prepare_elastic(working_test_elastic_client):
 
 
 def prepare_index() -> bool:
-    from sahyun_bot.elastic import CustomDLC
+    from sahyun_bot.elastic import CustomDLC, ManualUserRank
     try:
         for cdlc in MOCK_CDLC.values():
             cdlc_id = str(cdlc.get('id', None))
             CustomDLC(_id=cdlc_id, **To.cdlc(cdlc)).save(refresh=False)
 
         CustomDLC._index.refresh()
+
+        ManualUserRank(_id='37103864').set_rank(UserRank.ADMIN)
         return True
     except Exception as e:
         return debug_ex(e, 'prepare elasticsearch index for testing')

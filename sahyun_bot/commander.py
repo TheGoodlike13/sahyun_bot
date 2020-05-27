@@ -55,6 +55,15 @@ class TheCommander:
                 respond.to_sender('Unexpected error occurred. Please try later.')
                 debug_ex(e, f'executing <{command}>', LOG)
 
+    def _add_command(self, command: Command):
+        """
+        Registers given command to this commander. Should only be used by automatic loading (during initialization)
+        or tests.
+        """
+        for alias in command.alias():
+            if self.__commands.setdefault(alias, command) is not command:
+                raise RuntimeError(f'Programming error: multiple commands have the same alias: {alias}')
+
     def __is_command_class(self, item) -> bool:
         return inspect.isclass(item) and issubclass(item, Command)
 
@@ -68,6 +77,4 @@ class TheCommander:
             LOG.warning('Command <!%s> (and aliases) not available. See logs.', command_class.__name__.lower())
             return debug_ex(e, f'create command for class {command_class}', LOG, silent=True)
 
-        for alias in command.alias():
-            if self.__commands.setdefault(alias, command) is not command:
-                raise RuntimeError(f'Programming error: multiple commands have the same alias: {alias}')
+        self._add_command(command)
