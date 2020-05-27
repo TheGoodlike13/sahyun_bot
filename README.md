@@ -40,6 +40,14 @@ To launch the bot, use 'run.bat'. To play around with the modules instead, use '
 The latter should configure all relevant objects, but not actually launch the bot itself.
 Both files assume 'install.bat' was already called before.
 
+### Where to start looking at the code?
+
+I suggest starting at 'modules.py' in 'sahyun_bot' package. It contains most if not all singletons
+of the application, as well as imports to their configuration.
+
+This module exists to make it easy to try things out with 'repl.bat'. It is only referenced by
+'main' functions of the application, so it can be considered a kind of a bean factory.
+
 ### Elasticsearch
 
 For data storage, Elasticsearch is used. This is because we require somewhat advanced search
