@@ -22,7 +22,7 @@ from pathlib import Path
 from queue import Queue, Empty
 from tempfile import NamedTemporaryFile
 from threading import Thread, Event
-from typing import Iterator, Any, IO
+from typing import Iterator, Any, IO, Union
 
 from elasticsearch import Elasticsearch, NotFoundError
 from tldextract import extract
@@ -63,7 +63,7 @@ class Source(Closeable):
 
 
 class DirectLinkSource:
-    def to_direct_link(self, cdlc_id: Any) -> str:
+    def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
         """
         :returns direct download link for given CDLC id, if it is available
         """
@@ -116,7 +116,7 @@ class Customsforge(Source, DirectLinkSource):
             cdlc[CONTINUOUS_FROM] = start_from or 0
             yield cdlc
 
-    def to_direct_link(self, cdlc_id: Any) -> str:
+    def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
         return self.__cf.direct_link(cdlc_id)
 
 
@@ -161,8 +161,8 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
 
             yield cdlc
 
-    def to_direct_link(self, cdlc_id: Any) -> str:
-        c = CustomDLC.get(cdlc_id, ignore=[404])
+    def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
+        c = CustomDLC.get(str(cdlc_id), ignore=[404])
         return c.direct_download if c else None
 
     def start_from(self) -> int:

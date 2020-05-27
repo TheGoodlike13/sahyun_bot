@@ -3,7 +3,7 @@ import pickle
 from datetime import date, timedelta
 from itertools import dropwhile
 from threading import RLock
-from typing import Iterator, Optional, Callable, IO, Any, List
+from typing import Iterator, Optional, Callable, IO, Any, List, Union
 
 from requests import Response, Session
 from requests.cookies import RequestsCookieJar
@@ -138,7 +138,7 @@ class CustomsforgeClient:
 
                 yield from dropwhile(lambda c: c['snapshot_timestamp'] < since_exact, lazy_cdlcs)
 
-    def direct_link(self, cdlc_id: Any) -> str:
+    def direct_link(self, cdlc_id: Union[str, int]) -> str:
         """
         :returns link to the direct download of the CDLC with given id, if such exists, empty string otherwise
         """
