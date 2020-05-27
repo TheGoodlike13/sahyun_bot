@@ -33,10 +33,11 @@ class TheCommander:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
-        self.execute(sender, message, respond)
+        success = self.execute(sender, message, respond)
+        respond.to_debug('success' if success else 'failure')
         return respond
 
-    def execute(self, sender: str, message: str, respond: ResponseHook):
+    def execute(self, sender: str, message: str, respond: ResponseHook) -> bool:
         """
         Parses a message by some sender. If it is an available command, executes it.
         Sender starting with underscore is considered admin (e.g., _console, _test). Such names are not allowed
@@ -46,6 +47,8 @@ class TheCommander:
 
         Hook will be used to send a response, if any.
         Most generic errors (e.g. no such command) will simply be ignored.
+
+        :returns true if execution succeeded, false if it failed or never executed in the first place
         """
         if message and message[:1] == '!':
             name, space, args = message[1:].partition(' ')
@@ -63,7 +66,7 @@ class TheCommander:
                 return LOG.warning('<%s> is not authorized to use !%s.', user, name)
 
             try:
-                command.execute(user, args, respond)
+                return command.execute(user, args, respond)
             except Exception as e:
                 respond.to_sender('Unexpected error occurred. Please try later.')
                 debug_ex(e, f'executing <{command}>', LOG)

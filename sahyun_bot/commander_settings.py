@@ -1,6 +1,9 @@
 from typing import Iterator
 
 from sahyun_bot.users_settings import UserRank, User
+from sahyun_bot.utils_logging import get_logger
+
+LOG = get_logger(__name__)
 
 
 class ResponseHook:
@@ -18,6 +21,12 @@ class ResponseHook:
         Send message to the channel, not specific sender.
         """
         raise NotImplementedError
+
+    def to_debug(self, message: str):
+        """
+        Write a debug message. Feel free to override for testing purposes.
+        """
+        LOG.debug(message)
 
 
 class Command:
@@ -48,7 +57,7 @@ class Command:
         """
         return UserRank.ADMIN
 
-    def execute(self, user: User, args: str, respond: ResponseHook):
+    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
         """
         Executes the command with given args & responds to given hook.
          
@@ -58,6 +67,7 @@ class Command:
         :param user: one who requested command execution
         :param args: parameters passed in with the command, unparsed
         :param respond: callback to allow responding to the command
+        :returns true if execution succeeded, false if it failed or never executed in the first place
         """
         raise NotImplementedError
 
@@ -65,5 +75,6 @@ class Command:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
-        self.execute(user, args, respond)
+        success = self.execute(user, args, respond)
+        respond.to_debug('success' if success else 'failure')
         return respond

@@ -12,9 +12,10 @@ class Time(Command):
     def min_rank(self) -> UserRank:
         return UserRank.VWR
 
-    def execute(self, user: User, args: str, respond: ResponseHook):
+    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
         """
         Prints current time in UTC.
         """
         now = datetime.utcnow().isoformat(sep=' ', timespec='seconds')
         respond.to_sender(f'The time is now {now} UTC')
+        return True

@@ -8,10 +8,12 @@ class ResponseMock(ResponseHook, Closeable):
     def __init__(self):
         self.__all_to_sender: List[str] = []
         self.__all_to_channel: List[str] = []
+        self.__all_to_debug: List[str] = []
 
     def close(self):
         self.__all_to_sender.clear()
         self.__all_to_channel.clear()
+        self.__all_to_debug.clear()
 
     def to_sender(self, message: str):
         self.__all_to_sender.append(message)
@@ -19,15 +21,21 @@ class ResponseMock(ResponseHook, Closeable):
     def to_channel(self, message: str):
         self.__all_to_channel.append(message)
 
+    def to_debug(self, message: str):
+        self.__all_to_debug.append(message)
+
     def all_to_sender(self) -> str:
         return '\n'.join(self.__all_to_sender)
 
     def all_to_channel(self) -> str:
         return '\n'.join(self.__all_to_channel)
 
-    def all(self) -> str:
-        return '\n'.join(self.__all())
+    def all_to_debug(self) -> str:
+        return '\n'.join(self.__all_to_debug)
 
-    def __all(self) -> Iterator[str]:
+    def all_back(self) -> str:
+        return '\n'.join(self.__messages())
+
+    def __messages(self) -> Iterator[str]:
         yield from self.__all_to_sender
         yield from self.__all_to_channel

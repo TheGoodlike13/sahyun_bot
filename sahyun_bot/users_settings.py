@@ -22,8 +22,21 @@ class User:
         return f'{self.rank} {self.nick}'
 
     def has_right(self, rank: UserRank) -> bool:
+        """
+        :returns true if user has rights of the rank, false otherwise; ranks have rights of all ranks below them
+        """
         return self.rank >= rank
 
     @property
+    def is_limited(self) -> bool:
+        """
+        :returns true if user cannot perform unlimited commands under any circumstances, false if they can
+        """
+        return not self.has_right(UserRank.VIP)
+
+    @property
     def id(self) -> str:
+        """
+        :returns identifier of the user, preferring id over nick
+        """
         return self.user_id if self.user_id else self.nick

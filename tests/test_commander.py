@@ -13,10 +13,10 @@ def commander(users):
 
 def test_not_command(commander, hook):
     with commander.executest('_test', '', hook):
-        assert_that(hook.all()).is_empty()
+        assert_that(hook.all_back()).is_empty()
 
     with commander.executest('_test', 'Time for some random IRC chatter!', hook):  # !time is a command
-        assert_that(hook.all()).is_empty()
+        assert_that(hook.all_back()).is_empty()
 
 
 def test_commands_resolved_automatically(commander, hook):
