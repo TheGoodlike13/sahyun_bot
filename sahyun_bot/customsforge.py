@@ -33,7 +33,7 @@ class CustomsforgeClient:
     Implements customsforge API for CDLCs. (Should be) thread-safe.
 
     To access the API, logging in is required. This is attempted exactly once for every API call that returns
-    a redirect indicating lack (or invalid) credentials. Cookies resulting from login can be stored to avoid
+    a redirect indicating lack of (or invalid) credentials. Cookies resulting from login can be stored to avoid
     this process in subsequent executions.
     """
     def __init__(self,
@@ -67,7 +67,7 @@ class CustomsforgeClient:
 
         If no credentials are passed into the method, tries to use already stored credentials, if any.
 
-        If some cases it is possible to determine that login failed due to invalid credentials. In such cases
+        In some cases it is possible to determine that login failed due to invalid credentials. In such cases
         this method will avoid logging in until new credentials are passed into it.
 
         :returns true if login succeeded, false otherwise
