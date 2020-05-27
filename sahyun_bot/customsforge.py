@@ -121,7 +121,7 @@ class CustomsforgeClient:
         Exact time takes precedence over the date, unless it is 0 (or negative).
         If no date or exact time is given, starts at the beginning.
 
-        The order of CDLCs as they are returned in ascending with respect to the last time they were updated.
+        CDLCs are returned in order of ascending last update time.
         CDLCs are returned as dicts containing information, such as artist, title, id, link, etc.
         Refer to To.cdlcs method for specifics.
         """
