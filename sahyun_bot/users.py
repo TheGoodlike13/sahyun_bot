@@ -30,6 +30,13 @@ class Users(ElasticAware):
         self.__rank_cache = Cache()
         self.__rank_lock = RLock()
 
+    def get_admin(self) -> User:
+        """
+        :returns the admin user (streamer), with id if twitch is available
+        """
+        user_id = self.__tw.get_id(self.__streamer) if self.__tw else None
+        return User(nick=self.__streamer, rank=UserRank.ADMIN, user_id=user_id)
+
     def get(self, nick: str) -> User:
         """
         Determines rank (and id, if possible) for given nick.

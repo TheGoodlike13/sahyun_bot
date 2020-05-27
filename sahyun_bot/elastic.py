@@ -101,9 +101,9 @@ class ManualUserRank(BaseDoc):
             'number_of_replicas': 0,
         }
 
-    def set_rank(self, rank: UserRank):
+    def set_rank(self, rank: UserRank, **kwargs):
         self.rank_name = rank.name
-        return self.save()
+        return self.save(**kwargs)
 
     @property
     def rank(self) -> Optional[UserRank]:

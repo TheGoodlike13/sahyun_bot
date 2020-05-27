@@ -5,12 +5,16 @@ Trivial commands that do not touch any application functionality. Usually do not
 from datetime import datetime
 
 from sahyun_bot.commander_settings import Command, ResponseHook
+from sahyun_bot.users_settings import UserRank, User
 
 
 class Time(Command):
-    """
-    Prints current time in UTC.
-    """
-    def execute(self, user: str, args: str, respond: ResponseHook):
+    def min_rank(self) -> UserRank:
+        return UserRank.VWR
+
+    def execute(self, user: User, args: str, respond: ResponseHook):
+        """
+        Prints current time in UTC.
+        """
         now = datetime.utcnow().isoformat(sep=' ', timespec='seconds')
         respond.to_sender(f'The time is now {now} UTC')

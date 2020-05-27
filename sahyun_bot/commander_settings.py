@@ -1,5 +1,7 @@
 from typing import Iterator
 
+from sahyun_bot.users_settings import UserRank, User
+
 
 class ResponseHook:
     """
@@ -40,7 +42,13 @@ class Command:
         """
         yield type(self).__name__.lower()
 
-    def execute(self, user: str, args: str, respond: ResponseHook):
+    def min_rank(self) -> UserRank:
+        """
+        :returns minimum rank required to use this command; ADMIN by default
+        """
+        return UserRank.ADMIN
+
+    def execute(self, user: User, args: str, respond: ResponseHook):
         """
         Executes the command with given args & responds to given hook.
          
@@ -53,7 +61,7 @@ class Command:
         """
         raise NotImplementedError
 
-    def executest(self, user: str, args: str, respond: ResponseHook) -> ResponseHook:
+    def executest(self, user: User, args: str, respond: ResponseHook) -> ResponseHook:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """

@@ -85,7 +85,8 @@ def prepare_index() -> bool:
 
         CustomDLC._index.refresh()
 
-        ManualUserRank(_id='37103864').set_rank(UserRank.ADMIN)
+        ManualUserRank(_id='92152420').set_rank(UserRank.BAN, refresh=False)  # sahyunbot     BAN
+        ManualUserRank(_id='37103864').set_rank(UserRank.ADMIN)               # thegoodlike13 ADMIN
         return True
     except Exception as e:
         return debug_ex(e, 'prepare elasticsearch index for testing')
@@ -112,3 +113,9 @@ def cf_off():
 @pytest.fixture
 def hook():
     return ResponseMock()
+
+
+@pytest.fixture
+def users(twitchy, es):
+    from sahyun_bot.users import Users
+    return Users(streamer='sahyun', tw=twitchy, use_elastic=True)

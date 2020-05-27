@@ -1,9 +1,11 @@
 import inspect
 import sys
+from typing import Dict
 
 from sahyun_bot.commander_settings import *
 # noinspection PyUnresolvedReferences
 from sahyun_bot.commands import *
+from sahyun_bot.users import Users
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_logging import get_logger
 
@@ -17,7 +19,9 @@ class TheCommander:
     Given beans and other commands will be passed into every command constructor.
     """
     def __init__(self, **beans):
-        self.__commands = {}
+        self._users: Users = beans.get('us')  # user factory is always available
+
+        self.__commands: Dict[str, Command] = {}
 
         for module_name, module in sys.modules.items():
             if 'sahyun_bot.commands.' in module_name:
@@ -35,6 +39,8 @@ class TheCommander:
     def execute(self, sender: str, message: str, respond: ResponseHook):
         """
         Parses a message by some sender. If it is an available command, executes it.
+        Sender starting with underscore is considered admin (e.g., _console, _test). Such names are not allowed
+        by twitch by default.
 
         Before execution, the command will be checked against timeouts and user rights.
 
@@ -47,22 +53,23 @@ class TheCommander:
 
             command = self.__commands.get(name, None)
             if not command:
-                return LOG.warning(f'No command with alias <{name}> exists.')
+                return LOG.warning('No command with alias <%s> exists.', name)
+
+            user = self._users.get_admin() if sender[:1] == '_' else self._users.get(sender)
+            if not user.has_right(command.min_rank()):
+                if self.__just_needs_to_follow(command, user):
+                    respond.to_sender(f'Please follow the channel to use !{name}')
+
+                return LOG.warning('<%s> is not authorized to use !%s.', user, name)
 
             try:
-                command.execute(sender, args, respond)
+                command.execute(user, args, respond)
             except Exception as e:
                 respond.to_sender('Unexpected error occurred. Please try later.')
                 debug_ex(e, f'executing <{command}>', LOG)
 
-    def _add_command(self, command: Command):
-        """
-        Registers given command to this commander. Should only be used by automatic loading (during initialization)
-        or tests.
-        """
-        for alias in command.alias():
-            if self.__commands.setdefault(alias, command) is not command:
-                raise RuntimeError(f'Programming error: multiple commands have the same alias: {alias}')
+    def __just_needs_to_follow(self, command, user):
+        return user.rank == UserRank.VWR and command.min_rank() == UserRank.FLWR
 
     def __is_command_class(self, item) -> bool:
         return inspect.isclass(item) and issubclass(item, Command)
@@ -78,3 +85,12 @@ class TheCommander:
             return debug_ex(e, f'create command for class {command_class}', LOG, silent=True)
 
         self._add_command(command)
+
+    def _add_command(self, command: Command):
+        """
+        Registers given command to this commander. Should only be used by automatic loading (during initialization)
+        or tests.
+        """
+        for alias in command.alias():
+            if self.__commands.setdefault(alias, command) is not command:
+                raise RuntimeError(f'Programming error: multiple commands have the same alias: {alias}')
