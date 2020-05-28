@@ -75,7 +75,7 @@ class Users(ElasticAware):
 
         if user_id and self.use_elastic:
             try:
-                manual = ManualUserRank.get(user_id)
+                manual = ManualUserRank.get(user_id, ignore=[404])
                 if manual:
                     return manual.rank
             except Exception as e:
