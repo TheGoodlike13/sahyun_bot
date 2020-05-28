@@ -111,11 +111,6 @@ def cf_off():
 
 
 @pytest.fixture
-def hook():
-    return ResponseMock()
-
-
-@pytest.fixture
 def users(twitchy, es):
     from sahyun_bot.users import Users
     return Users(streamer='sahyun', tw=twitchy, use_elastic=True)
@@ -125,3 +120,20 @@ def users(twitchy, es):
 def live_users(twitchy, es):
     from sahyun_bot.users import Users
     return Users(streamer='sahyun', tw=twitchy)
+
+
+@pytest.fixture
+def commander(users):
+    from sahyun_bot.commander import TheCommander
+    from sahyun_bot.down import Downtime
+    downtime = {
+        'fail': '3600',
+        'time': '30',
+        'testfollow': '30:1',
+    }
+    return TheCommander(us=users, dt=Downtime(config=downtime))
+
+
+@pytest.fixture
+def hook():
+    return ResponseMock()
