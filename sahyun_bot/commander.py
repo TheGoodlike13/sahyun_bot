@@ -62,6 +62,9 @@ class TheCommander:
             if not command:
                 return LOG.warning('No command with alias <%s> exists.', name)
 
+            if not command.is_available():
+                return LOG.warning('Command !%s is missing a required module and thus cannot be executed.', name)
+
             user = self._users.get_admin() if self.__is_console_like(sender) else self._users.get(sender)
             if not user.has_right(command.min_rank()):
                 if self.__just_needs_to_follow(command, user):
@@ -105,7 +108,7 @@ class TheCommander:
 
     def __create_and_cache(self, command_class, **beans):
         try:
-            command = command_class(commands=self.__commands, **beans)
+            command = command_class(tc=self, commands=self.__commands, **beans)
         except Exception as e:
             LOG.warning('Command <!%s> (and aliases) not available. See logs.', command_class.__name__.lower())
             return debug_ex(e, f'create command for class {command_class}', LOG, silent=True)
