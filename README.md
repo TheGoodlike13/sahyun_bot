@@ -150,3 +150,32 @@ in the console for some reason
 
 LoggingConfigFilename = filename which contains logging configuration; defaults to 'config_log_default.ini';
 if the defaults are not suitable for you, consider making 'config_log.ini' which is ignored by git
+
+#### [downtime]
+
+Unlike the previous sections, this section is dynamic. Each key should match an alias of a command,
+and the value is a special string which represents downtime for that command. Downtime only
+applies to user roles that are limited (generally, less than VIP).
+ 
+If a command has multiple aliases, and a configuration for multiple of them is provided,
+only one of them will be used.
+There is no guarantee which one, although the result should be deterministic, i.e.
+unless you change the configuration, it will continue to work the same.
+
+The expected format is either an integer, or two integers separated by a colon. All negative
+integers will be treated as 0. 0 is equivalent to not providing the configuration.
+If the format of downtime is not followed, that setting is simply ignored. Here are a few examples:
+
+###### time = 30
+
+Now !time can only be executed once every 30 seconds. This applies globally - everyone has to wait.
+There is no way to configure how many times it can be executed at this moment.
+
+###### request = 900:2
+
+Now !request can only be executed twice every 15 minutes. This applies per-user - each user gets
+two requests.
+
+###### joke = :5
+
+This is ignored because it does not follow the format of previous configurations.
