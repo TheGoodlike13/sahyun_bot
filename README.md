@@ -169,7 +169,7 @@ If the format of downtime is not followed, that setting is simply ignored. Here 
 ###### time = 30
 
 Now !time can only be executed once every 30 seconds. This applies globally - everyone has to wait.
-There is no way to configure how many times it can be executed at this moment.
+There is no way to grant more than one execution on global level.
 
 ###### request = 900:2
 
@@ -178,4 +178,4 @@ two requests.
 
 ###### joke = :5
 
-This is ignored because it does not follow the format of previous configurations.
+This is ignored because it does not follow the format.
