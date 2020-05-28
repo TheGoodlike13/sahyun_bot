@@ -59,6 +59,12 @@ class Command:
         """
         yield type(self).__name__.lower()
 
+    def any_alias(self) -> str:
+        """
+        :returns first alias
+        """
+        return next(self.alias())
+
     def min_rank(self) -> UserRank:
         """
         :returns minimum rank required to use this command; ADMIN by default
