@@ -14,7 +14,7 @@ class Time(Command):
 
     def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
         """
-        Prints current time in UTC.
+        Responds with current time in UTC.
         """
         now = datetime.utcnow().isoformat(sep=' ', timespec='seconds')
         respond.to_sender(f'The time is now {now} UTC')
