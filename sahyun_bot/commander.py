@@ -56,7 +56,7 @@ class TheCommander:
         Hook will be used to send a response, if any.
         Most generic errors (e.g. no such command, no rights, global timeout) will simply be ignored.
 
-        :returns true if execution succeeded, false if it failed or never executed in the first place
+        :returns true if execution succeeded, false or None if it failed or never executed in the first place
         """
         if self.__is_command(message):
             name, space, args = message[1:].partition(' ')
@@ -87,11 +87,11 @@ class TheCommander:
                     return LOG.warning('<%s> has to wait %s before using !%s again.', user, time_words, name)
 
             try:
-                success = command.execute(user, args, respond)
-                if success and self._downtime and user.is_limited:
+                failure = command.execute(user, args, respond)
+                if not failure and self._downtime and user.is_limited:
                     self._downtime.remember_use(command, user)
 
-                return success
+                return not failure
             except Exception as e:
                 respond.to_sender('Unexpected error occurred. Please try later')
                 debug_ex(e, f'executing <{command}>', LOG)

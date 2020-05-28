@@ -10,15 +10,17 @@ class ResponseHook:
     """
     Base class for handling responses to the commands.
     """
-    def to_sender(self, message: str):
+    def to_sender(self, message: str) -> bool:
         """
         Respond directly to sender.
+        :returns true, always
         """
         raise NotImplementedError
 
-    def to_channel(self, message: str):
+    def to_channel(self, message: str) -> bool:
         """
         Send message to the channel, not specific sender.
+        :returns true, always
         """
         raise NotImplementedError
 
@@ -73,7 +75,7 @@ class Command:
         :param user: one who requested command execution
         :param args: parameters passed in with the command, unparsed
         :param respond: callback to allow responding to the command
-        :returns true if execution succeeded, false if it failed or never executed in the first place
+        :returns true if execution failed, false or None if it succeeded
         """
         raise NotImplementedError
 
@@ -81,6 +83,6 @@ class Command:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
-        success = self.execute(user, args, respond)
-        respond.to_debug('success' if success else 'failure')
+        failure = self.execute(user, args, respond)
+        respond.to_debug('failure' if failure else 'success')
         return respond

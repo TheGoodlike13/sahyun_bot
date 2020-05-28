@@ -91,15 +91,13 @@ class TestFollow(Command):
     def min_rank(self) -> UserRank:
         return UserRank.FLWR
 
-    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
+    def execute(self, user: User, args: str, respond: ResponseHook):
         respond.to_sender('Thanks for following!')
-        return True
 
 
 class Fail(Command):
     def min_rank(self) -> UserRank:
         return UserRank.VWR
 
-    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
-        respond.to_sender('I fail')
-        return False
+    def execute(self, user: User, args: str, respond: ResponseHook):
+        return respond.to_sender('I fail')

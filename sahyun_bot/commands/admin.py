@@ -13,11 +13,10 @@ class Lock(Command):
         super().__init__(**beans)
         self.__tc = beans.get('tc')  # TheCommander is always available
 
-    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
+    def execute(self, user: User, args: str, respond: ResponseHook):
         """
         Stops the bot from executing any further commands unless the user is ADMIN.
         """
         is_admin_only = self.__tc.flip_admin_switch()
         message = 'is now' if is_admin_only else 'no longer'
         respond.to_sender(f'Bot {message} in ADMIN only mode.')
-        return True

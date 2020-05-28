@@ -20,6 +20,8 @@ def setup_console(tc: TheCommander):
 class ToConsole(ResponseHook):
     def to_sender(self, message: str):
         self.to_channel(message)
+        return True
 
     def to_channel(self, message: str):
         LOG.warning(message)
+        return True

@@ -19,9 +19,11 @@ class ResponseMock(ResponseHook, Closeable):
 
     def to_sender(self, message: str):
         self.__all_to_sender.append(message)
+        return True
 
     def to_channel(self, message: str):
         self.__all_to_channel.append(message)
+        return True
 
     def to_debug(self, message: str):
         self.__all_to_debug.append(message)

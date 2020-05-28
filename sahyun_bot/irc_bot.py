@@ -24,9 +24,11 @@ class ToIrc(ResponseHook):
 
     def to_sender(self, message: str):
         self.to_channel(f'{self.__sender}: {message}')
+        return True
 
     def to_channel(self, message: str):
         run_coroutine_threadsafe(self.__bot.message(self.__channel, message), self.__bot.eventloop)
+        return True
 
 
 # noinspection PyPep8Naming
