@@ -9,6 +9,7 @@ from urllib.parse import urlparse, parse_qs
 from cachetools import TTLCache
 
 T = TypeVar('T')  # general purpose generic variable to be used in generic functions
+V = TypeVar('V')  # generic variable for dict like situations, e.g. Dict[T, V]
 
 NON_EXISTENT = object()  # if next(it, NON_EXISTENT) is NON_EXISTENT: <do stuff if 'it' was empty>
 

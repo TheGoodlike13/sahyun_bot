@@ -7,7 +7,6 @@ SOME TIME LATER
     Sub support
 
 BEFORE RELEASE
-    Support for command timeout (per user & global)
     Document commands, ranks and timeouts in README
     More background threads - TheLoaderer load()
 COMMANDS
@@ -28,3 +27,6 @@ COMMANDS
         !playlist - request queue (no more than TOP 5)
         !commands - list of public commands available to your rank
         !hosts - list of hosts for the channel
+
+Replace blah if blah > 0 else 0 with max(blah, 0)
+Support config for twitch caching in users

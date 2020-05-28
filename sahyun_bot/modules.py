@@ -9,6 +9,9 @@ from elasticsearch_dsl import connections
 
 from sahyun_bot.bot_settings import *
 from sahyun_bot.commander import TheCommander
+from sahyun_bot.commander_settings import *
+from sahyun_bot.down import Downtime
+from sahyun_bot.down_settings import *
 from sahyun_bot.elastic_settings import *
 from sahyun_bot.irc_bot import botyun
 from sahyun_bot.the_loaderer import *
@@ -53,7 +56,10 @@ if init_module(es, 'Elasticsearch client'):
 tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')
 
-tc = TheCommander(cf=cf, tw=tw, us=us, es=es, tl=tl)
+dt = Downtime(config=d_down)
+init_module(tl, 'Downtime for commands')
+
+tc = TheCommander(cf=cf, tw=tw, us=us, es=es, tl=tl, dt=dt)
 init_module(tc, 'The commander')
 
 bot = botyun(tc=tc,

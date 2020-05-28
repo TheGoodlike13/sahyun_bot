@@ -119,3 +119,9 @@ def hook():
 def users(twitchy, es):
     from sahyun_bot.users import Users
     return Users(streamer='sahyun', tw=twitchy, use_elastic=True)
+
+
+@pytest.fixture
+def live_users(twitchy, es):
+    from sahyun_bot.users import Users
+    return Users(streamer='sahyun', tw=twitchy)

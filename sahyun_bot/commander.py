@@ -2,9 +2,12 @@ import inspect
 import sys
 from typing import Dict
 
+from humanize import naturaldelta
+
 from sahyun_bot.commander_settings import *
 # noinspection PyUnresolvedReferences
 from sahyun_bot.commands import *
+from sahyun_bot.down import Downtime
 from sahyun_bot.users import Users
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_logging import get_logger
@@ -19,7 +22,8 @@ class TheCommander:
     Given beans and other commands will be passed into every command constructor.
     """
     def __init__(self, **beans):
-        self._users: Users = beans.get('us')  # user factory is always available
+        self._downtime: Downtime = beans.get('dt', None)  # downtime config is not guaranteed
+        self._users: Users = beans.get('us')              # user factory is always available
 
         self.__commands: Dict[str, Command] = {}
 
@@ -43,14 +47,14 @@ class TheCommander:
         Sender starting with underscore is considered admin (e.g., _console, _test). Such names are not allowed
         by twitch by default.
 
-        Before execution, the command will be checked against timeouts and user rights.
+        Before execution, the command will be checked against user rights and timeouts.
 
         Hook will be used to send a response, if any.
-        Most generic errors (e.g. no such command) will simply be ignored.
+        Most generic errors (e.g. no such command, no rights, global timeout) will simply be ignored.
 
         :returns true if execution succeeded, false if it failed or never executed in the first place
         """
-        if message and message[:1] == '!':
+        if self.__is_command(message):
             name, space, args = message[1:].partition(' ')
             name = name.lower()
 
@@ -58,20 +62,39 @@ class TheCommander:
             if not command:
                 return LOG.warning('No command with alias <%s> exists.', name)
 
-            user = self._users.get_admin() if sender[:1] == '_' else self._users.get(sender)
+            user = self._users.get_admin() if self.__is_console_like(sender) else self._users.get(sender)
             if not user.has_right(command.min_rank()):
                 if self.__just_needs_to_follow(command, user):
                     respond.to_sender(f'Please follow the channel to use !{name}')
 
                 return LOG.warning('<%s> is not authorized to use !%s.', user, name)
 
+            if self._downtime and user.is_limited:
+                time_to_wait = self._downtime.downtime_left(command, user)
+                if time_to_wait:
+                    time_words = naturaldelta(time_to_wait)
+                    if not self._downtime.is_global(command):
+                        respond.to_sender(f'You can use !{name} again in {time_words}')
+
+                    return LOG.warning('<%s> has to wait %s before using !%s again.', user, time_words, name)
+
             try:
-                return command.execute(user, args, respond)
+                success = command.execute(user, args, respond)
+                if success and self._downtime and user.is_limited:
+                    self._downtime.remember_use(command, user)
+
+                return success
             except Exception as e:
-                respond.to_sender('Unexpected error occurred. Please try later.')
+                respond.to_sender('Unexpected error occurred. Please try later')
                 debug_ex(e, f'executing <{command}>', LOG)
 
-    def __just_needs_to_follow(self, command, user):
+    def __is_command(self, message: str) -> bool:
+        return message and message[:1] == '!'
+
+    def __is_console_like(self, sender: str) -> bool:
+        return sender[:1] == '_'
+
+    def __just_needs_to_follow(self, command, user) -> bool:
         return user.rank == UserRank.VWR and command.min_rank() == UserRank.FLWR
 
     def __is_command_class(self, item) -> bool:

@@ -4,9 +4,9 @@ Contains utilities which help with parsing settings & similar.
 This module contains a reference to a global config parser. Please initialize it before use.
 """
 from configparser import ConfigParser
-from typing import Callable, Optional, List
+from typing import Callable, Optional, List, Dict
 
-from sahyun_bot.utils import T, identity, debug_ex
+from sahyun_bot.utils import T, V, identity, debug_ex
 
 config = ConfigParser()
 
@@ -56,3 +56,29 @@ def read_config(section: str,
     except Exception as e:
         debug_ex(e, f'convert config value [{section}]->{key}: {value}', silent=True)
         return fallback
+
+
+def read_dynamic_config(section: str,
+                        convert_key: Callable[[str], T] = identity,
+                        convert_value: Callable[[str], V] = identity,
+                        fallback: V = None) -> Dict[T, V]:
+    result = {}
+
+    if config.has_section(section):
+        for key, value in config.items(section):
+            try:
+                key = convert_key(key.strip())
+            except Exception as e:
+                debug_ex(e, f'convert config key [{section}]->{key}: {value}', silent=True)
+                key = None
+
+            try:
+                value = convert_value(value.strip())
+            except Exception as e:
+                debug_ex(e, f'convert config value [{section}]->{key}: {value}', silent=True)
+                value = fallback
+
+            if key and value:
+                result[key] = value
+
+    return result

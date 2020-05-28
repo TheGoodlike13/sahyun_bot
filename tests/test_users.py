@@ -6,11 +6,6 @@ from sahyun_bot.users_settings import UserRank, User
 
 
 @pytest.fixture
-def live_users(twitchy, es):
-    return Users(streamer='sahyun', tw=twitchy)
-
-
-@pytest.fixture
 def fallback_users():
     return Users(streamer='sahyun')
 
