@@ -1,5 +1,6 @@
 import inspect
 import sys
+from threading import RLock
 from typing import Dict
 
 from humanize import naturaldelta
@@ -24,6 +25,9 @@ class TheCommander:
     def __init__(self, **beans):
         self._downtime: Downtime = beans.get('dt', None)  # downtime config is not guaranteed
         self._users: Users = beans.get('us')              # user factory is always available
+
+        self.__lock = RLock()
+        self.__is_admin_only = False
 
         self.__commands: Dict[str, Command] = {}
 
@@ -66,8 +70,9 @@ class TheCommander:
                 return LOG.warning('Command !%s is missing a required module and thus cannot be executed.', name)
 
             user = self._users.get_admin() if self.__is_console_like(sender) else self._users.get(sender)
-            if not user.has_right(command.min_rank()):
-                if self.__just_needs_to_follow(command, user):
+            required_rank = self.__required_rank(command)
+            if not user.has_right(required_rank):
+                if self.__just_needs_to_follow(user, required_rank):
                     respond.to_sender(f'Please follow the channel to use !{name}')
 
                 return LOG.warning('<%s> is not authorized to use !%s.', user, name)
@@ -91,14 +96,26 @@ class TheCommander:
                 respond.to_sender('Unexpected error occurred. Please try later')
                 debug_ex(e, f'executing <{command}>', LOG)
 
+    def flip_admin_switch(self) -> bool:
+        """
+        :returns true if bot is now in ADMIN only mode, false if ADMIN mode was turned off instead
+        """
+        with self.__lock:
+            self.__is_admin_only = not self.__is_admin_only
+            return self.__is_admin_only
+
     def __is_command(self, message: str) -> bool:
         return message and message[:1] == '!'
 
     def __is_console_like(self, sender: str) -> bool:
         return sender[:1] == '_'
 
-    def __just_needs_to_follow(self, command, user) -> bool:
-        return user.rank == UserRank.VWR and command.min_rank() == UserRank.FLWR
+    def __required_rank(self, command):
+        with self.__lock:
+            return UserRank.ADMIN if self.__is_admin_only else command.min_rank()
+
+    def __just_needs_to_follow(self, user: User, required_rank: UserRank) -> bool:
+        return user.rank == UserRank.VWR and required_rank == UserRank.FLWR
 
     def __is_command_class(self, item) -> bool:
         return inspect.isclass(item) and issubclass(item, Command)
