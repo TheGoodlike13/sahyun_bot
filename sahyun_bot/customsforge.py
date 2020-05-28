@@ -46,7 +46,7 @@ class CustomsforgeClient:
                  get_today: Callable[[], date] = date.today):
         self.__api_key = api_key
         self.__batch_size = batch_size if Verify.batch_size(batch_size) else DEFAULT_BATCH_SIZE
-        self.__timeout = timeout if timeout > 0 else DEFAULT_TIMEOUT
+        self.__timeout = max(0, timeout) or DEFAULT_TIMEOUT
         self.__cookie_jar_file = cookie_jar_file
 
         self.__username = username
@@ -157,7 +157,7 @@ class CustomsforgeClient:
         passed_since = self.__get_today() - since
         # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
         skip_estimate = date_count - passed_since.days - 3
-        return skip_estimate if skip_estimate > 0 else 0
+        return max(0, skip_estimate)
 
     def __has_credentials(self, username: str, password: str):
         if username and password:

@@ -51,7 +51,7 @@ class HttpDump:
     """
     def __init__(self, unsafe: List[str] = None, max_dump: int = DEFAULT_MAX_DUMP):
         self.__unsafe_params = unsafe or []
-        self.__max_dump = max_dump if max_dump and max_dump > 0 else DEFAULT_MAX_DUMP
+        self.__max_dump = max(0, max_dump) or DEFAULT_MAX_DUMP
 
     def all(self, response: Response, *args, **kwargs):
         self.basic(response, *args, **kwargs)

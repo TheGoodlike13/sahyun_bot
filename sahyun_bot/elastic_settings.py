@@ -74,7 +74,7 @@ def init():
     e_req_max = read_config('elastic', 'RequestMatchCeiling', convert=int, fallback=DEFAULT_REQUEST_MATCH_CEILING)
     e_explain = read_config('elastic', 'Explain', convert=parse_bool, fallback=False)
 
-    e_req_max = e_req_max if e_req_max > 0 else DEFAULT_REQUEST_MATCH_CEILING
+    e_req_max = max(0, e_req_max) or DEFAULT_REQUEST_MATCH_CEILING
 
     for e in values():
         if e in TEST_ONLY_VALUES:

@@ -24,7 +24,7 @@ class SessionFactory:
     """
     def __init__(self, retry_count: int = DEFAULT_RETRY_COUNT, **dump_kwargs):
         self.__dump = HttpDump(**dump_kwargs)
-        self.__retry_count = retry_count if retry_count and retry_count > 0 else DEFAULT_RETRY_COUNT
+        self.__retry_count = max(0, retry_count) or DEFAULT_RETRY_COUNT
 
     def with_retry(self, session: Session = None):
         session = session or Session()

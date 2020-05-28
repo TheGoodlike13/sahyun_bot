@@ -361,7 +361,7 @@ class TheLoaderer(ElasticAware):
         super().__init__(use_elastic)
 
         self.__cf_source = Customsforge(cf) if cf else None
-        self.__max_threads = max_threads if max_threads and max_threads > 0 else DEFAULT_MAX_THREADS
+        self.__max_threads = max(0, max_threads) or DEFAULT_MAX_THREADS
 
     def log_weird_links(self):
         """
