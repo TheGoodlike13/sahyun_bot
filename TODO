@@ -4,7 +4,7 @@ SOME TIME LATER
     Print message when someone hosts or stops hosting - requires background task
     Advanced timeout system - quota based, with different outcomes having different costs
     Fallback implementation for CDLC search (similar to the original bot, querying the website)
-    Sub support
+    Sub & mod support
 
 BEFORE RELEASE
     Document commands, ranks and timeouts in README
