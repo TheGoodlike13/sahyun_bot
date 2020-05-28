@@ -52,19 +52,8 @@ def working_test_elastic_client():
         pytest.skip('Cannot perform elastic tests! Please launch & configure an elasticsearch instance.')
 
 
-# this fixture should be used in modules where changes are minimal and easy to track
-@pytest.fixture(scope='module')
-def es(working_test_elastic_client):
-    yield from prepare_elastic(working_test_elastic_client)
-
-
-# this fixture should be used when your test bricks values used by other tests
 @pytest.fixture
-def es_fresh(working_test_elastic_client):
-    yield from prepare_elastic(working_test_elastic_client)
-
-
-def prepare_elastic(working_test_elastic_client):
+def es(working_test_elastic_client):
     from sahyun_bot import utils_elastic
     try:
         # if test server crashes half way, but comes back up quick, the next test should clean up before moving forward
@@ -93,7 +82,7 @@ def prepare_index() -> bool:
 
 
 @pytest.fixture
-def tl(cf, es_fresh):
+def tl(cf, es):
     from sahyun_bot.the_loaderer import TheLoaderer
     return TheLoaderer(cf, use_elastic=True)
 

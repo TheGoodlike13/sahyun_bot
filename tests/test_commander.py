@@ -36,7 +36,7 @@ def test_command_authorization(commander, hook):
         hook.assert_success()
 
 
-def test_ask_to_follow_and_user_downtime(commander, hook, es_fresh):
+def test_ask_to_follow_and_user_downtime(commander, hook):
     commander._add_command(TestFollow())
 
     with commander.executest('goodlikebot', '!testfollow', hook):

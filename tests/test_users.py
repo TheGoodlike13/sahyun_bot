@@ -31,7 +31,7 @@ def test_full_functionality(users):
     assert_user(users.get('sahyunbot'), rank=UserRank.BAN, user_id='92152420')
 
 
-def test_set_manual_rank(users, es_fresh):
+def test_set_manual_rank(users):
     users.set_manual('goodlikebot', UserRank.BAN)
     assert_user(users.get('goodlikebot'), rank=UserRank.BAN, user_id='91770105')
 
