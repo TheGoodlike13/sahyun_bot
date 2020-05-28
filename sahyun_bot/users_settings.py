@@ -2,14 +2,21 @@ from enum import IntEnum
 
 
 class UserRank(IntEnum):
-    BAN = 0
-    VWR = 1
-    FLWR = 2
-    UNKNW = 3
-    SUB = 4
-    VIP = 5
-    MOD = 6
-    ADMIN = 7
+    """
+    Ranks given to users. The numbers represent comparable values for the ranks. Greater ranks implies more rights.
+
+    Never assign 0 to a rank, because this will cause Python to treat this rank as False, which may result in that
+    rank being broken. These numbers are not used internally outside comparison, so they can be freely adjusted in
+    any other way.
+    """
+    BAN = 1
+    VWR = 2
+    FLWR = 3
+    UNKNW = 4
+    SUB = 5
+    VIP = 6
+    MOD = 7
+    ADMIN = 8
 
 
 class User:
