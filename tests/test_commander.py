@@ -10,6 +10,7 @@ from sahyun_bot.users_settings import User, UserRank
 @pytest.fixture
 def commander(users):
     downtime = {
+        'fail': '3600',
         'time': '30',
         'testfollow': '30:1',
     }
@@ -90,6 +91,18 @@ def test_global_downtime(commander, hook, live_users):
         assert_that(hook.all_to_sender()).contains('The time is now ', ' UTC')
 
 
+def test_no_downtime_for_failure(commander, hook):
+    commander._add_command(Fail())
+
+    with commander.executest('goodlikebot', '!fail', hook):
+        assert_that(hook.all_to_sender()).contains('I fail')
+        assert_that(hook.all_to_debug()).contains('failure')
+
+    # no downtime because command didn't succeed
+    with commander.executest('goodlikebot', '!fail', hook):
+        assert_that(hook.all_to_sender()).contains('I fail')
+
+
 class TestFollow(Command):
     def min_rank(self) -> UserRank:
         return UserRank.FLWR
@@ -97,3 +110,12 @@ class TestFollow(Command):
     def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
         respond.to_sender('Thanks for following!')
         return True
+
+
+class Fail(Command):
+    def min_rank(self) -> UserRank:
+        return UserRank.VWR
+
+    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
+        respond.to_sender('I fail')
+        return False
