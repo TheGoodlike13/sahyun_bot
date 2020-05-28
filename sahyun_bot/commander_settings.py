@@ -79,10 +79,11 @@ class Command:
         """
         raise NotImplementedError
 
-    def executest(self, user: User, args: str, respond: ResponseHook) -> ResponseHook:
+    def executest(self, respond: ResponseHook, rank: UserRank = UserRank.ADMIN, args: str = '') -> ResponseHook:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
+        user = User(nick='_test', rank=rank)
         failure = self.execute(user, args, respond)
         respond.to_debug('failure' if failure else 'success')
         return respond

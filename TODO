@@ -11,7 +11,6 @@ BEFORE RELEASE
     More background threads - TheLoaderer load()
 COMMANDS
     ADMIN
-        !index - call TheLoaderer#load manually
         !rank - force rank on user, only if elastic index is available
         !next - pop next request from the queue; while at it, check if user still watching
         !top - move a request to the top of the queue

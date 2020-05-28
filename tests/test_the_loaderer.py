@@ -1,15 +1,8 @@
-import pytest
 from assertpy import assert_that
 from httmock import HTTMock
 
 from sahyun_bot.elastic import CustomDLC
-from sahyun_bot.the_loaderer import TheLoaderer
 from tests.mock_customsforge import customsforge
-
-
-@pytest.fixture
-def tl(cf, es_fresh):
-    return TheLoaderer(cf, use_elastic=True)
 
 
 def test_loading_from_start(tl):

@@ -93,6 +93,12 @@ def prepare_index() -> bool:
 
 
 @pytest.fixture
+def tl(cf, es_fresh):
+    from sahyun_bot.the_loaderer import TheLoaderer
+    return TheLoaderer(cf, use_elastic=True)
+
+
+@pytest.fixture
 def cf():
     return CustomsforgeClient(api_key=MOCK_API_KEY,
                               batch_size=1,
