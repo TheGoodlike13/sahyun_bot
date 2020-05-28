@@ -19,7 +19,26 @@ http://customsforge.com/page/support.html
 
 ## Command reference
 
-TODO
+Every command requires a specific rank from the user to be executed. Furthermore, higher ranks
+may grant additional functionality. This reference will be divided into sections of user rank
+which is required for the command, and any additional privileges to higher ranks will be explicitly
+enumerated within the description of this command.
+
+No commands are available for users with rank BAN.
+
+### VWR (any viewer that is not a follower)
+
+#### !time
+
+Responds with current time in UTC.
+
+### FLWR (follower)
+
+### ADMIN (streamer & his buddies)
+
+#### !lock
+
+Stops the bot from executing any further commands unless the user is ADMIN.
 
 ## Notes on development & running
 
