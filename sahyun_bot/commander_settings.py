@@ -42,6 +42,9 @@ class Command:
     The beans passed into the commands are named the same as globals from 'modules.py'.
     If some bean is not available, prefer to return false with #is_available rather than throwing an exception.
     """
+    def __init__(self, **beans):
+        pass
+
     def is_available(self) -> bool:
         """
         :returns true if all required modules are available, false if any of them is missing
