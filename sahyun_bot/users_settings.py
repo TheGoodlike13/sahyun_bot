@@ -19,7 +19,7 @@ class User:
         self.user_id = user_id
 
     def __str__(self):
-        return f'{self.rank} {self.nick}'
+        return f'{self.rank.name} {self.nick}'
 
     def has_right(self, rank: UserRank) -> bool:
         """
