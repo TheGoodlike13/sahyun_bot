@@ -13,7 +13,6 @@ from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
 
-
 TRANSIENT_RANKS = frozenset([
     UserRank.VWR,
     UserRank.FLWR,
@@ -48,16 +47,26 @@ class Users(ElasticAware):
     def get(self, nick: str) -> User:
         """
         Determines rank (and id, if possible) for given nick.
-        Checks against streamer, elastic index, twitch cached & live status, in that order.
-        If any of these do not contain the value, defaults to viewer.
-        Finally, if twitch isn't even available, defaults to unknown. This enables basic functionality.
-
         :returns user object for nick
         """
         nick = nick.lower()
         user_id = self.__tw.get_id(nick) if self.__tw else None
-        rank = self.__get_rank(nick, user_id)
+        rank = self.get_rank(nick, user_id)
         return User(nick=nick, rank=rank, user_id=user_id)
+
+    def get_rank(self, nick: str, user_id: str = None) -> UserRank:
+        """
+        Checks against streamer, elastic index, twitch cached & live status, in that order.
+        If any of these do not contain the value, defaults to viewer.
+        Finally, if twitch isn't even available, defaults to unknown. This enables basic functionality.
+
+        :returns rank for given user
+        """
+        user_id = self.__tw.get_id(nick) if self.__tw and not user_id else user_id
+        return self.__check_streamer(nick)\
+            or self.__check_elastic(nick, user_id) \
+            or self.__check_twitch(nick, user_id) \
+            or self.__fallback()
 
     def set_manual(self, nick: str, rank: UserRank) -> bool:
         """
@@ -65,7 +74,7 @@ class Users(ElasticAware):
 
         :returns true if rank was updated, false otherwise
         """
-        if not self.__tw:
+        if not self.__tw or not self.use_elastic:
             return False
 
         user_id = self.__tw.get_id(nick.lower())
@@ -75,13 +84,7 @@ class Users(ElasticAware):
         try:
             return ManualUserRank(_id=user_id).set_rank(rank)
         except Exception as e:
-            return debug_ex(e, f'set rank {rank} to <{nick}>', LOG)
-
-    def __get_rank(self, nick: str, user_id: str = None) -> UserRank:
-        return self.__check_streamer(nick)\
-               or self.__check_elastic(nick, user_id)\
-               or self.__check_twitch(nick, user_id)\
-               or self.__fallback()
+            return debug_ex(e, f'set <{nick}> to rank {rank.name}', LOG)
 
     def __check_streamer(self, nick: str) -> Optional[UserRank]:
         return UserRank.ADMIN if nick == self.__streamer else None
