@@ -70,7 +70,7 @@ def test_ask_to_follow_and_user_downtime(commander, hook, es_fresh):
         assert_that(hook.all_to_sender()).contains('Thanks for following!')
 
 
-def test_global_downtime(commander, live_users, hook):
+def test_global_downtime(commander, hook, live_users):
     commander._users = live_users  # fewer admins, easier to test
 
     # first use is free
