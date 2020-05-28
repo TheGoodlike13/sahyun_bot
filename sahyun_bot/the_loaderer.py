@@ -392,13 +392,14 @@ class TheLoaderer(ElasticAware):
         """
         self.load(ElasticIndex(continuous=False), ElasticIndexUpdateOnly(), links or self.__cf_source)
 
-    def load(self, src=None, dest=None, links=None):
+    def load(self, src=None, dest=None, links=None) -> bool:
         """
         Loads CDLCs from a source to a destination.
 
         :param src: Source implementation or an object that can be resolved to one
         :param dest: Destination implementation or an object that can be resolved to one
         :param links: DirectLinkSource implementation or an object that can be resolved to one
+        :returns true if loading was attempted, false if it failed before even starting
 
         Resolution logic:
         1) If it's any falsy object, use default
@@ -421,21 +422,25 @@ class TheLoaderer(ElasticAware):
         dest = self.__coerce_destination(dest)
         links = self.__coerce_links(src, links)
 
-        if src and dest and links:
-            work_queue: List[Future] = []
+        if not src or not dest:
+            return False
 
-            with src, dest, ThreadPoolExecutor(self.__max_threads) as p:
-                for cdlc in src.read_all(dest.start_from()):
-                    c = dest.try_write(cdlc)
-                    if c is not None:
-                        work = p.submit(self.__update, links, cdlc.get('id', None), dest, c)
-                        work_queue.append(work)
+        work_queue: List[Future] = []
 
-                for item in work_queue:
-                    item.result()
+        with src, dest, ThreadPoolExecutor(self.__max_threads) as p:
+            for cdlc in src.read_all(dest.start_from()):
+                c = dest.try_write(cdlc)
+                if c is not None:
+                    work = p.submit(self.__update, links, cdlc.get('id', None), dest, c)
+                    work_queue.append(work)
+
+            for item in work_queue:
+                item.result()
+
+        return True
 
     def __update(self, links: DirectLinkSource, c_id, dest: Destination, c):
-        direct_link = links.to_direct_link(c_id) if c_id else ''
+        direct_link = links.to_direct_link(c_id) if links and c_id else ''
         if direct_link and not extract(direct_link).registered_domain:
             LOG.warning('Strange link detected for CDLC #%s: <%s>', c_id, direct_link)
 
