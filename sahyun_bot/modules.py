@@ -19,6 +19,7 @@ from sahyun_bot.the_loaderer_settings import *
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.twitchy_settings import *
 from sahyun_bot.users import Users
+from sahyun_bot.users_settings import *
 from sahyun_bot.utils_elastic import print_elastic_indexes
 from sahyun_bot.utils_logging import get_logger
 
@@ -46,7 +47,7 @@ if init_module(cf, 'Customsforge client'):
 tw = Twitchy(client_id=t_id, client_secret=t_secret) if t_id and t_secret else None
 init_module(tw, 'Twitch API')
 
-us = Users(streamer=i_streamer, tw=tw)
+us = Users(streamer=i_streamer, tw=tw, cache_follows=u_cache_f, cache_viewers=u_cache_w)
 init_module(us, 'User factory')
 
 es = connections.create_connection(hosts=[e_host]) if e_host else None

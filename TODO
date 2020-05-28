@@ -29,4 +29,3 @@ COMMANDS
         !hosts - list of hosts for the channel
 
 Replace blah if blah > 0 else 0 with max(blah, 0)
-Support config for twitch caching in users

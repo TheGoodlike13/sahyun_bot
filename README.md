@@ -107,6 +107,14 @@ ClientId = client id for accessing twitch API
 
 Secret = client secret for accessing twitch API
 
+#### [users]
+
+CacheFollows = amount of seconds to cache a live follower rank, defaults to 300;
+any positive value is allowed
+
+CacheViewers = amount of seconds to cache a live follower rank, defaults to 5;
+any positive value is allowed
+
 #### [elastic]
 
 Host = host used by elasticsearch client; defaults to localhost; localhost is also used for tests
@@ -153,7 +161,10 @@ if the defaults are not suitable for you, consider making 'config_log.ini' which
 
 #### [downtime]
 
-Unlike the previous sections, this section is dynamic. Each key should match an alias of a command,
+Leniency = amount of seconds of downtime that should be ignored; defaults to 1; all values less
+than 1 become 1
+
+Unlike the previous sections, this section is dynamic. Each key matches an alias of a command,
 and the value is a special string which represents downtime for that command. Downtime only
 applies to user roles that are limited (generally, less than VIP).
  

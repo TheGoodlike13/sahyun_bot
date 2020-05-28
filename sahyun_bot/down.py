@@ -5,6 +5,7 @@ from typing import Dict, Optional, Tuple, List
 from twitch.cache import Cache
 
 from sahyun_bot.commander_settings import Command
+from sahyun_bot.down_settings import *
 from sahyun_bot.users_settings import User
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_logging import get_logger
@@ -30,8 +31,10 @@ class Downtime:
     {'request': '900:2'} -> 15min per-user timeout for !request (and aliases) with allowance of 2
     {'any': ':2'} -> ignored, as it is not valid format
     """
-    def __init__(self, leniency: int = 1, config: Dict[str, str] = None):
-        self.__leniency = timedelta(seconds=max(leniency or 1, 1))
+    def __init__(self,
+                 leniency: int = DEFAULT_LENIENCY,
+                 config: Dict[str, str] = None):
+        self.__leniency = timedelta(seconds=max(leniency, DEFAULT_LENIENCY))
 
         self.__index = 0
         self.__uses = Cache()

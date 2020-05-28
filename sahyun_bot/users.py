@@ -1,11 +1,12 @@
 from datetime import timedelta
 from threading import RLock
+from typing import Optional
 
 from twitch.cache import Cache
 
 from sahyun_bot.elastic import ManualUserRank
 from sahyun_bot.twitchy import Twitchy
-from sahyun_bot.users_settings import UserRank, User
+from sahyun_bot.users_settings import *
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_elastic import ElasticAware
 from sahyun_bot.utils_logging import get_logger
@@ -21,11 +22,18 @@ TRANSIENT_RANKS = frozenset([
 
 
 class Users(ElasticAware):
-    def __init__(self, streamer: str, tw: Twitchy = None, use_elastic: bool = None):
+    def __init__(self,
+                 streamer: str,
+                 tw: Twitchy = None,
+                 cache_follows: int = DEFAULT_CACHE_FOLLOWS,
+                 cache_viewers: int = DEFAULT_CACHE_VIEWERS,
+                 use_elastic: bool = None):
         super().__init__(use_elastic)
 
         self.__streamer = streamer.lower()
         self.__tw = tw
+        self.__cache_follows = cache_follows
+        self.__cache_viewers = cache_viewers
 
         self.__rank_cache = Cache()
         self.__rank_lock = RLock()
@@ -70,9 +78,15 @@ class Users(ElasticAware):
             return debug_ex(e, f'set rank {rank} to <{nick}>', LOG)
 
     def __get_rank(self, nick: str, user_id: str = None) -> UserRank:
-        if nick == self.__streamer:
-            return UserRank.ADMIN
+        return self.__check_streamer(nick)\
+               or self.__check_elastic(nick, user_id)\
+               or self.__check_twitch(nick, user_id)\
+               or self.__fallback()
 
+    def __check_streamer(self, nick: str) -> Optional[UserRank]:
+        return UserRank.ADMIN if nick == self.__streamer else None
+
+    def __check_elastic(self, nick: str, user_id: str) -> Optional[UserRank]:
         if user_id and self.use_elastic:
             try:
                 manual = ManualUserRank.get(user_id, ignore=[404])
@@ -81,6 +95,7 @@ class Users(ElasticAware):
             except Exception as e:
                 debug_ex(e, f'get manual rank for <{nick}>', LOG)
 
+    def __check_twitch(self, nick: str, user_id: str) -> Optional[UserRank]:
         if user_id:
             with self.__rank_lock:
                 try:
@@ -90,10 +105,14 @@ class Users(ElasticAware):
 
                     is_follower = self.__tw.is_following(self.__streamer, user_id)
                     live = UserRank.FLWR if is_follower else UserRank.VWR
-                    duration = timedelta(minutes=5) if is_follower else timedelta(seconds=5)
-                    self.__rank_cache.set(user_id, {'rank': live}, duration=duration)
+                    self.__rank_cache.set(user_id, {'rank': live}, duration=self.__cache_duration(is_follower))
                     return live
                 except Exception as e:
                     debug_ex(e, f'get live twitch rank for <{nick}>', LOG)
 
+    def __cache_duration(self, is_follower: bool) -> timedelta:
+        seconds = self.__cache_follows if is_follower else self.__cache_viewers
+        return timedelta(seconds=seconds)
+
+    def __fallback(self) -> UserRank:
         return UserRank.VWR if self.__tw else UserRank.UNKNW

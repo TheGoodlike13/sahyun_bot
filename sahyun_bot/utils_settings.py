@@ -59,6 +59,7 @@ def read_config(section: str,
 
 
 def read_dynamic_config(section: str,
+                        ignore: List[T],
                         convert_key: Callable[[str], T] = identity,
                         convert_value: Callable[[str], V] = identity,
                         fallback: V = None) -> Dict[T, V]:
@@ -71,6 +72,9 @@ def read_dynamic_config(section: str,
             except Exception as e:
                 debug_ex(e, f'convert config key [{section}]->{key}: {value}', silent=True)
                 key = None
+
+            if key in ignore:
+                continue
 
             try:
                 value = convert_value(value.strip())

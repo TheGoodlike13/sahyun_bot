@@ -1,5 +1,13 @@
 from enum import IntEnum
 
+from sahyun_bot.utils_settings import read_config
+
+DEFAULT_CACHE_FOLLOWS = 300
+DEFAULT_CACHE_VIEWERS = 5
+
+u_cache_f = read_config('users', 'CacheFollows', convert=int, fallback=DEFAULT_CACHE_FOLLOWS)
+u_cache_w = read_config('users', 'CacheViewers', convert=int, fallback=DEFAULT_CACHE_VIEWERS)
+
 
 class UserRank(IntEnum):
     """
