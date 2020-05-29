@@ -44,7 +44,7 @@ class Users(ElasticAware):
         user_id = self.__tw.get_id(self.__streamer) if self.__tw else None
         return User(nick=self.__streamer, rank=UserRank.ADMIN, user_id=user_id)
 
-    def get(self, nick: str) -> User:
+    def user(self, nick: str) -> User:
         """
         Determines rank (and id, if possible) for given nick.
         :returns user object for nick
