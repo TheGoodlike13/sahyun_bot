@@ -99,14 +99,6 @@ def cf():
 
 
 @pytest.fixture
-def cf_off():
-    return CustomsforgeClient(api_key=MOCK_API_KEY,
-                              batch_size=1,
-                              cookie_jar_file=None,
-                              get_today=lambda: TEST_DATE)
-
-
-@pytest.fixture
 def users(twitchy, es):
     from sahyun_bot.users import Users
     return Users(streamer='sahyun', tw=twitchy, use_elastic=True)

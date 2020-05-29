@@ -24,3 +24,5 @@ COMMANDS
         !playlist - request queue (no more than TOP 5)
         !commands - list of public commands available to your rank
         !hosts - list of hosts for the channel
+
+Apparently _id and #get for Documents allows int; let's use that!

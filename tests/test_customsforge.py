@@ -14,6 +14,14 @@ from tests.mock_settings import *
 
 
 @pytest.fixture
+def cf_off():
+    return CustomsforgeClient(api_key=MOCK_API_KEY,
+                              batch_size=1,
+                              cookie_jar_file=None,
+                              get_today=lambda: TEST_DATE)
+
+
+@pytest.fixture
 def cf_cookies():
     cookies = RequestsCookieJar()
     cookies.set(MOCK_COOKIE_KEY, MOCK_COOKIE_VALUE, domain=MOCK_COOKIE_DOMAIN, path=MOCK_COOKIE_PATH)
