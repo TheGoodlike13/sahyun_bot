@@ -54,16 +54,16 @@ def purge_elastic() -> bool:
     return _with_elastic('purge', _purge)
 
 
-def find(query: str) -> List[CustomDLC]:
+def find(query: str, results: int = None) -> List[CustomDLC]:
     """
     Searches for matching CDLCs in the index.
     """
-    result = list(CustomDLC.request(query))
+    result = list(CustomDLC.request(query, results))
     if not result:
         LOG.warning('No CDLCs matching <%s> were found.', query)
 
     for hit in result:
-        LOG.warning('Found CDLC <%s>: <%s>', hit.full_title, hit.link)
+        LOG.warning('(%5s) Found CDLC#%s <%s>: <%s>', round(hit.meta.score, 2), hit.id, hit.full_title, hit.link)
 
     return result
 

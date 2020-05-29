@@ -82,12 +82,15 @@ class CustomDLC(BaseDoc):
         return response.aggs.latest_auto_time.value
 
     @classmethod
-    def request(cls, query: str) -> Iterator[CustomDLC]:
+    def request(cls, query: str, results: int = None) -> Iterator[CustomDLC]:
         """
         :returns CDLCs that loosely match the search query, in order of descending relevance
         """
-        s = cls.search().query('multi_match', query=query, fields=elastic_settings.e_req_fields)
-        for hit in s[:elastic_settings.e_req_max]:
+        s = cls.search().filter()\
+            .query('multi_match', query=query, fields=elastic_settings.e_req_fields, type='cross_fields')\
+            .query('multi_match', query=query, fields=elastic_settings.e_req_fields, fuzziness='AUTO')
+        cut = results or elastic_settings.e_req_max
+        for hit in s[:cut]:
             yield hit
 
 
