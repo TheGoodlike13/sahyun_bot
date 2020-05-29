@@ -93,8 +93,7 @@ def prepare_cdlcs(doc):
         c = To.cdlc(cdlc)
         c['direct_download'] = ''
         c['from_auto_index'] = False
-        cdlc_id = str(cdlc.get('id', None))
-        doc(_id=cdlc_id, **c).save(refresh=refresh)
+        doc(_id=cdlc['id'], **c).save(refresh=refresh)
 
 
 def prepare_users(doc):

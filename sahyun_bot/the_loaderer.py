@@ -164,7 +164,7 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
             yield cdlc
 
     def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
-        c = CustomDLC.get(str(cdlc_id), ignore=[404])
+        c = CustomDLC.get(cdlc_id, ignore=[404])
         return c.direct_download if c else None
 
     def start_from(self) -> int:
@@ -174,7 +174,7 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         continuous_from = cdlc.pop(CONTINUOUS_FROM, None)
         is_continuous = self.__continuous and continuous_from is not None and continuous_from <= self.start_from()
 
-        cdlc_id = str(cdlc.get('id', None))
+        cdlc_id = cdlc.get('id', None)
         c = CustomDLC(_id=cdlc_id, from_auto_index=is_continuous, **cdlc)
         c.save()
         LOG.warning('Indexed CDLC #%s.', cdlc_id)
@@ -201,7 +201,7 @@ class ElasticIndexUpdateOnly(Destination):
     def update(self, from_write: Any, direct_link: str):
         cdlc_id = from_write
         if cdlc_id and direct_link:
-            CustomDLC(_id=str(cdlc_id)).update(direct_download=direct_link)
+            CustomDLC(_id=cdlc_id).update(direct_download=direct_link)
             LOG.warning('Indexed direct link for CDLC #%s.', cdlc_id)
 
 
@@ -210,7 +210,7 @@ class ElasticAbsolution(Destination):
     Very special Destination which fixes the one time programming error I committed. See TheLoaderer#fix_sin_against_art
     """
     def try_write(self, cdlc: dict) -> Any:
-        cdlc_id = str(cdlc.get('id', None))
+        cdlc_id = cdlc.get('id', None)
         art = cdlc.get('art', '')
         try:
             CustomDLC(_id=cdlc_id).update(art=art)

@@ -29,7 +29,7 @@ def test_loading_continued(tl):
 
 def test_load_links(tl):
     # this simulates the scenario where link was empty due to error
-    CustomDLC(_id='49841').update(direct_download='')
+    CustomDLC(_id=49841).update(direct_download='')
 
     with HTTMock(customsforge):
         tl.load_links()
