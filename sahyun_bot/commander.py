@@ -69,7 +69,7 @@ class TheCommander:
             if not command.is_available():
                 return LOG.warning('Command !%s is missing a required module and thus cannot be executed.', name)
 
-            user = self._users.get_admin() if self.__is_console_like(sender) else self._users.get(sender)
+            user = self._users.admin() if self.__is_console_like(sender) else self._users.get(sender)
             required_rank = self.__required_rank(command)
             if not user.has_right(required_rank):
                 if self.__just_needs_to_follow(user, required_rank):

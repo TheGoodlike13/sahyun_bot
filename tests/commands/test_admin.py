@@ -50,7 +50,7 @@ def test_rank(users, hook):
 
     with Rank(us=users).executest(hook, args='BAN goodlikebot'):
         hook.assert_success('goodlikebot is now BAN')
-        assert_that(users.get_rank('goodlikebot')).is_equal_to(UserRank.BAN)
+        assert_that(users.rank('goodlikebot')).is_equal_to(UserRank.BAN)
 
     users.set_use_elastic(False)
 

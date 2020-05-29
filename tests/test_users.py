@@ -31,9 +31,14 @@ def test_full_functionality(users):
     assert_user(users.get('sahyunbot'), rank=UserRank.BAN, user_id='92152420')
 
 
+def test_remove_manual_rank(users):
+    users.remove_manual('sahyunbot')
+    assert_that(users.get('sahyunbot').rank).is_not_equal_to(UserRank.BAN)
+
+
 def test_set_manual_rank(users):
-    users.set_manual('goodlikebot', UserRank.BAN)
-    assert_user(users.get('goodlikebot'), rank=UserRank.BAN, user_id='91770105')
+    with users._manual('goodlikebot', UserRank.BAN):
+        assert_user(users.get('goodlikebot'), rank=UserRank.BAN, user_id='91770105')
 
 
 def assert_user(user: User, rank: UserRank = None, user_id: str = None):

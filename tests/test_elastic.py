@@ -4,7 +4,7 @@ from elasticsearch import NotFoundError
 from sahyun_bot.elastic import CustomDLC
 
 
-def test_properties(es):
+def test_properties(es_cdlc):
     cdlc = CustomDLC.get('49874')
     assert_that(cdlc.full_title).is_equal_to("Trey Parker - Jackin' It In San Diego")
     assert_that(cdlc.link).is_equal_to('https://customsforge.com/process.php?id=49874')
@@ -16,7 +16,7 @@ def test_properties(es):
     assert_that(same_cdlc[0].link).is_equal_to('direct_link')
 
 
-def test_last_auto_index_time(es):
+def test_last_auto_index_time(es_cdlc):
     assert_that(CustomDLC.latest_auto_time()).is_none()
 
     # this cdlc IS NOT the earliest in the index, so it will be considered non-continuous
@@ -35,7 +35,7 @@ def test_last_auto_index_time(es):
     assert_that(CustomDLC.earliest_not_auto()).is_equal_to(1589377216)
 
 
-def test_request(es):
+def test_request(es_cdlc):
     assert_that(list(CustomDLC.request('definitely not here'))).is_empty()
 
     cdlcs = list(CustomDLC.request('paradise'))
@@ -43,7 +43,7 @@ def test_request(es):
     assert_that(cdlcs[0].full_title).is_equal_to('ZUN - Paradise ~ Deep Mountain')
 
 
-def test_partial_update_for_non_existent_document(es):
+def test_partial_update_for_non_existent_document(es_cdlc):
     try:
         CustomDLC(_id='100000').update(id=100000)
         assert False  # exception should be thrown!

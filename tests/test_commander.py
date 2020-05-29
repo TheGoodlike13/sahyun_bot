@@ -42,14 +42,12 @@ def test_ask_to_follow_and_user_downtime(commander, hook):
     with commander.executest('goodlikebot', '!testfollow', hook):
         hook.assert_failure('Please follow the channel to use !testfollow')
 
-    commander._users.set_manual('goodlikebot', UserRank.FLWR)  # simulate a follow
+    with commander._users._manual('goodlikebot', UserRank.FLWR):  # simulate a follow
+        with commander.executest('goodlikebot', '!testfollow', hook):
+            hook.assert_success('Thanks for following!')
 
-    with commander.executest('goodlikebot', '!testfollow', hook):
-        hook.assert_success('Thanks for following!')
-
-    # user downtime
-    with commander.executest('goodlikebot', '!testfollow', hook):
-        hook.assert_failure('You can use !testfollow again in ', ' seconds')
+        with commander.executest('goodlikebot', '!testfollow', hook):  # user downtime
+            hook.assert_failure('You can use !testfollow again in ', ' seconds')
 
     commander._users.set_manual('thegoodlike13', UserRank.FLWR)  # we need another follower to see downtime is user only
     with commander.executest('thegoodlike13', '!testfollow', hook):

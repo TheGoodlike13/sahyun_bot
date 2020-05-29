@@ -7,7 +7,7 @@ from twitch.cache import Cache
 from sahyun_bot.elastic import ManualUserRank
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.users_settings import *
-from sahyun_bot.utils import debug_ex
+from sahyun_bot.utils import debug_ex, Closeable
 from sahyun_bot.utils_elastic import ElasticAware
 from sahyun_bot.utils_logging import get_logger
 
@@ -37,7 +37,7 @@ class Users(ElasticAware):
         self.__rank_cache = Cache()
         self.__rank_lock = RLock()
 
-    def get_admin(self) -> User:
+    def admin(self) -> User:
         """
         :returns the admin user (streamer), with id if twitch is available
         """
@@ -50,11 +50,11 @@ class Users(ElasticAware):
         :returns user object for nick
         """
         nick = nick.lower()
-        user_id = self.__tw.get_id(nick) if self.__tw else None
-        rank = self.get_rank(nick, user_id)
+        rank = self.rank(nick)
+        user_id = self.id(nick)
         return User(nick=nick, rank=rank, user_id=user_id)
 
-    def get_rank(self, nick: str, user_id: str = None) -> UserRank:
+    def rank(self, nick: str) -> UserRank:
         """
         Checks against streamer, elastic index, twitch cached & live status, in that order.
         If any of these do not contain the value, defaults to viewer.
@@ -62,11 +62,18 @@ class Users(ElasticAware):
 
         :returns rank for given user
         """
-        user_id = self.__tw.get_id(nick) if self.__tw and not user_id else user_id
+        nick = nick.lower()
+        user_id = self.id(nick)
         return self.__check_streamer(nick)\
             or self.__check_elastic(nick, user_id) \
             or self.__check_twitch(nick, user_id) \
             or self.__fallback()
+
+    def id(self, nick: str) -> Optional[str]:
+        """
+        :returns twitch id for nick, if available
+        """
+        return self.__tw.get_id(nick.lower()) if self.__tw else None
 
     def set_manual(self, nick: str, rank: UserRank) -> bool:
         """
@@ -74,17 +81,37 @@ class Users(ElasticAware):
 
         :returns true if rank was updated, false otherwise
         """
-        if not self.__tw or not self.use_elastic:
-            return False
+        user_id = self.id(nick)
+        if self.use_elastic and user_id:
+            try:
+                return ManualUserRank(_id=user_id).set_rank(rank)
+            except Exception as e:
+                return debug_ex(e, f'set <{nick}> to rank {rank.name}', LOG)
 
-        user_id = self.__tw.get_id(nick.lower())
-        if not user_id:
-            return False
+    def remove_manual(self, nick: str) -> bool:
+        """
+        Removes manual rank for given nick. Only possible if twitch & elastic index are available.
 
-        try:
-            return ManualUserRank(_id=user_id).set_rank(rank)
-        except Exception as e:
-            return debug_ex(e, f'set <{nick}> to rank {rank.name}', LOG)
+        :returns true if rank was removed, false otherwise
+        """
+        user_id = self.id(nick)
+        if self.use_elastic and user_id:
+            try:
+                return ManualUserRank(_id=user_id).delete()
+            except Exception as e:
+                return debug_ex(e, f'remove rank for <{nick}>', LOG)
+
+    def _manual(self, nick: str, rank: UserRank) -> Closeable:
+        this = self
+
+        class CleanManual(Closeable):
+            def __enter__(self):
+                this.set_manual(nick, rank)
+
+            def close(self):
+                this.remove_manual(nick)
+
+        return CleanManual()
 
     def __check_streamer(self, nick: str) -> Optional[UserRank]:
         return UserRank.ADMIN if nick == self.__streamer else None

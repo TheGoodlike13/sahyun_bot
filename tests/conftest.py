@@ -27,9 +27,9 @@ def prepare_cdlc_data():
             MOCK_CDLC[date_str] = json.load(f)
 
 
-# we use the real twitch API in our tests, which should give great guarantees for it working
 @pytest.fixture(scope='session')
 def twitchy():
+    # we use the real twitch API in our tests, which should give great guarantees for it working
     config.read('config.ini')
     client_id = read_config('twitch', 'ClientId')
     client_secret = read_config('twitch', 'Secret')
@@ -41,71 +41,84 @@ def twitchy():
     api.close()
 
 
-# in most cases the server is either up or down for all tests; if it's down at the start, let's just assume it's down
 @pytest.fixture(scope='session')
-def working_test_elastic_client():
-    elastic_search = connections.create_connection(hosts=[elastic_settings.e_host])
+def es():
+    from sahyun_bot.utils_elastic import purge_elastic, setup_elastic
 
-    from sahyun_bot import utils_elastic
-    if utils_elastic.purge_elastic():
-        yield elastic_search
-    else:
+    elastic_search = connections.create_connection(hosts=[elastic_settings.e_host])
+    if not purge_elastic() or not setup_elastic():
         pytest.skip('Cannot perform elastic tests! Please launch & configure an elasticsearch instance.')
 
+    yield elastic_search
+    purge_elastic()
+
 
 @pytest.fixture
-def es(working_test_elastic_client):
-    from sahyun_bot import utils_elastic
+def es_cdlc(es):
+    from sahyun_bot.elastic import CustomDLC
+    yield from es_doc(es, CustomDLC)
+
+
+@pytest.fixture
+def es_rank(es):
+    from sahyun_bot.elastic import ManualUserRank
+    yield from es_doc(es, ManualUserRank)
+
+
+def es_doc(es, doc):
     try:
-        # if test server crashes half way, but comes back up quick, the next test should clean up before moving forward
-        if utils_elastic.purge_elastic() and utils_elastic.setup_elastic() and prepare_index():
-            yield working_test_elastic_client
-        else:
-            pytest.skip('Elasticsearch test server is down or incorrectly configured.')
-    finally:
-        utils_elastic.purge_elastic()
-
-
-def prepare_index() -> bool:
-    from sahyun_bot.elastic import CustomDLC, ManualUserRank
-    try:
-        for cdlc in MOCK_CDLC.values():
-            cdlc_id = str(cdlc.get('id', None))
-            CustomDLC(_id=cdlc_id, **To.cdlc(cdlc)).save(refresh=False)
-
-        CustomDLC._index.refresh()
-
-        ManualUserRank(_id='92152420').set_rank(UserRank.BAN, refresh=False)  # sahyunbot     BAN
-        ManualUserRank(_id='37103864').set_rank(UserRank.ADMIN)               # thegoodlike13 ADMIN
-        return True
+        prepare_index(doc)
     except Exception as e:
-        return debug_ex(e, 'prepare elasticsearch index for testing')
+        debug_ex(e, 'prepare elasticsearch index for testing')
+        pytest.skip('Elasticsearch setup failed. See logs for exception.')
+
+    yield es
+
+
+def prepare_index(doc):
+    from sahyun_bot.elastic import CustomDLC, ManualUserRank
+    if doc is CustomDLC:
+        prepare_cdlcs(doc)
+    elif doc is ManualUserRank:
+        prepare_users(doc)
+    else:
+        pytest.skip(f'Programming error - unknown document: {doc.__name__}')
+
+
+def prepare_cdlcs(doc):
+    last_index = len(MOCK_CDLC) - 1
+    for i, cdlc in enumerate(MOCK_CDLC.values()):
+        refresh = i == last_index
+
+        c = To.cdlc(cdlc)
+        c['direct_download'] = ''
+        c['from_auto_index'] = False
+        cdlc_id = str(cdlc.get('id', None))
+        doc(_id=cdlc_id, **c).save(refresh=refresh)
+
+
+def prepare_users(doc):
+    # sahyunbot BAN
+    doc(_id='92152420').set_rank(UserRank.BAN, refresh=False)
+
+    # thegoodlike13 ADMIN
+    doc(_id='37103864').set_rank(UserRank.ADMIN)
 
 
 @pytest.fixture
-def tl(cf, es):
+def tl(cf, es_cdlc):
     from sahyun_bot.the_loaderer import TheLoaderer
     return TheLoaderer(cf, use_elastic=True)
 
 
 @pytest.fixture
-def cf():
-    return CustomsforgeClient(api_key=MOCK_API_KEY,
-                              batch_size=1,
-                              username=MOCK_USER,
-                              password=MOCK_PASS,
-                              cookie_jar_file=None,
-                              get_today=lambda: TEST_DATE)
-
-
-@pytest.fixture
-def users(twitchy, es):
+def users(twitchy, es_rank):
     from sahyun_bot.users import Users
     return Users(streamer='sahyun', tw=twitchy, use_elastic=True)
 
 
 @pytest.fixture
-def live_users(twitchy, es):
+def live_users(twitchy):
     from sahyun_bot.users import Users
     return Users(streamer='sahyun', tw=twitchy)
 
@@ -120,6 +133,16 @@ def commander(users):
         'testfollow': '30:1',
     }
     return TheCommander(us=users, dt=Downtime(config=downtime))
+
+
+@pytest.fixture
+def cf():
+    return CustomsforgeClient(api_key=MOCK_API_KEY,
+                              batch_size=1,
+                              username=MOCK_USER,
+                              password=MOCK_PASS,
+                              cookie_jar_file=None,
+                              get_today=lambda: TEST_DATE)
 
 
 @pytest.fixture
