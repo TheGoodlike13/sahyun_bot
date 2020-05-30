@@ -23,8 +23,8 @@ class TheCommander:
     Given beans and other commands will be passed into every command constructor.
     """
     def __init__(self, **beans):
-        self._downtime: Downtime = beans.get('dt', None)  # downtime config is not guaranteed
-        self._users: Users = beans.get('us')              # user factory is always available
+        self._downtime: Downtime = beans.get('dt', None)
+        self._users: Users = beans.get('us')
 
         self.__lock = RLock()
         self.__is_admin_only = False

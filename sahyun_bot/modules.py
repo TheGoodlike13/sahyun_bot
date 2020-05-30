@@ -22,6 +22,7 @@ from sahyun_bot.users import Users
 from sahyun_bot.users_settings import *
 from sahyun_bot.utils_elastic import print_elastic_indexes
 from sahyun_bot.utils_logging import get_logger
+from sahyun_bot.utils_queue import MemoryQueue
 
 LOG = get_logger(__name__)
 
@@ -47,20 +48,24 @@ if init_module(cf, 'Customsforge client'):
 tw = Twitchy(client_id=t_id, client_secret=t_secret) if t_id and t_secret else None
 init_module(tw, 'Twitch API')
 
-us = Users(streamer=i_streamer, tw=tw, cache_follows=u_cache_f, cache_viewers=u_cache_w)
-init_module(us, 'User factory')
-
 es = connections.create_connection(hosts=[e_host]) if e_host else None
 if init_module(es, 'Elasticsearch client'):
     print_elastic_indexes()
 
+dt = Downtime(config=d_down) if d_down else None
+init_module(dt, 'Downtime for commands')
+
+# following modules are always available (may still have limited functionality)
+us = Users(streamer=i_streamer, tw=tw, cache_follows=u_cache_f, cache_viewers=u_cache_w)
+init_module(us, 'User factory')
+
 tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')
 
-dt = Downtime(config=d_down)
-init_module(tl, 'Downtime for commands')
+rq = MemoryQueue()
+init_module(rq, 'Request queue')
 
-tc = TheCommander(cf=cf, tw=tw, us=us, es=es, tl=tl, dt=dt)
+tc = TheCommander(cf=cf, tw=tw, es=es, dt=dt, us=us, tl=tl, rq=rq)
 init_module(tc, 'The commander')
 
 bot = botyun(tc=tc,

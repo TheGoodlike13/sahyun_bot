@@ -14,7 +14,7 @@ from sahyun_bot.users_settings import User, UserRank
 class Lock(Command):
     def __init__(self, **beans):
         super().__init__(**beans)
-        self.__commander = beans.get('tc')  # TheCommander is always available
+        self.__commander = beans.get('tc')
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook):
         """
@@ -46,7 +46,7 @@ class Index(Command):
 class Rank(Command):
     def __init__(self, **beans):
         super().__init__(**beans)
-        self.__users: Users = beans.get('us')  # user factory is always available
+        self.__users: Users = beans.get('us')
 
     def alias(self) -> Iterator[str]:
         yield from super().alias()
