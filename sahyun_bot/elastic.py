@@ -105,8 +105,11 @@ class ManualUserRank(BaseDoc):
         }
 
     def set_rank(self, rank: UserRank, **kwargs):
+        return self.set_rank_no_op(rank).save(**kwargs)
+
+    def set_rank_no_op(self, rank: UserRank) -> ManualUserRank:
         self.rank_name = rank.name
-        return self.save(**kwargs)
+        return self
 
     @property
     def rank(self) -> Optional[UserRank]:

@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import pytest
+from elasticsearch.helpers import bulk
 from elasticsearch_dsl import connections
 
 from sahyun_bot import elastic_settings
@@ -16,6 +17,11 @@ from tests.mock_irc import ResponseMock
 from tests.mock_settings import *
 
 elastic_settings.init_test()
+
+MANUAL_USERS = {
+    '92152420': UserRank.BAN,  # sahyunbot
+    '37103864': UserRank.ADMIN,  # thegoodlike13
+}
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -67,7 +73,7 @@ def es_rank(es):
 
 def es_doc(es, doc):
     try:
-        prepare_index(doc)
+        bulk(es, (d.to_dict(True) for d in prepare_index(doc)), refresh=True)
     except Exception as e:
         debug_ex(e, 'prepare elasticsearch index for testing')
         pytest.skip('Elasticsearch setup failed. See logs for exception.')
@@ -77,31 +83,27 @@ def es_doc(es, doc):
 
 def prepare_index(doc):
     from sahyun_bot.elastic import CustomDLC, ManualUserRank
+
     if doc is CustomDLC:
-        prepare_cdlcs(doc)
-    elif doc is ManualUserRank:
-        prepare_users(doc)
-    else:
-        pytest.skip(f'Programming error - unknown document: {doc.__name__}')
+        return prepare_cdlcs(doc)
+
+    if doc is ManualUserRank:
+        return prepare_users(doc)
+
+    pytest.skip(f'Programming error - unknown document: {doc.__name__}')
 
 
 def prepare_cdlcs(doc):
-    last_index = len(MOCK_CDLC) - 1
-    for i, cdlc in enumerate(MOCK_CDLC.values()):
-        refresh = i == last_index
-
+    for cdlc in MOCK_CDLC.values():
         c = To.cdlc(cdlc)
         c['direct_download'] = ''
         c['from_auto_index'] = False
-        doc(_id=cdlc['id'], **c).save(refresh=refresh)
+        yield doc(_id=cdlc['id'], **c)
 
 
 def prepare_users(doc):
-    # sahyunbot BAN
-    doc(_id='92152420').set_rank(UserRank.BAN, refresh=False)
-
-    # thegoodlike13 ADMIN
-    doc(_id='37103864').set_rank(UserRank.ADMIN)
+    for twitch_id, rank in MANUAL_USERS.items():
+        yield doc(_id=twitch_id).set_rank_no_op(rank)
 
 
 @pytest.fixture
