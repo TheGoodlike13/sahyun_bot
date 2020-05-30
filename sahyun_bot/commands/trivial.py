@@ -12,7 +12,7 @@ class Time(Command):
     def min_rank(self) -> UserRank:
         return UserRank.VWR
 
-    def execute(self, user: User, args: str, respond: ResponseHook):
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook):
         """
         Responds with current time in UTC.
         """

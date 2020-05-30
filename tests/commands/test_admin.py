@@ -8,23 +8,23 @@ from tests.mock_customsforge import customsforge
 
 def test_require_admin(commander, hook):
     for command in ['!lock', '!index', '!rank']:
-        with commander.executest('goodlikebot', command, hook):
+        with commander.executest(hook, command, 'goodlikebot'):
             hook.assert_silent_failure()
 
 
 def test_lock_unlock(commander, hook):
-    with commander.executest('sahyun', '!lock', hook):
+    with commander.executest(hook, '!lock'):
         hook.assert_success('Bot is now in ADMIN only mode')
 
     # even basic commands are unauthorized
-    with commander.executest('goodlikebot', '!time', hook):
+    with commander.executest(hook, '!time', 'goodlikebot'):
         hook.assert_silent_failure()
 
-    with commander.executest('sahyun', '!lock', hook):
+    with commander.executest(hook, '!lock'):
         hook.assert_success('Bot no longer in ADMIN only mode')
 
     # functionality restored
-    with commander.executest('goodlikebot', '!time', hook):
+    with commander.executest(hook, '!time', 'goodlikebot'):
         hook.assert_success()
 
 
@@ -56,3 +56,9 @@ def test_rank(users, hook):
 
     with Rank(us=users).executest(hook, args='ADMIN goodlikebot'):
         hook.assert_failure('Rank could not be set')
+
+
+def test_rank_shorthand(commander, hook):
+    with commander.executest(hook, '!ban goodlikebot'):
+        hook.assert_success('goodlikebot is now BAN')
+        assert_that(commander._users.rank('goodlikebot')).is_equal_to(UserRank.BAN)

@@ -37,7 +37,7 @@ class TheCommander:
                     if not self.__is_abstract(command_class_name):
                         self.__create_and_cache(command_class, **beans)
 
-    def executest(self, sender: str, message: str, respond: ResponseHook) -> ResponseHook:
+    def executest(self, respond: ResponseHook, message: str, sender: str = '_test') -> ResponseHook:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
@@ -87,7 +87,7 @@ class TheCommander:
                     return LOG.warning('<%s> has to wait %s before using !%s again.', user, time_words, name)
 
             try:
-                failure = command.execute(user, args, respond)
+                failure = command.execute(user, name, args, respond)
                 if not failure and self._downtime and user.is_limited:
                     self._downtime.remember_use(command, user)
 

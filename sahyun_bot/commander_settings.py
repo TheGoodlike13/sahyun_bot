@@ -59,7 +59,7 @@ class Command:
         """
         yield type(self).__name__.lower()
 
-    def any_alias(self) -> str:
+    def the_alias(self) -> str:
         """
         :returns first alias
         """
@@ -71,7 +71,7 @@ class Command:
         """
         return UserRank.ADMIN
 
-    def execute(self, user: User, args: str, respond: ResponseHook) -> bool:
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
         """
         Executes the command with given args & responds to given hook.
          
@@ -79,17 +79,33 @@ class Command:
         Further authorization is only needed if the command itself is dynamic with respect to the user role.
         
         :param user: one who requested command execution
+        :param alias: the alias of this command that was used to execute it
         :param args: parameters passed in with the command, unparsed
         :param respond: callback to allow responding to the command
         :returns true if execution failed, false or None if it succeeded
         """
         raise NotImplementedError
 
-    def executest(self, respond: ResponseHook, rank: UserRank = UserRank.ADMIN, args: str = '') -> ResponseHook:
+    def executest(self,
+                  respond: ResponseHook,
+                  rank: UserRank = UserRank.ADMIN,
+                  alias: str = None,
+                  args: str = '') -> ResponseHook:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
         user = User(nick='_test', rank=rank)
-        failure = self.execute(user, args, respond)
+        failure = self.execute(user, alias or self.the_alias(), args, respond)
         respond.to_debug('failure' if failure else 'success')
         return respond
+
+    def _all_args(self, alias: str, args: str) -> Iterator[str]:
+        """
+        Helper for parsing commands which use alias as an argument.
+
+        :returns infinite iterator containing all args and empty strings beyond that
+        """
+        yield alias
+        yield from args.split()
+        while True:
+            yield ''
