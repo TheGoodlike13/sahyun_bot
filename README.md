@@ -19,12 +19,18 @@ http://customsforge.com/page/support.html
 
 ## Command reference
 
-Every command requires a specific rank from the user to be executed. Furthermore, higher ranks
-may grant additional functionality. This reference will be divided into sections of user rank
-which is required for the command, and any additional privileges to higher ranks will be explicitly
-enumerated within the description of this command.
+Commands have the following attributes:
+* aliases - different ways to call the command
+* expected args - parameters for the command
+* shorthands - similar to alias, but automatically sets a parameter
+* minimum user rank - any user with lower rank cannot use the command
 
-No commands are available for users with rank BAN.
+The reference below splits the commands by their minimum user rank. Each command will be
+described by a comma separated list of aliases, followed by expected args (uppercase).
+Every alias supports the same args. Args are usually delimited by spaces, and any unexpected
+args are always ignored. Exceptional cases will always be documented.
+
+##### No commands are available for users with rank BAN.
 
 ### VWR (any viewer that is not a follower)
 
@@ -33,6 +39,10 @@ No commands are available for users with rank BAN.
 Responds with current time in UTC.
 
 ### FLWR (follower)
+
+#### !request, !song, !sr QUERY
+
+TODO
 
 ### ADMIN (streamer & his buddies)
 
@@ -48,7 +58,7 @@ Tries to index CDLCs from customsforge into elasticsearch.
 
 Sets manual rank to the user.
 
-Any rank can be used as alias: !ban NICK, !admin NICK, etc.
+Any rank can be used as a shorthand: !ban NICK, !admin NICK, etc.
 
 ## Notes on development & running
 
