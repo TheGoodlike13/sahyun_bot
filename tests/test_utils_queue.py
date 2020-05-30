@@ -42,35 +42,47 @@ def test_last(int_queue):
         item = int_queue.next()
         assert_that(int_queue.last()).is_same_as(item)
 
-    int_queue.clean()
+    int_queue.forget()
     assert_that(int_queue.last()).is_none()
 
 
-def test_dump(int_queue):
-    assert_that(int_queue.dump()).is_empty()
+def test_memory(int_queue):
+    assert_that(int_queue.memory()).is_empty()
 
     expected = []
     for i in range(3):
         expected.append(int_queue.next())
-        assert_that(int_queue.dump()).is_equal_to(expected)
+        assert_that(int_queue.memory()).is_equal_to(expected)
 
-    int_queue.clean()
-    assert_that(int_queue.dump()).is_empty()
+    int_queue.forget()
+    assert_that(int_queue.memory()).is_empty()
 
 
 def test_replace(int_queue):
-    assert_that(int_queue.replace(3, lambda n: n == 1)).is_equal_to(2)
+    assert_that(int_queue.offer(3, lambda n: n == 1)).is_equal_to(2)
     assert_that(int_queue).is_equal_to([0, 3, 2])
 
 
 def test_replace_first_match(int_queue):
-    assert_that(int_queue.replace(3, lambda n: n > 1)).is_equal_to(3)
+    assert_that(int_queue.offer(3, lambda n: n > 1)).is_equal_to(3)
     assert_that(int_queue).is_equal_to([0, 1, 3])
 
 
 def test_replace_no_match(int_queue):
-    assert_that(int_queue.replace(3, lambda n: n > 2)).is_equal_to(4)
+    assert_that(int_queue.offer(3, lambda n: n > 2)).is_equal_to(4)
     assert_that(int_queue).is_equal_to([0, 1, 2, 3])
+
+
+def test_replace_already_dumped(int_queue):
+    item = int_queue.next()
+    assert_that(int_queue.offer(item, lambda n: n > 1)).is_equal_to(0)  # cannot replace
+    assert_that(int_queue.offer(item, lambda n: n > 2)).is_equal_to(0)  # cannot add
+    assert_that(int_queue).is_equal_to([1, 2])
+
+
+def test_replace_unique(int_queue):
+    assert_that(int_queue.offer(0, lambda n: n > 1)).is_equal_to(-1)  # cannot replace
+    assert_that(int_queue.offer(1, lambda n: n > 2)).is_equal_to(-2)  # cannot add
 
 
 def test_bump(int_queue):

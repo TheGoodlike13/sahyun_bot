@@ -11,7 +11,7 @@ from sahyun_bot.customsforge import To, CustomsforgeClient
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.users_settings import UserRank
 from sahyun_bot.utils import debug_ex
-from sahyun_bot.utils_queue import BumpQueue
+from sahyun_bot.utils_queue import MemoryQueue
 from sahyun_bot.utils_settings import read_config, config
 from tests.mock_irc import ResponseMock
 from tests.mock_settings import *
@@ -148,7 +148,7 @@ def cf():
 
 @pytest.fixture
 def queue():
-    return BumpQueue()
+    return MemoryQueue()
 
 
 @pytest.fixture
