@@ -40,6 +40,16 @@ Responds with current time in UTC.
 
 Stops the bot from executing any further commands unless the user is ADMIN.
 
+#### !index
+
+Tries to index CDLCs from customsforge into elasticsearch.
+
+#### !rank RANK NICK
+
+Sets manual rank to the user.
+
+Any rank can be used as alias: !ban NICK, !admin NICK, etc.
+
 ## Notes on development & running
 
 The purpose of this bot is to manage the playlist of user requests while Sahyun is streaming.
