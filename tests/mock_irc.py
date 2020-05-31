@@ -1,4 +1,4 @@
-from typing import Iterator, List
+from typing import Iterator, List, Union, Iterable
 
 from assertpy import assert_that
 
@@ -46,15 +46,19 @@ class ResponseMock(ResponseHook, Closeable):
     def assert_silent_failure(self):
         assert_that(self.all()).is_equal_to('failure')
 
-    def assert_failure(self, *args):
-        self.__assert_response('failure', *args)
+    def assert_failure(self, *args, but_not: Union[str, Iterable[str]] = ''):
+        self.__assert_response('failure', *args, but_not=but_not)
 
-    def assert_success(self, *args):
-        self.__assert_response('success', *args)
+    def assert_success(self, *args, but_not: Union[str, Iterable[str]] = ''):
+        self.__assert_response('success', *args, but_not=but_not)
 
-    def __assert_response(self, debug: str, *args):
+    def __assert_response(self, debug: str, *args, but_not: Union[str, Iterable[str]] = ''):
         if args:
             assert_that(self.all_back()).contains(*args)
+
+        if but_not:
+            but_not = [but_not] if isinstance(but_not, str) else but_not
+            assert_that(self.all_back()).does_not_contain(*but_not)
 
         assert_that(self.all_to_debug()).contains(debug)
 
