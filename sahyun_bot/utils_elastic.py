@@ -77,7 +77,7 @@ def find(query: str, results: int = None) -> List[CustomDLC]:
         LOG.warning('No CDLCs matching <%s> were found.', query)
 
     for hit in result:
-        LOG.warning('(%5s) Found CDLC#%s <%s>: <%s>', round(hit.meta.score, 2), hit.id, hit.full_title, hit.link)
+        LOG.warning('(%5.2f) Found CDLC#%05d %s: <%s>', hit.meta.score, hit.id, hit, hit.link)
 
     return result
 
@@ -108,7 +108,7 @@ def domain_example(domain: str) -> str:
 def domain_all(domain: str) -> Iterator[str]:
     for hit in CustomDLC.search().scan():
         if extract(hit.link).registered_domain == domain:
-            LOG.warning('Found CDLC #%s <%s>', hit.id, hit.full_title)
+            LOG.warning('Found CDLC#%05d <%s>', hit.id, hit)
             yield hit.link
 
 

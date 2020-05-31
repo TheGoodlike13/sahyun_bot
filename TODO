@@ -24,6 +24,5 @@ COMMANDS
         !commands - list of public commands available to your rank
         !hosts - list of hosts for the channel
 
-Cleanup elastic utils - print cdlc object itself when possible (from str)
 Add readme & config.ini doc about ManualUserRank config
 Make more things configurable (e.g. fuzziness)
