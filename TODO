@@ -27,3 +27,4 @@ COMMANDS
 
 Cleanup elastic utils - print cdlc object itself when possible (from str)
 Add readme & config.ini doc about ManualUserRank config
+Make more things configurable (e.g. fuzziness)
