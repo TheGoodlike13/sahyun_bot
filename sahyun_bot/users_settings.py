@@ -50,8 +50,8 @@ class User:
         return not self.has_right(UserRank.VIP)
 
     @property
-    def id(self) -> str:
+    def is_admin(self) -> bool:
         """
-        :returns identifier of the user, preferring id over nick
+        :returns true if user is admin, false if any other rank
         """
-        return self.user_id if self.user_id else self.nick
+        return self.has_right(UserRank.ADMIN)

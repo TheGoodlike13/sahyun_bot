@@ -1,5 +1,4 @@
 SOME TIME LATER
-    Elastic index migration assistance - utility which will migrate the index and print instructions
     Automatic CDLC download from supported websites into pre-configured folder
     Print message when someone hosts or stops hosting - requires background task
     Advanced timeout system - quota based, with different outcomes having different costs

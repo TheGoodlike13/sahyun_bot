@@ -1,11 +1,14 @@
 import webbrowser
-from typing import Callable, FrozenSet, List, Iterator
+from typing import Callable, FrozenSet, List, Iterator, Type
 
 from elasticsearch import Elasticsearch
+from elasticsearch_dsl.analysis import Analyzer
 from elasticsearch_dsl.connections import get_connection
 from tldextract import extract
 
 from sahyun_bot.elastic import CustomDLC, ManualUserRank
+from sahyun_bot.elastic_settings import BaseDoc, TEST_ONLY_VALUES
+from sahyun_bot.the_danger_zone import nuke_from_orbit
 from sahyun_bot.utils import debug_ex
 from sahyun_bot.utils_logging import get_logger
 
@@ -54,11 +57,22 @@ def purge_elastic() -> bool:
     return _with_elastic('purge', _purge)
 
 
+def migrate(doc: Type[BaseDoc], index: str) -> bool:
+    """
+    :returns re-indexes given document index to another
+    """
+    if index in TEST_ONLY_VALUES:
+        nuke_from_orbit('Cannot migrate to test indexes!')
+
+    return _with_elastic(f'migrate {doc.__name__} for', lambda es: _migrate(es, doc, index))
+
+
 def find(query: str, results: int = None) -> List[CustomDLC]:
     """
     Searches for matching CDLCs in the index.
     """
-    result = list(CustomDLC.request(query, results))
+    s = CustomDLC.search(query)
+    result = list(s[:results] if results else s)
     if not result:
         LOG.warning('No CDLCs matching <%s> were found.', query)
 
@@ -98,6 +112,14 @@ def domain_all(domain: str) -> Iterator[str]:
             yield hit.link
 
 
+def tokenize(analyzer: Analyzer, text: str):
+    LOG.warning(f'Analyzing <{text}> with {analyzer._name}.')
+    result = analyzer.simulate(text)
+
+    for token in result.tokens:
+        LOG.warning(f'POS {token.position}: {token.token} [{token.start_offset}:{token.end_offset}] ({token.type})')
+
+
 def _with_elastic(do: str, action: Callable[[Elasticsearch], None]) -> bool:
     try:
         action(get_connection())
@@ -107,7 +129,7 @@ def _with_elastic(do: str, action: Callable[[Elasticsearch], None]) -> bool:
         return debug_ex(e, f'{do} elastic', LOG, silent=True)
 
 
-def _setup(es):
+def _setup(es: Elasticsearch):
     for doc in DOCUMENTS:
         index = doc.index_name()
         if es.indices.exists(index):
@@ -119,7 +141,29 @@ def _setup(es):
             doc.init()
 
 
-def _purge(es):
+def _purge(es: Elasticsearch):
     for doc in DOCUMENTS:
         LOG.critical('Deleting index & its contents (if it exists): %s', doc.index_name())
         doc._index.delete(ignore=[404])
+
+
+def _migrate(es: Elasticsearch, doc: Type[BaseDoc], index: str):
+    original_index = doc.index_name()
+    if not es.indices.exists(original_index):
+        raise ValueError(f'Original index does not exist: {original_index}')
+
+    if es.indices.exists(index):
+        raise ValueError(f'Index already exists: {index}')
+
+    doc._index._name = index
+    LOG.warning('Initializing index: %s.', index)
+    doc.init()
+
+    LOG.warning('Copying data from %s to %s.', original_index, index)
+    es.reindex({'source': {'index': original_index}, 'dest': {'index': index}}, request_timeout=60)
+
+    LOG.critical('Deleting original index & its contents: %s', doc.index_name())
+    es.indices.delete(original_index)
+
+    LOG.warning(f'Index for {doc.__name__} has been migrated to {index}.')
+    LOG.warning(f'Please update your config.ini file to keep these changes!')

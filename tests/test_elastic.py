@@ -36,9 +36,9 @@ def test_last_auto_index_time(es_cdlc):
 
 
 def test_request(es_cdlc):
-    assert_that(list(CustomDLC.request('definitely not here'))).is_empty()
+    assert_that(list(CustomDLC.search('definitely not here'))).is_empty()
 
-    cdlcs = list(CustomDLC.request('paradise'))
+    cdlcs = list(CustomDLC.search('paradise'))
     assert_that(cdlcs).is_length(1)
     assert_that(cdlcs[0].full_title).is_equal_to('ZUN - Paradise ~ Deep Mountain')
 

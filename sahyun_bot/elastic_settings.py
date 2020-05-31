@@ -8,9 +8,10 @@ executed which will shut down the application, thus preventing any shenanigans w
 At least in normal circumstances :)
 """
 from datetime import timezone, datetime
-from typing import Optional, List
+from typing import Optional, List, Union
 
-from elasticsearch_dsl import Document, Date, integer_types, ValidationException
+from elasticsearch_dsl import Document, Date, integer_types, ValidationException, Search
+from elasticsearch_dsl.query import Query
 
 from sahyun_bot.the_danger_zone import nuke_from_orbit
 from sahyun_bot.utils import NON_EXISTENT
@@ -109,8 +110,49 @@ class BaseDoc(Document):
         return cls._doc_type.mapping.to_dict()
 
     @classmethod
-    def search(cls, **kwargs):
+    def search(cls, **kwargs) -> Search:
         return super().search(**kwargs).extra(explain=e_explain)
+
+    @classmethod
+    def as_lucine(cls, query: Union[Query, dict], **kwargs) -> str:
+        """
+        :returns given query as it will be interpreted by the index of this document in Lucine format
+        """
+        kwargs['explain'] = True
+        kwargs['rewrite'] = True
+
+        es = cls._get_connection()
+        body = query if isinstance(query, dict) else {'query': query.to_dict()}
+        result = es.indices.validate_query(body, cls._default_index(), **kwargs)
+        return result['explanations'][0]['explanation']
+
+    def explain(self, query: Query, **kwargs) -> dict:
+        """
+        :returns lucine query, whether it matches this document & basic explanation why or why not
+        """
+        es = self._get_connection()
+        body = {'query': query.to_dict()}
+        response = es.explain(self._get_index(), self.meta.id, body=body, **kwargs)
+        return {
+            'search': self.as_lucine(body),
+            'match': response['matched'],
+            'reason': response['explanation'],
+        }
+
+    def terms(self, *fields: str, **kwargs) -> dict:
+        """
+        :returns for every field, the terms that have been analyzed for this particular document
+        """
+        vectors = self.term_vectors(*fields, **kwargs)
+        return {field_name: list(data['terms'].keys()) for field_name, data in vectors.items()}
+
+    def term_vectors(self, *fields: str, **kwargs) -> dict:
+        """
+        :returns for every field, information about the terms that have been analyzed for this particular document
+        """
+        es = self._get_connection()
+        response = es.termvectors(index=self._get_index(), id=self.meta.id, fields=fields, **kwargs)
+        return response['term_vectors']
 
     def delete(self, **kwargs):
         kwargs.setdefault('refresh', e_refresh)
