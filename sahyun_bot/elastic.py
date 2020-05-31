@@ -133,7 +133,7 @@ class CustomDLC(BaseDoc):
 
     @property
     def full_title(self) -> str:
-        return self.artist + ' - ' + self.title
+        return f'{self.artist} - {self.title}'
 
     @property
     def link(self) -> str:
