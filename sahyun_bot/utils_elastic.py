@@ -59,7 +59,20 @@ def purge_elastic() -> bool:
 
 def migrate(doc: Type[BaseDoc], index: str) -> bool:
     """
-    :returns re-indexes given document index to another
+    When changes are made to a document, it needs to be re-indexed to take effect. Failing to do so can lead to
+    crashes or weird search results.
+
+    The procedure to migrate safely is as follows:
+    1. Perform any changes (e.g. development) on the document.
+    2. Restart the bot in REPL mode.
+    3. Once it is ready, change the document index name in config.ini file. Copy this name as well.
+    4. Execute this function with document class and the copied name as parameters.
+    5. Wait.
+    6. If it takes longer than 60 seconds, the call may exit abruptly - it likely means the indexing has succeeded.
+       But additional checking needs to be done to be sure (such as count of documents in the new index).
+    7. That is all, bot is ready to go with new document settings.
+
+    :returns re-indexes given document to another index
     """
     if index in TEST_ONLY_VALUES:
         nuke_from_orbit('Cannot migrate to test indexes!')

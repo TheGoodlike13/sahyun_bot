@@ -29,7 +29,7 @@ the_worderer = token_filter(
     'the_worderer',
     type='shingle',
     min_shingle_size=2,
-    max_shingle_size=3,
+    max_shingle_size=elastic_settings.e_shingle,
     token_separator='_',
     output_unigrams=True,
 )
@@ -64,7 +64,7 @@ def shingle_merge(n: int) -> Analyzer:
 
 grammar_comrade = analyzer('grammar_comrade', tokenizer='whitespace', filter=with_common_filters())
 shingle_city = analyzer('shingle_city', tokenizer='standard', filter=with_common_filters(the_worderer))
-shingle_mergers = [shingle_merge(n) for n in range(2, 3)]
+shingle_mergers = [shingle_merge(n) for n in range(2, elastic_settings.e_shingle)]
 
 
 cdlcs = Index(elastic_settings.e_cf_index)
@@ -204,7 +204,7 @@ def fuzzy_match(field: str, match: str, explicit_analyzer: Union[Analyzer, str] 
         options['analyzer'] = explicit_analyzer
 
     fuzzy_options = options.copy()
-    fuzzy_options['fuzziness'] = 'auto:5,11'
+    fuzzy_options['fuzziness'] = elastic_settings.e_fuzzy
 
     q1 = Match(**{field: options})
     q2 = Match(**{field: fuzzy_options})

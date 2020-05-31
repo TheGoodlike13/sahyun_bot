@@ -161,13 +161,24 @@ Host = host used by elasticsearch client; defaults to localhost; localhost is al
 CustomsforgeIndex = name of index which will contain information about cdlcs; defaults to 'cdlcs';
 if you set it to 'cdlcs_test', which is used by tests, the application will crash immediately
 
-RequestFields = comma separated list of fields used when making requests; it has a general purpose
-default value, but since it may change a lot in the future, I won't write it out explicitly; for
-examples of what is possible, refer to the elastic.CustomDLC class & elasticsearch documentation
-about passing fields into multi-match queries
+RankIndex = name of index which will contain manual user ranks; defaults to 'users';
+if you set it to 'users_test', which is used by tests, the application will crash immediately
 
-RequestMatchCeiling = max amount of matches from a request; defaults to 3; any positive integer
-is allowed
+Fuzziness = parameter used to account for spelling mistakes; defaults to 'auto:5,11';
+this setting means that words length 1-4 will not allow for spelling mistakes,
+words length 5-10 will allow a single spelling mistakes and words length 11 or more allow
+for two spelling mistakes
+
+ShingleCeiling = amount of shingle mergers to use for searching; defaults to 3; any number
+larger than 2 is OK; to keep it simple: when requesting "ac dc", it will only match "acdc"
+if shingle ceiling is 2 or more; similarly when requesting "gunsnroses", it will only
+match "guns n' roses" if shingle ceiling is 3 or more; the higher the ceiling the bigger
+the index, the slower the search and less accurate the results; although I doubt there
+would be any significant effect because the items indexed (artist and title) are quite
+small on their own; finally - if you change this parameter, you need to migrate your index
+(see #migrate in utils_elastic.py); if the number was lowered, the bot will function, but
+the search results may not work as expected; if the number was increased, the bot will
+likely crash when trying to search
 
 Explain = true if you want elasticsearch to explain itself; defaults to false;
 explanations will only be visible in the JSON responses, usually DEBUG level logs
