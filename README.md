@@ -166,7 +166,7 @@ if you set it to 'users_test', which is used by tests, the application will cras
 
 Fuzziness = parameter used to account for spelling mistakes; defaults to 'auto:5,11';
 this setting means that words length 1-4 will not allow for spelling mistakes,
-words length 5-10 will allow a single spelling mistakes and words length 11 or more allow
+words length 5-10 will allow a single spelling mistake and words length 11 or more allow
 for two spelling mistakes
 
 ShingleCeiling = amount of shingle mergers to use for searching; defaults to 3; any number

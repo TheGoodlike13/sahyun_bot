@@ -34,7 +34,7 @@ class Twitchy(Closeable):
     @property
     def api(self) -> Helix:
         """
-        This getter is intended to be used internally or with REPL access, thus is does not handle exceptions.
+        This getter is intended to be used internally or with REPL access, thus it does not handle exceptions.
 
         :returns internal twitch API object
         """
@@ -50,9 +50,9 @@ class Twitchy(Closeable):
         except Exception as e:
             debug_ex(e, 'revoke token', LOG, silent=True)
 
-    def get_id(self, nick_or_id: str) -> str:
+    def get_id(self, nick_or_id: str) -> Optional[str]:
         """
-        :returns coerces given nick or twitch id into twitch id; None if not possible
+        Coerces given nick or twitch id into twitch id, if possible
         """
         try:
             with self.__user_id_lock:

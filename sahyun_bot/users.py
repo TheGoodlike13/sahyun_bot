@@ -65,8 +65,8 @@ class Users(ElasticAware):
         nick = nick.lower()
         user_id = self.id(nick)
         return self.__check_streamer(nick)\
-            or self.__check_elastic(nick, user_id) \
-            or self.__check_twitch(nick, user_id) \
+            or self.__check_elastic(nick, user_id)\
+            or self.__check_twitch(nick, user_id)\
             or self.__fallback()
 
     def id(self, nick: str) -> Optional[str]:

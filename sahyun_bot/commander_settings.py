@@ -88,13 +88,14 @@ class Command:
 
     def executest(self,
                   respond: ResponseHook,
+                  nick: str = '_test',
                   rank: UserRank = UserRank.ADMIN,
                   alias: str = None,
                   args: str = '') -> ResponseHook:
         """
         Same as execute, but returns ResponseHook. Allows using this method call as context for hook cleanup.
         """
-        user = User(nick='_test', rank=rank)
+        user = User(nick=nick, rank=rank)
         failure = self.execute(user, alias or self.the_alias(), args, respond)
         respond.to_debug('failure' if failure else 'success')
         return respond
