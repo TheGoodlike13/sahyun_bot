@@ -1,6 +1,6 @@
 from assertpy import assert_that
 
-from sahyun_bot.commands.request_queue import Request, Next, Pick, Top, Played, Last
+from sahyun_bot.commands.request_queue import Request, Next, Pick, Top, Played, Last, Playlist
 from sahyun_bot.users_settings import UserRank
 
 
@@ -177,6 +177,9 @@ def test_bump(rq, hook):
 
 
 def test_played(rq, hook):
+    with Played(rq=rq).executest(hook):
+        hook.assert_success('Requests played: none')
+
     with Request(rq=rq).executest(hook, args=''), Next(rq=rq).executest(hook), \
          Request(rq=rq).executest(hook, args='ZUN'), Next(rq=rq).executest(hook):
         pass
@@ -194,6 +197,26 @@ def test_last(rq, hook):
 
     with Last(rq=rq).executest(hook):
         hook.assert_success('Last: <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> by ADMIN _test')
+
+
+def test_playlist(rq, hook):
+    with Playlist(rq=rq).executest(hook):
+        hook.assert_success('Playlist (0/0): empty')
+
+    with Request(rq=rq).executest(hook, args=''):
+        pass
+
+    with Playlist(rq=rq).executest(hook):
+        hook.assert_success('Playlist (1/1): ')
+
+    with Request(rq=rq).executest(hook, args='ZUN'):
+        pass
+
+    with Playlist(rq=rq).executest(hook):
+        hook.assert_success('Playlist (2/2): , ZUN - Paradise ~ Deep Mountain (coldrampage)')
+
+    with Playlist(rq=rq, max_print=1).executest(hook):
+        hook.assert_success('Playlist (1/2): ')
 
 
 def test_ranks(commander, hook):

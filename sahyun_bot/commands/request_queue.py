@@ -267,7 +267,7 @@ class Played(Command):
         """
         Prints all the requests in the request queue memory.
         """
-        requests = ', '.join(match.short for match in self.__queue.memory())
+        requests = ', '.join(match.short for match in self.__queue.memory()) or 'none'
         respond.to_sender(f'Requests played: {requests}')
 
 
@@ -325,3 +325,24 @@ class Last(Command):
             return respond.to_sender('No requests have been played yet')
 
         respond.to_sender(f'Last: <{last}> by {last.user}')
+
+
+class Playlist(Command):
+    def __init__(self, **beans):
+        super().__init__(**beans)
+        self.__queue: MemoryQueue[Match] = beans.get('rq')
+        self.__max_print = beans.get('max_print', DEFAULT_MAX_PRINT)
+
+    def alias(self) -> Iterator[str]:
+        yield from super().alias()
+        yield 'list'
+
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook):
+        """
+        Prints the request queue. If the queue is big, may choose to print only some top elements.
+        """
+        copy = self.__queue[:]
+        total = len(copy)
+        visible = min(self.__max_print, total)
+        requests = ', '.join(match.short for match in copy[:visible]) or 'empty'
+        respond.to_sender(f'Playlist ({visible}/{total}): {requests}')

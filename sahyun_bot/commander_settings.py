@@ -6,12 +6,15 @@ from sahyun_bot.utils_settings import read_config
 
 DEFAULT_MAX_SEARCH = 10
 DEFAULT_MAX_PICK = 3
+DEFAULT_MAX_PRINT = 5
 
 cm_search = read_config('commands', 'MaxSearch', convert=int, fallback=DEFAULT_MAX_SEARCH)
 cm_pick = read_config('commands', 'MaxPick', convert=int, fallback=DEFAULT_MAX_PICK)
+cm_print = read_config('commands', 'MaxPrint', convert=int, fallback=DEFAULT_MAX_PRINT)
 
 cm_search = max(1, cm_search)
 cm_pick = max(1, cm_pick)
+cm_print = max(1, cm_print)
 
 
 class ResponseHook(ABC):

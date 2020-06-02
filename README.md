@@ -51,6 +51,10 @@ args are always ignored. Exceptional cases will always be documented.
 
 Prints the last song that was popped from the queue.
 
+#### !playlist, !list
+
+Prints the request queue. If the queue is big, may choose to print only some top elements.
+
 #### !time
 
 Responds with current time in UTC.
@@ -285,6 +289,8 @@ does not affect random requests, which pick from the entire matching pool
 MaxPick = maximum amount of choices given to user; defaults to 3; any positive number is OK; however,
 any number larger than MaxSearch will be effectively pointless, as this number just trims the results
 after the search filters out unplayable matches
+
+MaxPrint = maximum amount of playlist items to print; defaults to 5; any positive number is OK
 
 #### [downtime]
 

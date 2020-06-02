@@ -10,10 +10,11 @@ BEFORE RELEASE
     Document all commands in README
 COMMANDS
     VWR
-        !playlist - request queue (no more than TOP 5)
         !commands - list of public commands available to your rank
         !hosts - list of hosts for the channel
 
 Type hint review (customsforge, others)
 
 Launch link in browser after !next
+
+Refactor <> into Match itself, since we always use those when printing query
