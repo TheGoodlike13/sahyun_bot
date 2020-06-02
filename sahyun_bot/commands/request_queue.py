@@ -7,7 +7,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import List, Iterator, Optional, Tuple, FrozenSet, Iterable, Union
 
-from sahyun_bot.commander_settings import Command, ResponseHook, DEFAULT_MAX_SEARCH, DEFAULT_MAX_PICK
+from sahyun_bot.commander_settings import Command, ResponseHook, DEFAULT_MAX_SEARCH, DEFAULT_MAX_PICK, DEFAULT_MAX_PRINT
 from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.users_settings import User, UserRank
 from sahyun_bot.utils_queue import MemoryQueue
@@ -261,13 +261,13 @@ class Pick(BaseRequest):
 class Played(Command):
     def __init__(self, **beans):
         super().__init__(**beans)
-        self._queue: MemoryQueue[Match] = beans.get('rq')
+        self.__queue: MemoryQueue[Match] = beans.get('rq')
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook):
         """
         Prints all the requests in the request queue memory.
         """
-        requests = ', '.join(match.short for match in self._queue.memory())
+        requests = ', '.join(match.short for match in self.__queue.memory())
         respond.to_sender(f'Requests played: {requests}')
 
 
