@@ -63,4 +63,6 @@ def test_filtered_pools(es_cdlc):
 
 
 def test_random(es_cdlc):
+    assert_that(CustomDLC.random('definitely not here')).is_none()
+
     assert_that(CustomDLC.random().id).is_in(12990, 49874, 49886)

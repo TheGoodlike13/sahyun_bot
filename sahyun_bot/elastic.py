@@ -105,6 +105,11 @@ class CustomDLC(BaseDoc):
 
     @classmethod
     def search(cls, query: str = None, **kwargs) -> Search:
+        """
+        Provides search API for CustomDLC objects.
+
+        Filters CDLCs by given query.
+        """
         s = super().search(**kwargs)
         if query and not query.isspace():
             s = s.query(search_query(query))
@@ -113,18 +118,36 @@ class CustomDLC(BaseDoc):
 
     @classmethod
     def playable(cls, query: str = None, **kwargs) -> Search:
+        """
+        Provides search API for CustomDLC objects.
+
+        Filters CDLCs by given query. Also filters out not playable CDLCs.
+        """
         return cls.search(query, **kwargs).query(playable_query())
 
     @classmethod
-    def random_pool(cls, query: str = None, **kwargs) -> Search:
-        playable = cls.playable(query, **kwargs)
+    def random_pool(cls, query: str = None, *exclude: int, **kwargs) -> Search:
+        """
+        Provides search API for CustomDLC objects.
+
+        Filters CDLCs by given query. Also filters out not playable CDLCs. Excludes official CDLCs if configured so.
+
+        Finally, excludes arbitrary ids.
+        """
+        playable = cls.playable(query, **kwargs).exclude('terms', id=exclude)
         return playable if elastic_settings.e_allow_official else playable.query('term', is_official=False)
 
     @classmethod
-    def random(cls, query: str = None, **kwargs) -> Optional[CustomDLC]:
-        total = cls.random_pool(query, **kwargs).count()
+    def random(cls, query: str = None, *exclude: int, **kwargs) -> Optional[CustomDLC]:
+        """
+        Returns random CustomDLC from #random_pool, if any match exists.
+        """
+        total = cls.random_pool(query, *exclude, **kwargs).count()
+        if not total:
+            return None
+
         random_pick = randrange(0, total)
-        for hit in cls.random_pool(query, **kwargs)[random_pick:random_pick + 1]:
+        for hit in cls.random_pool(query, *exclude, **kwargs)[random_pick:random_pick + 1]:
             return hit
 
     def __str__(self) -> str:
