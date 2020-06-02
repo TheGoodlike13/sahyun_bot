@@ -47,6 +47,10 @@ args are always ignored. Exceptional cases will always be documented.
 
 ### VWR (any viewer that is not a follower)
 
+#### !commands
+
+Prints all commands available to the user's rank.
+
 #### !last
 
 Prints the last song that was popped from the queue.

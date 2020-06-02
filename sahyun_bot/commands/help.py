@@ -16,6 +16,9 @@ class Commands(Command):
         return UserRank.VWR
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook):
+        """
+        Prints all commands available to the user's rank.
+        """
         commands = ', '.join(self.__commands_for_rank(user))
         respond.to_sender(f'Commands: {commands}')
 
