@@ -113,6 +113,9 @@ def test_pick_specific(rq, hook):
     with Pick(rq=rq).executest(hook, rank=UserRank.FLWR, alias='1'):
         hook.assert_success('Your request for <(LRBV) Linkin Park - All For Nothing (AntonZap)> is now in position 1')
 
+    with Pick(rq=rq).executest(hook, rank=UserRank.FLWR, alias='2'):
+        hook.assert_success("<(RBV) Trey Parker - Jackin' It In San Diego (dtn828)> is now in position 1")
+
 
 def test_admin_pick_next(rq, hook):
     with Pick(rq=rq).executest(hook, alias='1'):
@@ -134,6 +137,9 @@ def test_admin_pick_next(rq, hook):
 
     with Pick(rq=rq).executest(hook, alias='1'):
         hook.assert_success('Next: <(LRBV) Linkin Park - All For Nothing (AntonZap)>')
+
+    with Pick(rq=rq).executest(hook, alias='2'):
+        hook.assert_success("Next: <(RBV) Trey Parker - Jackin' It In San Diego (dtn828)>")
 
 
 def test_not_playable(rq, hook):

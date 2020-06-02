@@ -23,4 +23,4 @@ COMMANDS
 Reformat files with '\' - should not be touching the values, needs space
 Type hint review (customsforge, others)
 
-For !pick, allow changing your mind
+Make choice count configurable

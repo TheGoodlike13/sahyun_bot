@@ -20,10 +20,11 @@ def pick_format(request: Match) -> str:
 
 
 class Match:
-    def __init__(self, user: User, query: str, *matches: CustomDLC):
+    def __init__(self, user: User, query: str, *matches: CustomDLC, original: Match = None):
         self.user = user
         self.query = query
         self.matches: List[CustomDLC] = matches[:3]
+        self.original = original or self
 
     def __len__(self):
         return len(self.matches)
@@ -52,8 +53,11 @@ class Match:
             yield pos, match
 
     def pick(self, choice: int) -> Optional[Match]:
+        if self.original != self:
+            return self.original.pick(choice)
+
         index = choice - 1
-        return None if choice > len(self) else Match(self.user, self.query, self.matches[index])
+        return None if choice > len(self) else Match(self.user, self.query, self.matches[index], original=self)
 
     def by_same_user(self, other: Match) -> bool:
         return self.is_from(other.user)
@@ -64,8 +68,31 @@ class Match:
     def needs_picking(self, user: User) -> bool:
         return not self.is_exact and self.is_from(user)
 
+    def has_pick_for(self, user: User) -> bool:
+        return self.original.needs_picking(user)
+
+    def has_pick(self) -> bool:
+        return self.original != self and not self.original.is_exact
+
     def ids(self) -> FrozenSet[int]:
         return frozenset([match.id for match in self.matches])
+
+
+class Picker:
+    def __init__(self, user: User):
+        self.user = user
+        self.pick_needs = True
+
+    def needs_picking(self, match: Match) -> bool:
+        self.pick_needs = True
+        return match.needs_picking(self.user)
+
+    def has_pick_for(self, match: Match) -> bool:
+        self.pick_needs = False
+        return match.has_pick_for(self.user)
+
+    def last_pick(self, match: Match) -> bool:
+        return match.needs_picking(self.user) if self.pick_needs else match.has_pick_for(self.user)
 
 
 class Request(Command):
@@ -124,16 +151,22 @@ class Pick(Command):
         if not choice:
             return respond.to_sender('Try !pick 1-3')
 
+        picker = Picker(user)
         with self.__queue:
-            request = self.__queue.find(lambda r: r.needs_picking(user))
+            request = self.__queue.find(picker.needs_picking)
             if not request:
-                return self.__pick_last(choice, respond) if user.is_admin else True
+                if user.is_admin:
+                    return self.__pick_last(choice, respond)
+
+                request = self.__queue.find(picker.has_pick_for)
+                if not request:
+                    return True
 
             chosen = request.pick(choice)
             if not chosen:
                 return respond.to_sender(f'{choice} is not available; max: {len(request)}')
 
-            position = self.__queue.offer(chosen, lambda r: r.needs_picking(user))
+            position = self.__queue.offer(chosen, picker.last_pick)
             respond.to_sender(f'Your request for <{chosen}> is now in position {position}')
 
     def __pick_last(self, choice: int, respond: ResponseHook) -> bool:
