@@ -19,13 +19,6 @@ def pick_format(request: Match) -> str:
     return '; '.join(f'!{pos} {match.short}' for pos, match in request.all())
 
 
-def is_playable(match: CustomDLC) -> bool:
-    """
-    :returns true if song is playable
-    """
-    return 'pc' in match.platforms and ('lead' in match.parts or 'rhythm' in match.parts)
-
-
 class Match:
     def __init__(self, user: User, query: str, *matches: CustomDLC):
         self.user = user
@@ -92,7 +85,7 @@ class Request(Command):
         if not matches:
             return respond.to_sender(f'No matches for <{args}>')
 
-        playable = list(filter(is_playable, matches))
+        playable = list(filter(lambda match: match.is_playable, matches))
         if not playable:
             unplayable = '; '.join(match.short for match in matches)
             return respond.to_sender(f'Matches for <{args}> not playable: {unplayable}')

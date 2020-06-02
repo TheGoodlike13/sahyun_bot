@@ -23,5 +23,4 @@ COMMANDS
 Reformat files with '\' - should not be touching the values, needs space
 Type hint review (customsforge, others)
 
-Move is_playable to CDLC logic and make configurable
 For !pick, allow changing your mind
