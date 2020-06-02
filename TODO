@@ -9,8 +9,6 @@ Improve queue by managing already played more explicitly
 BEFORE RELEASE
     Document all commands in README
 COMMANDS
-    ADMIN
-        !top - move a request to the top of the queue
     FLWR
         !played - list of picked songs that were next'd
     VWR

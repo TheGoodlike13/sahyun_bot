@@ -86,17 +86,17 @@ def test_replace_unique(int_queue):
 
 
 def test_bump(int_queue):
-    assert_that(int_queue.bump(lambda n: n == 1)).is_true()
+    assert_that(int_queue.bump(lambda n: n == 1)).is_equal_to(1)
     assert_that(int_queue).is_equal_to([1, 0, 2])
 
 
 def test_bump_first_match(int_queue):
-    assert_that(int_queue.bump(lambda n: n > 1)).is_true()
+    assert_that(int_queue.bump(lambda n: n > 1)).is_equal_to(2)
     assert_that(int_queue).is_equal_to([2, 0, 1])
 
 
 def test_bump_no_match(int_queue):
-    assert_that(int_queue.bump(lambda n: n > 2)).is_false()
+    assert_that(int_queue.bump(lambda n: n > 2)).is_none()
     assert_that(int_queue).is_equal_to([0, 1, 2])
 
 

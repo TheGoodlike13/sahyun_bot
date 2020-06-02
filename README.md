@@ -103,6 +103,10 @@ Pop the next song in request queue. After calling this, it is considered played.
 If the request was not exact, ADMIN rank can then call !pick to make it exact.
 Only the picked value will be considered played in that case.
 
+#### !top NICK
+
+Move the latest request by user with given nick to the top of the queue.
+
 ## Notes on development & running
 
 The purpose of this bot is to manage the playlist of user requests while Sahyun is streaming.

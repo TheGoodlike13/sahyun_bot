@@ -129,17 +129,18 @@ class MemoryQueue(Generic[T]):
             i = self.__find(match)
             return self[i] if i >= 0 else None
 
-    def bump(self, match: Callable[[T], bool]) -> bool:
+    def bump(self, match: Callable[[T], bool]) -> Optional[T]:
         """
         Bumps the last matching item to the top of the queue.
-        :returns true if item was bumped, false or None if it was not found
+        :returns item that was bumped, None if it was not found
         """
         with self:
             i = self.__find(match)
             if i >= 0:
-                self.__queue.insert(0, self[i])
+                item = self[i]
+                self.__queue.insert(0, item)
                 del self[i + 1]
-                return True
+                return item
 
     def last(self) -> Optional[T]:
         """

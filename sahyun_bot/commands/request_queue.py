@@ -5,7 +5,7 @@ Commands which control the request queue.
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Iterator, Optional, Tuple, FrozenSet, Iterable
+from typing import List, Iterator, Optional, Tuple, FrozenSet, Iterable, Union
 
 from sahyun_bot.commander_settings import Command, ResponseHook, DEFAULT_MAX_SEARCH, DEFAULT_MAX_PICK
 from sahyun_bot.elastic import CustomDLC
@@ -63,8 +63,9 @@ class Match:
     def by_same_user(self, other: Match) -> bool:
         return self.is_from(other.user)
 
-    def is_from(self, user: User) -> bool:
-        return self.user.nick == user.nick
+    def is_from(self, user: Union[User, str]) -> bool:
+        nick = user if isinstance(user, str) else user.nick
+        return self.user.nick == nick
 
     def needs_picking(self, user: User) -> bool:
         return not self.is_exact and self.is_from(user)
@@ -242,3 +243,17 @@ class Next(Command):
             respond.to_sender(f'Next: <{request}> by {request.user}')
         else:
             respond.to_sender(f'Pick for <{request}> by {request.user}: {pick_format(request)}')
+
+
+class Top(Command):
+    def __init__(self, **beans):
+        super().__init__(**beans)
+        self.__queue: MemoryQueue[Match] = beans.get('rq')
+
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        nick, space, ignore = args.partition(' ')
+        request = self.__queue.bump(lambda m: m.is_from(nick))
+        if not request:
+            return respond.to_sender(f'No requests by <{nick}> in queue')
+
+        respond.to_sender(f'Request <{request}> by {request.user} is now in position 1')

@@ -1,6 +1,6 @@
 from assertpy import assert_that
 
-from sahyun_bot.commands.request_queue import Request, Next, Pick
+from sahyun_bot.commands.request_queue import Request, Next, Pick, Top
 from sahyun_bot.users_settings import UserRank
 
 
@@ -50,7 +50,7 @@ def test_next(rq, hook):
 
 
 def test_request_already_played(rq, hook):
-    with Request(rq=rq).executest(hook, args=''), Next(rq=rq).executest(hook),\
+    with Request(rq=rq).executest(hook, args=''), Next(rq=rq).executest(hook), \
          Request(rq=rq).executest(hook, args='ZUN'), Next(rq=rq).executest(hook):
         pass
 
@@ -89,7 +89,7 @@ def test_request_already_in_queue(rq, hook):
 
 
 def test_replace_request(rq, hook):
-    with Request(rq=rq).executest(hook, rank=UserRank.FLWR, args=''),\
+    with Request(rq=rq).executest(hook, rank=UserRank.FLWR, args=''), \
          Request(rq=rq).executest(hook, nick='another', args='parke'):
         pass
 
@@ -162,6 +162,18 @@ def test_official(rq, hook):
             'Your request for <(OFFICIAL) (LBV) Skillet - Those Nights (Rankourai)> is now in position 1',
             'WARNING! This song is official, so it may not be playable. Ask or try again!',
         )
+
+
+def test_bump(rq, hook):
+    with Request(rq=rq).executest(hook, args='ZUN'), Request(rq=rq).executest(hook, args='parke'), \
+         Request(rq=rq).executest(hook, nick='another', rank=UserRank.FLWR, args=''):
+        pass
+
+    with Top(rq=rq).executest(hook, args='who'):
+        hook.assert_failure('No requests by <who> in queue')
+
+    with Top(rq=rq).executest(hook, args='another'):
+        hook.assert_success('Request <> by FLWR another is now in position 1')
 
 
 def test_ranks(commander, hook):
