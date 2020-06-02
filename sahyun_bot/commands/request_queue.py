@@ -1,7 +1,6 @@
 """
 Commands which control or otherwise interact with the request queue.
 """
-
 from __future__ import annotations
 
 from abc import ABC
