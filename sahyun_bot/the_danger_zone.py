@@ -26,7 +26,7 @@ if __name__ == '__main__':
     setup_elastic_usage(us, tl, use_elastic=True)
 
     local_utils = [m[:-3] for m in os.listdir(os.path.dirname(__file__)) if m[:5] == 'utils']
-    other_utils = ['datetime', 'itertools', 'urllib.parse', 'dictdiffer', 'humanize']
+    other_utils = ['datetime', 'itertools', 'urllib.parse', 'dictdiffer', 'humanize', 'random']
 
     for u in chain(local_utils, other_utils):
         m = __import__(u, globals(), locals(), ['*'], 0)

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from random import random
 from typing import Optional, Union, List
 
 from elasticsearch_dsl import Text, Keyword, Boolean, Long, token_filter, analyzer, Index, Search
 from elasticsearch_dsl.aggs import Max, Min
 from elasticsearch_dsl.analysis import Analyzer, TokenFilter
-from elasticsearch_dsl.query import Match, Query
+from elasticsearch_dsl.query import Match, Query, Terms, FunctionScore
 
 from sahyun_bot import elastic_settings
 from sahyun_bot.elastic_settings import BaseDoc, EpochSecond
@@ -66,7 +67,6 @@ grammar_comrade = analyzer('grammar_comrade', tokenizer='whitespace', filter=wit
 shingle_city = analyzer('shingle_city', tokenizer='standard', filter=with_common_filters(the_worderer))
 shingle_mergers = [shingle_merge(n) for n in range(2, elastic_settings.e_shingle)]
 
-
 cdlcs = Index(elastic_settings.e_cf_index)
 cdlcs.settings(number_of_shards=1, number_of_replicas=0)
 [cdlcs.analyzer(merger) for merger in shingle_mergers]
@@ -107,17 +107,27 @@ class CustomDLC(BaseDoc):
     def search(cls, query: str = None, **kwargs) -> Search:
         s = super().search(**kwargs)
         if query and not query.isspace():
-            s = s.query(cls.query(query))
+            s = s.query(search_query(query))
 
         return s
 
     @classmethod
-    def query(cls, query: str) -> Query:
-        q = fuzzy_match('full_title_grammar_comrade', query) | fuzzy_match('full_title_shingle_city', query)
-        for merger in shingle_mergers:
-            q |= fuzzy_match('full_title_shingle_city', query, merger)
+    def playable(cls, query: str = None, **kwargs) -> Search:
+        return cls.search(query, **kwargs).query(playable_query())
 
-        return q
+    @classmethod
+    def random_pool(cls, query: str = None, **kwargs) -> Search:
+        playable = cls.playable(query, **kwargs)
+        return playable if elastic_settings.e_allow_official else playable.query('term', is_official=False)
+
+    @classmethod
+    def random(cls, query: str = None, **kwargs) -> Search:
+        return cls.random_pool(query, **kwargs).query(random_query('id'))
+
+    @classmethod
+    def random_one(cls, query: str = None, **kwargs) -> Optional[CustomDLC]:
+        for hit in cls.random(query, **kwargs)[:1]:
+            return hit
 
     def __str__(self) -> str:
         official_str = '(OFFICIAL)' if self.is_official else ''
@@ -138,6 +148,12 @@ class CustomDLC(BaseDoc):
     @property
     def link(self) -> str:
         return self.direct_download if self.direct_download else self.download
+
+    @property
+    def is_playable(self) -> bool:
+        playable_platforms = any(platform in self.platforms for platform in elastic_settings.e_platforms)
+        playable_parts = any(part in self.parts for part in elastic_settings.e_parts)
+        return playable_platforms and playable_parts
 
     @classmethod
     def earliest_not_auto(cls) -> Optional[int]:
@@ -164,6 +180,22 @@ class CustomDLC(BaseDoc):
         s.aggs.metric('latest_auto_time', Max(field='snapshot_timestamp'))
         response = s[0:0].execute()
         return response.aggs.latest_auto_time.value
+
+
+def random_query(field: str) -> Query:
+    return FunctionScore(random_score={'field': field, 'seed': str(random())})
+
+
+def playable_query() -> Query:
+    return Terms(platforms=elastic_settings.e_platforms) & Terms(parts=elastic_settings.e_parts)
+
+
+def search_query(query: str) -> Query:
+    q = fuzzy_match('full_title_grammar_comrade', query) | fuzzy_match('full_title_shingle_city', query)
+    for merger in shingle_mergers:
+        q |= fuzzy_match('full_title_shingle_city', query, merger)
+
+    return q
 
 
 def fuzzy_match(field: str, match: str, explicit_analyzer: Union[Analyzer, str] = None) -> Query:

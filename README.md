@@ -183,6 +183,15 @@ likely crash when trying to search
 Explain = true if you want elasticsearch to explain itself; defaults to false;
 explanations will only be visible in the JSON responses, usually DEBUG level logs
 
+Platforms = comma separated list of platforms that will be considered playable; defaults to pc;
+CDLCs with only unplayable platforms will not be queued or chosen randomly by the bot
+
+Parts = comma separated list of parts that will be considered playable; defaults to lead & rhythm;
+CDLCs with only unplayable parts will not be queued or chosen randomly by the bot
+
+RandomOfficial = true if you want the bot to include all official CDLCs when picking random;
+defaults to false
+
 #### [load]
 
 MaxWorkers = amount of background threads that assist with loading CDLCs; defaults to 8;

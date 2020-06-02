@@ -49,3 +49,18 @@ def test_partial_update_for_non_existent_document(es_cdlc):
         assert False  # exception should be thrown!
     except NotFoundError:
         assert_that(CustomDLC.get(100000, ignore=[404])).is_none()
+
+
+def test_playable(es_cdlc):
+    assert_that(CustomDLC.get(49706).is_playable).is_true()   # official is still playable
+    assert_that(CustomDLC.get(49792).is_playable).is_false()  # no pc
+    assert_that(CustomDLC.get(49841).is_playable).is_false()  # no lead or rhythm
+
+
+def test_filtered_pools(es_cdlc):
+    assert_that(list(CustomDLC.playable())).is_length(4)     # 2 mock CDLCs out of 6 are not playable
+    assert_that(list(CustomDLC.random_pool())).is_length(3)  # 1 more CDLC is official
+
+
+def test_random(es_cdlc):
+    assert_that(CustomDLC.random_one().id).is_in(12990, 49874, 49886)

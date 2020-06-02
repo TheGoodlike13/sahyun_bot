@@ -15,7 +15,7 @@ from elasticsearch_dsl.query import Query
 
 from sahyun_bot.the_danger_zone import nuke_from_orbit
 from sahyun_bot.utils import NON_EXISTENT
-from sahyun_bot.utils_settings import read_config, parse_bool
+from sahyun_bot.utils_settings import read_config, parse_bool, parse_list
 
 DEFAULT_HOST = 'localhost'
 DEFAULT_CUSTOMSFORGE_INDEX = 'cdlcs'
@@ -23,6 +23,10 @@ DEFAULT_USER_INDEX = 'users'
 
 DEFAULT_FUZZINESS = 'auto:5,11'
 DEFAULT_SHINGLE_CEILING = 3
+
+DEFAULT_PLATFORMS = ['pc']
+DEFAULT_PARTS = ['lead', 'rhythm']
+DEFAULT_OFFICIAL = False
 
 TEST_CUSTOMSFORGE_INDEX = DEFAULT_CUSTOMSFORGE_INDEX + '_test'
 TEST_USER_INDEX = DEFAULT_USER_INDEX + '_test'
@@ -41,6 +45,10 @@ e_shingle = NON_EXISTENT
 
 e_explain = NON_EXISTENT
 e_refresh = False
+
+e_platforms = NON_EXISTENT
+e_parts = NON_EXISTENT
+e_allow_official = NON_EXISTENT
 
 
 def important_values() -> List:
@@ -63,6 +71,9 @@ def init():
     global e_fuzzy
     global e_shingle
     global e_explain
+    global e_platforms
+    global e_parts
+    global e_allow_official
 
     e_host = read_config('elastic', 'Host', fallback=DEFAULT_HOST)
     e_cf_index = read_config('elastic', 'CustomsforgeIndex', fallback=DEFAULT_CUSTOMSFORGE_INDEX)
@@ -70,6 +81,11 @@ def init():
     e_fuzzy = read_config('elastic', 'Fuzziness', fallback=DEFAULT_FUZZINESS)
     e_shingle = read_config('elastic', 'ShingleCeiling', convert=int, fallback=DEFAULT_SHINGLE_CEILING)
     e_explain = read_config('elastic', 'Explain', convert=parse_bool, fallback=False)
+    # noinspection PyTypeChecker
+    e_platforms = read_config('elastic', 'Platforms', convert=parse_list, fallback=DEFAULT_PLATFORMS)
+    # noinspection PyTypeChecker
+    e_parts = read_config('elastic', 'Parts', convert=parse_list, fallback=DEFAULT_PARTS)
+    e_allow_official = read_config('elastic', 'RandomOfficial', convert=parse_bool, fallback=DEFAULT_OFFICIAL)
 
     e_shingle = max(2, e_shingle)
 
@@ -86,6 +102,9 @@ def init_test():
     global e_shingle
     global e_explain
     global e_refresh
+    global e_platforms
+    global e_parts
+    global e_allow_official
 
     e_host = DEFAULT_HOST
     e_cf_index = TEST_CUSTOMSFORGE_INDEX
@@ -94,6 +113,9 @@ def init_test():
     e_shingle = DEFAULT_SHINGLE_CEILING
     e_explain = True
     e_refresh = True
+    e_platforms = DEFAULT_PLATFORMS
+    e_parts = DEFAULT_PARTS
+    e_allow_official = DEFAULT_OFFICIAL
 
 
 class BaseDoc(Document):
@@ -120,6 +142,9 @@ class BaseDoc(Document):
         es = cls._get_connection()
         body = query if isinstance(query, dict) else {'query': query.to_dict()}
         result = es.indices.validate_query(body, cls._default_index(), **kwargs)
+        if 'error' in result:
+            raise ValueError(result['error'])
+
         return result['explanations'][0]['explanation']
 
     def explain(self, query: Query, **kwargs) -> dict:
