@@ -15,6 +15,7 @@ of the underlying data by breaking assumptions. For that reason, avoid using boo
 import json
 import os
 import shutil
+from abc import ABC
 from concurrent.futures import Future
 from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -52,7 +53,7 @@ ELASTIC_STR = frozenset([
 ])
 
 
-class Source(Closeable):
+class Source(Closeable, ABC):
     def read_all(self, start_from: int = 0) -> Iterator[dict]:
         """
         Generates all CDLCs since given time of update (or beginning, if not given).
@@ -64,7 +65,7 @@ class Source(Closeable):
         raise NotImplementedError
 
 
-class DirectLinkSource:
+class DirectLinkSource(ABC):
     def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
         """
         :returns direct download link for given CDLC id, if it is available
@@ -72,7 +73,7 @@ class DirectLinkSource:
         raise NotImplementedError
 
 
-class Destination(Closeable):
+class Destination(Closeable, ABC):
     def start_from(self) -> int:
         """
         To avoid loading continuous sources from beginning, this value is used as optimization.

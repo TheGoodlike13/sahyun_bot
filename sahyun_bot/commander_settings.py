@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Iterator
 
 from sahyun_bot.users_settings import UserRank, User
@@ -6,7 +7,7 @@ from sahyun_bot.utils_logging import get_logger
 LOG = get_logger(__name__)
 
 
-class ResponseHook:
+class ResponseHook(ABC):
     """
     Base class for handling responses to the commands.
     """
@@ -31,7 +32,7 @@ class ResponseHook:
         LOG.debug(message)
 
 
-class Command:
+class Command(ABC):
     """
     Base class for all commands. All implementations of this class in 'commands' package are dynamically loaded.
 

@@ -3,6 +3,7 @@ Contains general utilities that can be used in many contexts.
 May also contain utilities that are too few to create a separate module for.
 """
 import logging
+from abc import ABC
 from typing import TypeVar
 from urllib.parse import urlparse, parse_qs
 
@@ -55,7 +56,7 @@ def clean_link(link: str) -> str:
     return link or ''
 
 
-class Closeable:
+class Closeable(ABC):
     """
     To avoid making errors in the method signatures, just extend this class for objects that can be used as context.
     """
