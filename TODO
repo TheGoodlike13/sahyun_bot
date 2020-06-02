@@ -1,22 +1,17 @@
-SOME TIME LATER
-    Check if user has left
-    Automatic CDLC download from supported websites into pre-configured folder
-    Print message when someone hosts or stops hosting - requires background task
-    Advanced timeout system - quota based, with different outcomes having different costs
-    Fallback implementation for CDLC search (similar to the original bot, querying the website)
-    Sub & mod support
+The following functionality will be implemented with future versions, if needed:
+
+Background tasks: automatic indexing, checking of hosts, checking of current watchers
+Automatic CDLC download from supported websites into pre-configured folder
+Fallback implementation for CDLC search (similar to the original bot, querying the website)
+Sub & mod support
 
 BEFORE RELEASE
-    Document commands, ranks and timeouts in README
-    More background threads - TheLoaderer load()
+    Document all commands in README
 COMMANDS
     ADMIN
-        !next - pop next request from the queue
         !top - move a request to the top of the queue
     FLWR
-        !request - puts a request into the queue
         !random - puts a random request into the queue
-        !pick - choose a specific match from a request in the queue (admins can pick for others after next)
         !played - list of picked songs that were next'd
     VWR
         !joke - best joke
