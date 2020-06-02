@@ -1,6 +1,6 @@
 from assertpy import assert_that
 
-from sahyun_bot.commands.request_queue import Request, Next, Pick, Top, Played
+from sahyun_bot.commands.request_queue import Request, Next, Pick, Top, Played, Last
 from sahyun_bot.users_settings import UserRank
 
 
@@ -185,9 +185,26 @@ def test_played(rq, hook):
         hook.assert_success('Requests played: , ZUN - Paradise ~ Deep Mountain (coldrampage)')
 
 
+def test_last(rq, hook):
+    with Last(rq=rq).executest(hook):
+        hook.assert_failure('No requests have been played yet')
+
+    with Request(rq=rq).executest(hook, args='ZUN'), Next(rq=rq).executest(hook):
+        pass
+
+    with Last(rq=rq).executest(hook):
+        hook.assert_success('Last: <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> by ADMIN _test')
+
+
 def test_ranks(commander, hook):
     with commander.executest(hook, '!request', 'goodlikebot'):
         hook.assert_failure('Please follow the channel to use !request')
 
     with commander.executest(hook, '!next', 'goodlikebot'):
+        hook.assert_silent_failure()
+
+    with commander.executest(hook, '!top', 'goodlikebot'):
+        hook.assert_silent_failure()
+
+    with commander.executest(hook, '!last', 'sahyunbot'):
         hook.assert_silent_failure()

@@ -309,3 +309,19 @@ class Top(Command):
             return respond.to_sender(f'No requests by <{nick}> in queue')
 
         respond.to_sender(f'Request <{request}> by {request.user} is now in position 1')
+
+
+class Last(Command):
+    def __init__(self, **beans):
+        super().__init__(**beans)
+        self.__queue: MemoryQueue[Match] = beans.get('rq')
+
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        """
+        Prints the last song that was popped from the queue.
+        """
+        last = self.__queue.last()
+        if not last:
+            return respond.to_sender('No requests have been played yet')
+
+        respond.to_sender(f'Last: <{last}> by {last.user}')

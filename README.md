@@ -47,6 +47,10 @@ args are always ignored. Exceptional cases will always be documented.
 
 ### VWR (any viewer that is not a follower)
 
+#### !last
+
+Prints the last song that was popped from the queue.
+
 #### !time
 
 Responds with current time in UTC.
