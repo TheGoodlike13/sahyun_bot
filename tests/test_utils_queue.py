@@ -98,3 +98,23 @@ def test_bump_first_match(int_queue):
 def test_bump_no_match(int_queue):
     assert_that(int_queue.bump(lambda n: n > 2)).is_false()
     assert_that(int_queue).is_equal_to([0, 1, 2])
+
+
+def test_find(int_queue):
+    assert_that(int_queue.find(lambda n: n > 0)).is_equal_to(2)
+    assert_that(int_queue.find(lambda n: n > 1)).is_equal_to(2)
+    assert_that(int_queue.find(lambda n: n > 2)).is_none()
+
+
+def test_mandela(int_queue):
+    int_queue.mandela(5)
+    assert_that(int_queue.last()).is_equal_to(5)
+    assert_that(int_queue.memory()).is_equal_to([5])
+
+    int_queue.next()
+    assert_that(int_queue.last()).is_equal_to(0)
+    assert_that(int_queue.memory()).is_equal_to([5, 0])
+
+    int_queue.mandela(6)
+    assert_that(int_queue.last()).is_equal_to(6)
+    assert_that(int_queue.memory()).is_equal_to([5, 6])

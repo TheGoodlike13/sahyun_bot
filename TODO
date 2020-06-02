@@ -1,4 +1,5 @@
 SOME TIME LATER
+    Check if user has left
     Automatic CDLC download from supported websites into pre-configured folder
     Print message when someone hosts or stops hosting - requires background task
     Advanced timeout system - quota based, with different outcomes having different costs
@@ -10,12 +11,12 @@ BEFORE RELEASE
     More background threads - TheLoaderer load()
 COMMANDS
     ADMIN
-        !next - pop next request from the queue; while at it, check if user still watching
+        !next - pop next request from the queue
         !top - move a request to the top of the queue
     FLWR
         !request - puts a request into the queue
         !random - puts a random request into the queue
-        !pick - choose a specific match from a request in the queue (admins can pick for others, including after next)
+        !pick - choose a specific match from a request in the queue (admins can pick for others after next)
         !played - list of picked songs that were next'd
     VWR
         !joke - best joke
@@ -27,3 +28,6 @@ COMMANDS
 Type hint review (customsforge, others)
 Add ABC to abstract classes
 Add broken link story to trivia
+
+Move is_playable to CDLC logic and make configurable
+For !pick, allow changing your mind

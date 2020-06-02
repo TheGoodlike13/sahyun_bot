@@ -62,23 +62,23 @@ def es():
 @pytest.fixture
 def es_cdlc(es):
     from sahyun_bot.elastic import CustomDLC
-    yield from es_doc(es, CustomDLC)
+    prepare_doc(es, CustomDLC)
+    return es
 
 
 @pytest.fixture
 def es_rank(es):
     from sahyun_bot.elastic import ManualUserRank
-    yield from es_doc(es, ManualUserRank)
+    prepare_doc(es, ManualUserRank)
+    return es
 
 
-def es_doc(es, doc):
+def prepare_doc(es, doc):
     try:
         bulk(es, (d.to_dict(True) for d in prepare_index(doc)), refresh=True)
     except Exception as e:
         debug_ex(e, 'prepare elasticsearch index for testing')
         pytest.skip('Elasticsearch setup failed. See logs for exception.')
-
-    yield es
 
 
 def prepare_index(doc):
@@ -148,6 +148,11 @@ def cf():
 
 @pytest.fixture
 def queue():
+    return MemoryQueue()
+
+
+@pytest.fixture
+def rq(es_cdlc):
     return MemoryQueue()
 
 
