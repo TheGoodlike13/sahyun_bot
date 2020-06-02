@@ -12,7 +12,6 @@ COMMANDS
     FLWR
         !played - list of picked songs that were next'd
     VWR
-        !joke - best joke
         !last - last next'd
         !playlist - request queue (no more than TOP 5)
         !commands - list of public commands available to your rank

@@ -51,6 +51,10 @@ args are always ignored. Exceptional cases will always be documented.
 
 Responds with current time in UTC.
 
+#### !joke
+
+Tells the most awesome joke ever.
+
 ### FLWR (follower)
 
 #### !request, !song, !sr QUERY
