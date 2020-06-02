@@ -124,11 +124,50 @@ class BaseRequest(Command, ABC):
             respond.to_sender(f'To pick exact: {pick_format(request)}')
 
 
+class Request(BaseRequest):
+    def __init__(self, **beans):
+        super().__init__(**beans)
+
+        self.__max_search = beans.get('max_search', DEFAULT_MAX_SEARCH)
+        self.__max_pick = beans.get('max_pick', DEFAULT_MAX_PICK)
+
+    def alias(self) -> Iterator[str]:
+        yield from super().alias()
+        yield from ['song', 'sr']
+
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        """
+        Adds any matching songs to the request queue. Query is taken as a literal search string. Can be empty.
+
+        If multiple matches are found, you will be able to use !pick to choose the most relevant ones.
+
+        The following rules do NOT apply to ADMIN rank:
+        * If you already had a song in the queue, replaces it instead.
+        * If the song is already in the queue, does not add it.
+        * If the song has been played already, does not add it.
+        """
+        matches = list(CustomDLC.search(query=args)[:self.__max_search])
+        if not matches:
+            return respond.to_sender(f'No matches for <{args}>')
+
+        playable = list(filter(lambda match: match.is_playable, matches))
+        if not playable:
+            unplayable = '; '.join(match.short for match in matches)
+            return respond.to_sender(f'Matches for <{args}> not playable: {unplayable}')
+
+        request = Match(user, args, *playable[:self.__max_pick])
+        return self._enqueue_request(user, request, respond)
+
+
 class Random(BaseRequest):
     def __init__(self, **beans):
         super().__init__(**beans)
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        """
+        Same as !request, but automatically picks from ALL possible matches. This includes matches that cannot
+        be picked with !pick due to lower relevance. Usually best used with artists, e.g. !random acdc
+        """
         with self._queue:
             match = CustomDLC.random(args, *self.__exclusions())
             if not match:
@@ -150,31 +189,6 @@ class Random(BaseRequest):
                 yield match.exact.id
 
 
-class Request(BaseRequest):
-    def __init__(self, **beans):
-        super().__init__(**beans)
-
-        self.__max_search = beans.get('max_search', DEFAULT_MAX_SEARCH)
-        self.__max_pick = beans.get('max_pick', DEFAULT_MAX_PICK)
-
-    def alias(self) -> Iterator[str]:
-        yield from super().alias()
-        yield from ['song', 'sr']
-
-    def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
-        matches = list(CustomDLC.search(query=args)[:self.__max_search])
-        if not matches:
-            return respond.to_sender(f'No matches for <{args}>')
-
-        playable = list(filter(lambda match: match.is_playable, matches))
-        if not playable:
-            unplayable = '; '.join(match.short for match in matches)
-            return respond.to_sender(f'Matches for <{args}> not playable: {unplayable}')
-
-        request = Match(user, args, *playable[:self.__max_pick])
-        return self._enqueue_request(user, request, respond)
-
-
 class Pick(BaseRequest):
     def __init__(self, **beans):
         super().__init__(**beans)
@@ -187,6 +201,17 @@ class Pick(BaseRequest):
         yield from self.__choices
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        """
+        If a previous !request returned more than one match, this command allows to pick an exact match.
+
+        Picking an exact match is subject to the same rules as request.
+
+        Position can be used as a shorthand, e.g. instead of "!pick 1", you can just use "!1".
+
+        You can change your pick as long as it is still in the queue, unless you are ADMIN.
+        Instead, ADMIN can !pick for the last !next result, even if it's not theirs.
+        Pick for !next can be changed with a follow-up !pick.
+        """
         choice = self.__choice(alias, args)
         if not choice:
             return respond.to_sender(f'Try !pick 1-{self.__max_pick}')
@@ -235,6 +260,13 @@ class Next(Command):
         self.__queue: MemoryQueue[Match] = beans.get('rq')
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        """
+        Pop the next song in request queue. After calling this, it is considered played.
+
+        If the request was not exact, ADMIN rank can then call !pick to make it exact.
+
+        Only the picked value will be considered played in that case.
+        """
         request = self.__queue.next()
         if not request:
             return respond.to_sender('Request queue is empty')
@@ -251,6 +283,9 @@ class Top(Command):
         self.__queue: MemoryQueue[Match] = beans.get('rq')
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
+        """
+        Move the latest request by user with given nick to the top of the queue.
+        """
         nick, space, ignore = args.partition(' ')
         request = self.__queue.bump(lambda m: m.is_from(nick))
         if not request:
