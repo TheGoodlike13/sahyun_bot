@@ -9,8 +9,6 @@ Improve queue by managing already played more explicitly
 BEFORE RELEASE
     Document all commands in README
 COMMANDS
-    FLWR
-        !played - list of picked songs that were next'd
     VWR
         !last - last next'd
         !playlist - request queue (no more than TOP 5)

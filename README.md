@@ -85,6 +85,10 @@ You can change your pick as long as it is still in the queue, unless you are ADM
 Instead, ADMIN can !pick for the last !next result, even if it's not theirs.
 Pick for !next can be changed with a follow-up !pick.
 
+#### !played
+
+Prints all the requests in the request queue memory.
+
 ### ADMIN (streamer & his buddies)
 
 #### !lock

@@ -40,6 +40,10 @@ class Match:
         return self.ids() == o.ids()
 
     @property
+    def short(self) -> str:
+        return self.exact.short if self.is_exact else self.query
+
+    @property
     def is_exact(self) -> bool:
         return len(self) == 1
 
@@ -252,6 +256,19 @@ class Pick(BaseRequest):
 
         index, space, ignored = args.partition(' ')
         return int(index) if index in self.__choices else 0
+
+
+class Played(Command):
+    def __init__(self, **beans):
+        super().__init__(**beans)
+        self._queue: MemoryQueue[Match] = beans.get('rq')
+
+    def execute(self, user: User, alias: str, args: str, respond: ResponseHook):
+        """
+        Prints all the requests in the request queue memory.
+        """
+        requests = ', '.join(match.short for match in self._queue.memory())
+        respond.to_sender(f'Requests played: {requests}')
 
 
 class Next(Command):

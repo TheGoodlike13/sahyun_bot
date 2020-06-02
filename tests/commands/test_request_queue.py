@@ -1,6 +1,6 @@
 from assertpy import assert_that
 
-from sahyun_bot.commands.request_queue import Request, Next, Pick, Top
+from sahyun_bot.commands.request_queue import Request, Next, Pick, Top, Played
 from sahyun_bot.users_settings import UserRank
 
 
@@ -174,6 +174,15 @@ def test_bump(rq, hook):
 
     with Top(rq=rq).executest(hook, args='another'):
         hook.assert_success('Request <> by FLWR another is now in position 1')
+
+
+def test_played(rq, hook):
+    with Request(rq=rq).executest(hook, args=''), Next(rq=rq).executest(hook), \
+         Request(rq=rq).executest(hook, args='ZUN'), Next(rq=rq).executest(hook):
+        pass
+
+    with Played(rq=rq).executest(hook):
+        hook.assert_success('Requests played: , ZUN - Paradise ~ Deep Mountain (coldrampage)')
 
 
 def test_ranks(commander, hook):
