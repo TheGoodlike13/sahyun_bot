@@ -1,5 +1,5 @@
 from threading import RLock
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 
 from requests import HTTPError
 from twitch import Helix
@@ -76,6 +76,15 @@ class Twitchy(Closeable):
         v_id = self.get_id(viewer)
         return s_id and v_id and self.__call(self.__is_following, s_id, v_id)
 
+    def hosts(self, streamer: str) -> List[str]:
+        """
+        :param streamer: nick or id of a streamer
+        :returns list of nicks who are hosting the streamer if possible to determine
+        :raises Exception: if call to twitch fails
+        """
+        s_id = self.get_id(streamer)
+        return self.__get_hosts(s_id)
+
     def __acquire_authorized_api(self) -> Helix:
         self.__bearer_token = self.__acquire_token()
         self.__api = Helix(client_id=self.__client_id,
@@ -126,3 +135,13 @@ class Twitchy(Closeable):
 
     def __is_following(self, api: Helix, streamer: str, viewer: str) -> bool:
         return Follows(api=api.api, follow_type='followers', to_id=streamer, from_id=viewer).total > 0
+
+    def __get_hosts(self, streamer: str) -> List[str]:
+        params = {
+            'target': streamer,
+        }
+
+        with self.__sessions.with_retry() as session:
+            result = session.get(TWITCH_HOSTS_API, params=params)
+
+        return [host.get('host_login') for host in result.json().get('hosts')]

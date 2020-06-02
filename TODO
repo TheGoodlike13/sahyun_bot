@@ -15,3 +15,5 @@ COMMANDS
 Type hint review (customsforge, others)
 
 Launch link in browser after !next
+
+Fix twitch API - it DOES differentiate between int and str for id and nick!
