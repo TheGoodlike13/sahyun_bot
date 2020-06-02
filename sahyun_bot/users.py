@@ -101,12 +101,13 @@ class Users(ElasticAware):
             except Exception as e:
                 return debug_ex(e, f'remove rank for <{nick}>', LOG)
 
-    def _manual(self, nick: str, rank: UserRank) -> Closeable:
+    def _manual(self, nick: str, rank: UserRank = None) -> Closeable:
         this = self
 
         class CleanManual(Closeable):
             def __enter__(self):
-                this.set_manual(nick, rank)
+                if rank:
+                    this.set_manual(nick, rank)
 
             def close(self):
                 this.remove_manual(nick)

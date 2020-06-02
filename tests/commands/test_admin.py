@@ -48,7 +48,7 @@ def test_rank(users, hook):
     with Rank(us=users).executest(hook, args='BAD_RANK goodlikebot'):
         hook.assert_failure('BAD_RANK is not a valid rank')
 
-    with Rank(us=users).executest(hook, args='BAN goodlikebot'):
+    with Rank(us=users).executest(hook, args='BAN goodlikebot'), users._manual('goodlikebot'):
         hook.assert_success('goodlikebot is now BAN')
         assert_that(users.rank('goodlikebot')).is_equal_to(UserRank.BAN)
 
@@ -59,6 +59,6 @@ def test_rank(users, hook):
 
 
 def test_rank_shorthand(commander, hook):
-    with commander.executest(hook, '!ban goodlikebot'):
+    with commander.executest(hook, '!ban goodlikebot'), commander._users._manual('goodlikebot'):
         hook.assert_success('goodlikebot is now BAN')
         assert_that(commander._users.rank('goodlikebot')).is_equal_to(UserRank.BAN)
