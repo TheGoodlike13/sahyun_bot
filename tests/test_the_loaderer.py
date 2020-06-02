@@ -9,8 +9,8 @@ def test_loading_from_start(tl):
     with HTTMock(customsforge):
         tl.load()
 
-    assert_that([hit.link for hit in CustomDLC.search().filter('term', from_auto_index=True)])\
-        .is_length(6)\
+    assert_that([hit.link for hit in CustomDLC.search().filter('term', from_auto_index=True)]) \
+        .is_length(6) \
         .contains_only('magical_link')
 
 
@@ -34,6 +34,6 @@ def test_load_links(tl):
     with HTTMock(customsforge):
         tl.load_links()
 
-    assert_that([hit.link for hit in CustomDLC.search()])\
-        .is_length(6)\
+    assert_that([hit.link for hit in CustomDLC.search()]) \
+        .is_length(6) \
         .contains_only('magical_link')

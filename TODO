@@ -20,5 +20,4 @@ COMMANDS
         !commands - list of public commands available to your rank
         !hosts - list of hosts for the channel
 
-Reformat files with '\' - should not be touching the values, needs space
 Type hint review (customsforge, others)

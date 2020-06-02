@@ -67,18 +67,18 @@ def test_detailed_info(small, big):
 
 def test_redacted(small):
     dump = HttpDump(unsafe=['password'])
-    assert_that(dump.to_detailed_info(small))\
-        .does_not_contain('password=secret')\
+    assert_that(dump.to_detailed_info(small)) \
+        .does_not_contain('password=secret') \
         .contains('password=REDACTED')
 
 
 def test_redacted_query(small):
     dump = HttpDump(unsafe=['secret'])
-    assert_that(dump.to_basic_info(small))\
-        .does_not_contain('> POST http://localhost/small?secret=value')\
+    assert_that(dump.to_basic_info(small)) \
+        .does_not_contain('> POST http://localhost/small?secret=value') \
         .contains('> POST http://localhost/small?secret=REDACTED')
-    assert_that(dump.to_detailed_info(small))\
-        .does_not_contain('> POST http://localhost/small?secret=value')\
+    assert_that(dump.to_detailed_info(small)) \
+        .does_not_contain('> POST http://localhost/small?secret=value') \
         .contains('> POST http://localhost/small?secret=REDACTED')
 
 
