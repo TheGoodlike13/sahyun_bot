@@ -19,9 +19,9 @@ def test_multiple_matches(rq, hook):
             "!3 Trey Parker - Jackin' It In San Diego (dtn828)",
         )
 
-    with Request(rq=rq).executest(hook, args='Parke'):
+    with Request(rq=rq).executest(hook, args='parke'):
         hook.assert_success(
-            'Your request for <Parke> is now in position 2',
+            'Your request for <parke> is now in position 2',
             'To pick exact: ',
             '!1 Linkin Park - All For Nothing (AntonZap)',
             "!2 Trey Parker - Jackin' It In San Diego (dtn828)",
@@ -31,7 +31,7 @@ def test_multiple_matches(rq, hook):
 def test_exact_match(rq, hook):
     with Request(rq=rq).executest(hook, args='ZUN'):
         hook.assert_success(
-            'Your request for <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> is now in position 1',
+            'Your request for (L) ZUN - Paradise ~ Deep Mountain (coldrampage) is now in position 1',
             but_not='To pick exact: ',
         )
 
@@ -44,7 +44,7 @@ def test_next(rq, hook):
         pass
 
     with Next(rq=rq).executest(hook):
-        hook.assert_success('Next: <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> by ADMIN sahyun')
+        hook.assert_success('Next: (L) ZUN - Paradise ~ Deep Mountain (coldrampage) by ADMIN sahyun')
 
     assert_that(rq).is_empty()
 
@@ -59,7 +59,7 @@ def test_request_already_played(rq, hook):
         hook.assert_failure('Already played <>')
 
     with Request(rq=rq).executest(hook, rank=UserRank.FLWR, args='ZUN'):
-        hook.assert_failure('Already played <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)>')
+        hook.assert_failure('Already played (L) ZUN - Paradise ~ Deep Mountain (coldrampage)')
 
     # still works for admins, though
     with Request(rq=rq).executest(hook, args=''):
@@ -78,7 +78,7 @@ def test_request_already_in_queue(rq, hook):
         hook.assert_failure('Request <> already in queue position 1')
 
     with Request(rq=rq).executest(hook, rank=UserRank.FLWR, args='ZUN'):
-        hook.assert_failure('Request <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> already in queue position 2')
+        hook.assert_failure('Request (L) ZUN - Paradise ~ Deep Mountain (coldrampage) already in queue position 2')
 
     # still works for admins, though
     with Request(rq=rq).executest(hook, args=''):
@@ -94,7 +94,7 @@ def test_replace_request(rq, hook):
         pass
 
     with Request(rq=rq).executest(hook, rank=UserRank.FLWR, args='ZUN'):
-        hook.assert_success('Your request for <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> is now in position 1')
+        hook.assert_success('Your request for (L) ZUN - Paradise ~ Deep Mountain (coldrampage) is now in position 1')
 
 
 def test_pick_specific(rq, hook):
@@ -111,10 +111,10 @@ def test_pick_specific(rq, hook):
         hook.assert_failure('3 is not available; max: 2')
 
     with Pick(rq=rq).executest(hook, rank=UserRank.FLWR, alias='1'):
-        hook.assert_success('Your request for <(LRBV) Linkin Park - All For Nothing (AntonZap)> is now in position 1')
+        hook.assert_success('Your request for (LRBV) Linkin Park - All For Nothing (AntonZap) is now in position 1')
 
     with Pick(rq=rq).executest(hook, rank=UserRank.FLWR, alias='2'):
-        hook.assert_success("<(RBV) Trey Parker - Jackin' It In San Diego (dtn828)> is now in position 1")
+        hook.assert_success("(RBV) Trey Parker - Jackin' It In San Diego (dtn828) is now in position 1")
 
 
 def test_admin_pick_next(rq, hook):
@@ -136,10 +136,10 @@ def test_admin_pick_next(rq, hook):
         hook.assert_failure('3 is not available; max: 2')
 
     with Pick(rq=rq).executest(hook, alias='1'):
-        hook.assert_success('Next: <(LRBV) Linkin Park - All For Nothing (AntonZap)>')
+        hook.assert_success('Next: (LRBV) Linkin Park - All For Nothing (AntonZap)')
 
     with Pick(rq=rq).executest(hook, alias='2'):
-        hook.assert_success("Next: <(RBV) Trey Parker - Jackin' It In San Diego (dtn828)>")
+        hook.assert_success("Next: (RBV) Trey Parker - Jackin' It In San Diego (dtn828)")
 
 
 def test_not_playable(rq, hook):
@@ -159,7 +159,7 @@ def test_not_playable(rq, hook):
 def test_official(rq, hook):
     with Request(rq=rq).executest(hook, args='Skillet'):
         hook.assert_failure(
-            'Your request for <(OFFICIAL) (LBV) Skillet - Those Nights (Rankourai)> is now in position 1',
+            'Your request for (OFFICIAL) (LBV) Skillet - Those Nights (Rankourai) is now in position 1',
             'WARNING! This song is official, so it may not be playable. Ask or try again!',
         )
 
@@ -185,7 +185,7 @@ def test_played(rq, hook):
         pass
 
     with Played(rq=rq).executest(hook):
-        hook.assert_success('Requests played: , ZUN - Paradise ~ Deep Mountain (coldrampage)')
+        hook.assert_success('Requests played: <>, ZUN - Paradise ~ Deep Mountain (coldrampage)')
 
 
 def test_last(rq, hook):
@@ -196,7 +196,7 @@ def test_last(rq, hook):
         pass
 
     with Last(rq=rq).executest(hook):
-        hook.assert_success('Last: <(L) ZUN - Paradise ~ Deep Mountain (coldrampage)> by ADMIN _test')
+        hook.assert_success('Last: (L) ZUN - Paradise ~ Deep Mountain (coldrampage) by ADMIN _test')
 
 
 def test_playlist(rq, hook):
@@ -207,16 +207,16 @@ def test_playlist(rq, hook):
         pass
 
     with Playlist(rq=rq).executest(hook):
-        hook.assert_success('Playlist (1/1): ')
+        hook.assert_success('Playlist (1/1): <>')
 
     with Request(rq=rq).executest(hook, args='ZUN'):
         pass
 
     with Playlist(rq=rq).executest(hook):
-        hook.assert_success('Playlist (2/2): , ZUN - Paradise ~ Deep Mountain (coldrampage)')
+        hook.assert_success('Playlist (2/2): <>, ZUN - Paradise ~ Deep Mountain (coldrampage)')
 
     with Playlist(rq=rq, max_print=1).executest(hook):
-        hook.assert_success('Playlist (1/2): ')
+        hook.assert_success('Playlist (1/2): <>')
 
 
 def test_ranks(commander, hook):

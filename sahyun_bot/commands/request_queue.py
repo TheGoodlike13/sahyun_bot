@@ -31,7 +31,7 @@ class Match:
         return len(self.matches)
 
     def __str__(self) -> str:
-        return str(self.exact or self.query)
+        return str(self.exact or f'<{self.query}>')
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, Match):
@@ -41,7 +41,7 @@ class Match:
 
     @property
     def short(self) -> str:
-        return self.exact.short if self.is_exact else self.query
+        return self.exact.short if self.is_exact else f'<{self.query}>'
 
     @property
     def is_exact(self) -> bool:
@@ -115,12 +115,12 @@ class BaseRequest(Command, ABC):
 
     def _validate_position(self, position: int, request: Match, respond: ResponseHook) -> bool:
         if not position:
-            return respond.to_sender(f'Already played <{request}>')
+            return respond.to_sender(f'Already played {request}')
 
         if position < 0:
-            return respond.to_sender(f'Request <{request}> already in queue position {-position}')
+            return respond.to_sender(f'Request {request} already in queue position {-position}')
 
-        respond.to_sender(f'Your request for <{request}> is now in position {position}')
+        respond.to_sender(f'Your request for {request} is now in position {position}')
         if request.is_exact:
             if request.exact.is_official:
                 return respond.to_sender('WARNING! This song is official, so it may not be playable. Ask or try again!')
@@ -248,7 +248,7 @@ class Pick(BaseRequest):
             return respond.to_sender(f'{choice} is not available; max: {len(request)}')
 
         self._queue.mandela(chosen)
-        respond.to_sender(f'Next: <{chosen}>')
+        respond.to_sender(f'Next: {chosen}')
 
     def __choice(self, alias: str, args: str) -> int:
         if alias in self.__choices:
@@ -289,9 +289,9 @@ class Next(Command):
             return respond.to_sender('Request queue is empty')
 
         if request.is_exact:
-            respond.to_sender(f'Next: <{request}> by {request.user}')
+            respond.to_sender(f'Next: {request} by {request.user}')
         else:
-            respond.to_sender(f'Pick for <{request}> by {request.user}: {pick_format(request)}')
+            respond.to_sender(f'Pick for {request} by {request.user}: {pick_format(request)}')
 
 
 class Top(Command):
@@ -308,7 +308,7 @@ class Top(Command):
         if not request:
             return respond.to_sender(f'No requests by <{nick}> in queue')
 
-        respond.to_sender(f'Request <{request}> by {request.user} is now in position 1')
+        respond.to_sender(f'Request {request} by {request.user} is now in position 1')
 
 
 class Last(Command):
@@ -327,7 +327,7 @@ class Last(Command):
         if not last:
             return respond.to_sender('No requests have been played yet')
 
-        respond.to_sender(f'Last: <{last}> by {last.user}')
+        respond.to_sender(f'Last: {last} by {last.user}')
 
 
 class Playlist(Command):

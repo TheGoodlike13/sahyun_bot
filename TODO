@@ -16,5 +16,3 @@ COMMANDS
 Type hint review (customsforge, others)
 
 Launch link in browser after !next
-
-Refactor <> into Match itself, since we always use those when printing query
