@@ -160,9 +160,6 @@ class Request(BaseRequest):
         yield from super().alias()
         yield from ['song', 'sr']
 
-    def min_rank(self) -> UserRank:
-        return UserRank.FLWR
-
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
         matches = list(CustomDLC.search(query=args)[:self.__max_search])
         if not matches:
@@ -187,9 +184,6 @@ class Pick(BaseRequest):
     def alias(self) -> Iterator[str]:
         yield from super().alias()
         yield from self.__choices
-
-    def min_rank(self) -> UserRank:
-        return UserRank.VWR
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
         choice = self.__choice(alias, args)
