@@ -316,6 +316,9 @@ class Last(Command):
         super().__init__(**beans)
         self.__queue: MemoryQueue[Match] = beans.get('rq')
 
+    def min_rank(self) -> UserRank:
+        return UserRank.VWR
+
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
         """
         Prints the last song that was popped from the queue.
@@ -332,6 +335,9 @@ class Playlist(Command):
         super().__init__(**beans)
         self.__queue: MemoryQueue[Match] = beans.get('rq')
         self.__max_print = beans.get('max_print', DEFAULT_MAX_PRINT)
+
+    def min_rank(self) -> UserRank:
+        return UserRank.VWR
 
     def alias(self) -> Iterator[str]:
         yield from super().alias()
