@@ -4,13 +4,12 @@ Background tasks: automatic indexing, checking of hosts, checking of current wat
 Automatic CDLC download from supported websites into pre-configured folder
 Fallback implementation for CDLC search (similar to the original bot, querying the website)
 Sub & mod support
-Improve queue by managing already played more explicitly
+Improve queue by managing already played songs more explicitly
 
 BEFORE RELEASE
     Document all commands in README
 COMMANDS
     VWR
-        !commands - list of public commands available to your rank
         !hosts - list of hosts for the channel
 
 Type hint review (customsforge, others)
