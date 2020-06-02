@@ -21,7 +21,6 @@ COMMANDS
         !hosts - list of hosts for the channel
 
 Type hint review (customsforge, others)
-Add broken link story to trivia
 
 Move is_playable to CDLC logic and make configurable
 For !pick, allow changing your mind

@@ -2,3 +2,13 @@
 
 This set of characters is brought to you by customsforge CDLCs. It's the exhaustive list (as of this writing) of
 characters that are not a letter, digit or whitespace, but somehow found themselves on the artist or song title.
+
+http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-enabled-rs-2014-cdlc/chasing-dreams-r5581
+
+The CDLC above is said to have a broken link. If you try to download it, it will not succeed. But upon further
+inspection, you can find that this link is actually two links combined together, with one of the links pasted
+right into the middle of another. It can be a bit confusing, but if you try to untangle both of the links,
+you will be able to find the real and working one.
+
+I discovered this when inspecting the domains for direct download links. This link was the only one that did
+not have a proper domain.
