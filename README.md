@@ -218,6 +218,15 @@ in the console for some reason
 LoggingConfigFilename = filename which contains logging configuration; defaults to 'config_log_default.ini';
 if the defaults are not suitable for you, consider making 'config_log.ini' which is ignored by git
 
+#### [commands]
+
+MaxSearch = maximum amount of matches to consider for requests; defaults to 10; any positive number is OK;
+does not affect random requests, which pick from the entire matching pool
+
+MaxPick = maximum amount of choices given to user; defaults to 3; any positive number is OK; however,
+any number larger than MaxSearch will be effectively pointless, as this number just trims the results
+after the search filters out unplayable matches
+
 #### [downtime]
 
 Leniency = amount of seconds of downtime that should be ignored; defaults to 1; all values less

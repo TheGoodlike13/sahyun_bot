@@ -65,7 +65,11 @@ init_module(tl, 'The loaderer')
 rq = MemoryQueue()
 init_module(rq, 'Request queue')
 
-tc = TheCommander(cf=cf, tw=tw, es=es, dt=dt, us=us, tl=tl, rq=rq)
+tc_config = {
+    'max_search': cm_search,
+    'max_pick': cm_pick,
+}
+tc = TheCommander(cf=cf, tw=tw, es=es, dt=dt, us=us, tl=tl, rq=rq, **tc_config)
 init_module(tc, 'The commander')
 
 bot = botyun(tc=tc,

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import List, Iterator, Optional, Tuple, FrozenSet
 
-from sahyun_bot.commander_settings import Command, ResponseHook
+from sahyun_bot.commander_settings import Command, ResponseHook, DEFAULT_MAX_SEARCH, DEFAULT_MAX_PICK
 from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.users_settings import User, UserRank
 from sahyun_bot.utils_queue import MemoryQueue
@@ -23,7 +23,7 @@ class Match:
     def __init__(self, user: User, query: str, *matches: CustomDLC, original: Match = None):
         self.user = user
         self.query = query
-        self.matches: List[CustomDLC] = matches[:3]
+        self.matches: List[CustomDLC] = matches
         self.original = original or self
 
     def __len__(self):
@@ -99,6 +99,8 @@ class Request(Command):
     def __init__(self, **beans):
         super().__init__(**beans)
         self.__queue: MemoryQueue[Match] = beans.get('rq')
+        self.__max_search = beans.get('max_search', DEFAULT_MAX_SEARCH)
+        self.__max_pick = beans.get('max_pick', DEFAULT_MAX_PICK)
 
     def alias(self) -> Iterator[str]:
         yield from super().alias()
@@ -108,7 +110,7 @@ class Request(Command):
         return UserRank.FLWR
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
-        matches = list(CustomDLC.search(query=args))
+        matches = list(CustomDLC.search(query=args)[:self.__max_search])
         if not matches:
             return respond.to_sender(f'No matches for <{args}>')
 
@@ -117,7 +119,7 @@ class Request(Command):
             unplayable = '; '.join(match.short for match in matches)
             return respond.to_sender(f'Matches for <{args}> not playable: {unplayable}')
 
-        request = Match(user, args, *playable)
+        request = Match(user, args, *playable[:self.__max_pick])
         position = self.__queue.add(request) if user.is_admin else self.__queue.offer(request, request.by_same_user)
         if not position:
             return respond.to_sender(f'Already played <{request}>')
@@ -137,7 +139,8 @@ class Pick(Command):
     def __init__(self, **beans):
         super().__init__(**beans)
         self.__queue: MemoryQueue[Match] = beans.get('rq')
-        self.__choices = list(map(str, range(1, 4)))
+        self.__max_pick = beans.get('max_pick', DEFAULT_MAX_PICK)
+        self.__choices = list(map(str, range(1, self.__max_pick + 1)))
 
     def alias(self) -> Iterator[str]:
         yield from super().alias()
@@ -149,7 +152,7 @@ class Pick(Command):
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
         choice = self.__choice(alias, args)
         if not choice:
-            return respond.to_sender('Try !pick 1-3')
+            return respond.to_sender(f'Try !pick 1-{self.__max_pick}')
 
         picker = Picker(user)
         with self.__queue:

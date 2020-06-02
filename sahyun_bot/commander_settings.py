@@ -2,9 +2,16 @@ from abc import ABC
 from typing import Iterator
 
 from sahyun_bot.users_settings import UserRank, User
-from sahyun_bot.utils_logging import get_logger
+from sahyun_bot.utils_settings import read_config
 
-LOG = get_logger(__name__)
+DEFAULT_MAX_SEARCH = 10
+DEFAULT_MAX_PICK = 3
+
+cm_search = read_config('commands', 'MaxSearch', convert=int, fallback=DEFAULT_MAX_SEARCH)
+cm_pick = read_config('commands', 'MaxPick', convert=int, fallback=DEFAULT_MAX_PICK)
+
+cm_search = max(1, cm_search)
+cm_pick = max(1, cm_pick)
 
 
 class ResponseHook(ABC):
@@ -29,7 +36,7 @@ class ResponseHook(ABC):
         """
         Write a debug message. Feel free to override for testing purposes.
         """
-        LOG.debug(message)
+        pass
 
 
 class Command(ABC):
