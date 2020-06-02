@@ -19,6 +19,8 @@ if __name__ == '__main__':
     Main function for an interactive shell. Loads a bunch of utils into locals() so they can be used immediately.
     Use bot.py for a sane main function.
     """
+    # noinspection PyUnresolvedReferences
+    from collections import Counter
     from sahyun_bot.modules import *
     from sahyun_bot.elastic import *
     from sahyun_bot.utils_elastic import setup_elastic_usage

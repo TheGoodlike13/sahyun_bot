@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from random import random
+from random import random, randrange
 from typing import Optional, Union, List
 
 from elasticsearch_dsl import Text, Keyword, Boolean, Long, token_filter, analyzer, Index, Search
@@ -121,12 +121,10 @@ class CustomDLC(BaseDoc):
         return playable if elastic_settings.e_allow_official else playable.query('term', is_official=False)
 
     @classmethod
-    def random(cls, query: str = None, **kwargs) -> Search:
-        return cls.random_pool(query, **kwargs).query(random_query('id'))
-
-    @classmethod
-    def random_one(cls, query: str = None, **kwargs) -> Optional[CustomDLC]:
-        for hit in cls.random(query, **kwargs)[:1]:
+    def random(cls, query: str = None, **kwargs) -> Optional[CustomDLC]:
+        total = cls.random_pool(query, **kwargs).count()
+        random_pick = randrange(0, total)
+        for hit in cls.random_pool(query, **kwargs)[random_pick:random_pick + 1]:
             return hit
 
     def __str__(self) -> str:
@@ -183,6 +181,10 @@ class CustomDLC(BaseDoc):
 
 
 def random_query(field: str) -> Query:
+    """
+    This query is not used because it seems that it only adds to the score. Perhaps there is a way to make use of it,
+    but why not just do it by hand...
+    """
     return FunctionScore(random_score={'field': field, 'seed': str(random())})
 
 
