@@ -4,9 +4,22 @@
 This is the implementation of the bot used in Sahyun's twitch channel:
 https://www.twitch.tv/sahyun
 
-## Usage examples
+## Usage example
 
-TODO
+> !request acdc highway to hell
+>> To pick exact:
+>> !1 AC/DC - Highway to Hell (Brooklyn_Sounds);
+>> !2 AC/DC - Highway to hell (gizmo);
+>> !3 AC/DC - Highway to Hell (fetal_icecream)
+>>
+> !1
+>> Your request for <(LRBV) AC/DC - Highway to Hell (Brooklyn_Sounds)> is now in position 1
+>>
+> !next
+>> Next: <(LRBV) AC/DC - Highway to Hell (Brooklyn_Sounds)> by ADMIN sahyun
+>>
+> !random acdc
+>> Your request for <(LRBV) AC/DC - ThunderStruck (rGUNSLINGERr)> is now in position 1
 
 ## Permissions
 
@@ -42,7 +55,31 @@ Responds with current time in UTC.
 
 #### !request, !song, !sr QUERY
 
-TODO
+Adds any matching songs to the request queue. Query is taken as a literal search string. Can be empty.
+
+If multiple matches are found, you will be able to use !pick to choose the most relevant ones.
+
+The following rules do NOT apply to ADMIN rank:
+* If you already had a song in the queue, replaces it instead.
+* If the song is already in the queue, does not add it.
+* If the song has been played already, does not add it.
+
+#### !random QUERY
+
+Same as !request, but automatically picks from ALL possible matches. This includes matches that cannot
+be picked with !pick due to lower relevance. Usually best used with artists, e.g. !random acdc
+
+#### !pick N
+
+If a previous !request returned more than one match, this command allows to pick an exact match.
+
+Picking an exact match is subject to the same rules as request.
+
+Position can be used as a shorthand, e.g. instead of "!pick 1", you can just use "!1".
+
+You can change your pick as long as it is still in the queue, unless you are ADMIN.
+Instead, ADMIN can !pick for the last !next result, even if it's not theirs.
+Pick for !next can be changed with a follow-up !pick.
 
 ### ADMIN (streamer & his buddies)
 
@@ -59,6 +96,12 @@ Tries to index CDLCs from customsforge into elasticsearch.
 Sets manual rank to the user.
 
 Any rank can be used as a shorthand: !ban NICK, !admin NICK, etc.
+
+#### !next
+
+Pop the next song in request queue. After calling this, it is considered played.
+If the request was not exact, ADMIN rank can then call !pick to make it exact.
+Only the picked value will be considered played in that case.
 
 ## Notes on development & running
 

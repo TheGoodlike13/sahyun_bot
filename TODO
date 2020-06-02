@@ -21,3 +21,5 @@ COMMANDS
         !hosts - list of hosts for the channel
 
 Type hint review (customsforge, others)
+
+Launch link in browser after !next
