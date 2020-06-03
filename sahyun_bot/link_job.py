@@ -21,6 +21,7 @@ class BrowseLink(LinkJob):
 
 class CopyLinkToPaste(LinkJob):
     def handle(self, link: str):
+        LOG.warning('Link %s copied to clipboard.', link)
         pyperclip.copy(link)
 
 
