@@ -1,9 +1,9 @@
 from threading import RLock
-from typing import Callable, Optional, List
+from typing import Callable, Optional, List, Union
 
 from requests import HTTPError
 from twitch import Helix
-from twitch.helix import Follows
+from twitch.helix import Follows, User
 
 from sahyun_bot.utils import Closeable, debug_ex, NonelessCache, T
 from sahyun_bot.utils_logging import get_logger
@@ -28,7 +28,7 @@ class Twitchy(Closeable):
         self.__api = None
         self.__prevent_multiple_tokens = RLock()
 
-        self.__user_id_cache = NonelessCache(maxsize=2**10, ttl=60*60)
+        self.__user_cache = NonelessCache(maxsize=2 ** 10, ttl=60 * 60)
         self.__user_id_lock = RLock()
 
     @property
@@ -50,22 +50,22 @@ class Twitchy(Closeable):
         except Exception as e:
             debug_ex(e, 'revoke token', LOG, silent=True)
 
-    def get_id(self, nick_or_id: str) -> Optional[str]:
+    def get_id(self, nick_or_id: Union[str, int]) -> Optional[int]:
         """
         Coerces given nick or twitch id into twitch id, if possible
         """
         try:
             with self.__user_id_lock:
-                user_id = self.__user_id_cache.get(nick_or_id)
-                if not user_id:
-                    user_id = self.__call(self.__get_user_id, nick_or_id)
-                    self.__user_id_cache.update({nick_or_id: user_id, user_id: user_id})
+                user = self.__user_cache.get(nick_or_id)
+                if not user:
+                    user = self.__call(self.__get_user, nick_or_id)
+                    self.__user_cache.update({int(user.id): user, user.login: user})
 
-                return user_id
+                return int(user.id)
         except Exception as e:
             return debug_ex(e, f'find twitch user id for <{nick_or_id}>', LOG)
 
-    def is_following(self, streamer: str, viewer: str) -> bool:
+    def is_following(self, streamer: Union[str, int], viewer: Union[str, int]) -> bool:
         """
         :param streamer: nick or id of a streamer
         :param viewer: nick or id of a viewer
@@ -129,14 +129,13 @@ class Twitchy(Closeable):
 
             return self.__call(api_call, *args, retry_auth=False)
 
-    def __get_user_id(self, api: Helix, nick: str) -> Optional[str]:
-        user = api.user(nick)
-        return user.id if user else None
+    def __get_user(self, api: Helix, nick_or_id: Union[str, int]) -> Optional[User]:
+        return api.user(nick_or_id)
 
-    def __is_following(self, api: Helix, streamer: str, viewer: str) -> bool:
+    def __is_following(self, api: Helix, streamer: int, viewer: int) -> bool:
         return Follows(api=api.api, follow_type='followers', to_id=streamer, from_id=viewer).total > 0
 
-    def __get_hosts(self, streamer: str) -> List[str]:
+    def __get_hosts(self, streamer: int) -> List[str]:
         params = {
             'target': streamer,
         }

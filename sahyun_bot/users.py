@@ -41,8 +41,7 @@ class Users(ElasticAware):
         """
         :returns the admin user (streamer), with id if twitch is available
         """
-        user_id = self.__tw.get_id(self.__streamer) if self.__tw else None
-        return User(nick=self.__streamer, rank=UserRank.ADMIN, user_id=user_id)
+        return User(nick=self.__streamer, rank=UserRank.ADMIN, user_id=self.id(self.__streamer))
 
     def user(self, nick: str) -> User:
         """
@@ -69,7 +68,7 @@ class Users(ElasticAware):
             or self.__check_twitch(nick, user_id) \
             or self.__fallback()
 
-    def id(self, nick: str) -> Optional[str]:
+    def id(self, nick: str) -> Optional[int]:
         """
         :returns twitch id for nick, if available
         """
@@ -117,7 +116,7 @@ class Users(ElasticAware):
     def __check_streamer(self, nick: str) -> Optional[UserRank]:
         return UserRank.ADMIN if nick == self.__streamer else None
 
-    def __check_elastic(self, nick: str, user_id: str) -> Optional[UserRank]:
+    def __check_elastic(self, nick: str, user_id: int) -> Optional[UserRank]:
         if user_id and self.use_elastic:
             try:
                 manual = ManualUserRank.get(user_id, ignore=[404])
@@ -126,17 +125,17 @@ class Users(ElasticAware):
             except Exception as e:
                 debug_ex(e, f'get manual rank for <{nick}>', LOG)
 
-    def __check_twitch(self, nick: str, user_id: str) -> Optional[UserRank]:
+    def __check_twitch(self, nick: str, user_id: int) -> Optional[UserRank]:
         if user_id:
             with self.__rank_lock:
                 try:
-                    cached = self.__rank_cache.get(user_id)
+                    cached = self.__rank_cache.get(str(user_id))
                     if cached:
                         return cached['rank']
 
                     is_follower = self.__tw.is_following(self.__streamer, user_id)
                     live = UserRank.FLWR if is_follower else UserRank.VWR
-                    self.__rank_cache.set(user_id, {'rank': live}, duration=self.__cache_duration(is_follower))
+                    self.__rank_cache.set(str(user_id), {'rank': live}, duration=self.__cache_duration(is_follower))
                     return live
                 except Exception as e:
                     debug_ex(e, f'get live twitch rank for <{nick}>', LOG)

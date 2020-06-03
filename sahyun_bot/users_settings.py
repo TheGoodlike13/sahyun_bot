@@ -28,7 +28,7 @@ class UserRank(IntEnum):
 
 
 class User:
-    def __init__(self, nick: str, rank: UserRank = UserRank.UNKNW, user_id: str = None):
+    def __init__(self, nick: str, rank: UserRank = UserRank.UNKNW, user_id: int = None):
         self.nick = nick
         self.rank = rank
         self.user_id = user_id
