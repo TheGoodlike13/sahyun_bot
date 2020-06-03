@@ -55,7 +55,10 @@ class LinkJobFactory(LinkJob):
     def handle(self, link: str):
         for job in self.__jobs:
             if job.supports(link):
-                return job.handle(link)
+                try:
+                    return job.handle(link)
+                except Exception as e:
+                    debug_ex(e, f'download {link}', LOG)
 
         self.__fallback.handle(link)
 
