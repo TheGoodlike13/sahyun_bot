@@ -43,7 +43,8 @@ class LinkJobFactory(LinkJob):
         for module_name, module in sys.modules.items():
             if 'sahyun_bot.links.' in module_name:
                 for link_job_name, link_job_class in inspect.getmembers(module, self.__is_link_job):
-                    self.__create_and_cache(link_job_class, **settings)
+                    if not self.__is_abstract(link_job_name):
+                        self.__create_and_cache(link_job_class, **settings)
 
     def supports(self, link: str) -> bool:
         for job in self.__jobs:
@@ -64,6 +65,9 @@ class LinkJobFactory(LinkJob):
 
     def __is_link_job(self, item) -> bool:
         return inspect.isclass(item) and issubclass(item, LinkJob)
+
+    def __is_abstract(self, link_job_name: str) -> bool:
+        return link_job_name == 'LinkJob' or link_job_name[:4] == 'Base'
 
     def __create_and_cache(self, link_job_class, **settings):
         try:

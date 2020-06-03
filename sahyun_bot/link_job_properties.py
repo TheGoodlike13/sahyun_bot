@@ -10,6 +10,8 @@ lj_default = read_config('links', 'Default', fallback=LINK_JOB_DEFAULT)
 class LinkJob(ABC):
     """
     Strategy for handling links.
+
+    Abstract implementations should start with 'Base'. Non-abstract implementations should not start with 'Base'.
     """
     def supports(self, link: str) -> bool:
         """
