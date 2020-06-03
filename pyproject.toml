@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sahyun-bot"
-version = "1"
+version = "1.0.0"
 description = "IRC bot used by Sahyun"
 license = "MIT"
 authors = ["TheGoodlike13 <henrisssss@hotmail.com>"]
