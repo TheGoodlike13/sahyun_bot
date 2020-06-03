@@ -13,6 +13,7 @@ def test_commands(commander, hook):
             '!playlist',
             '!joke',
             '!time',
+            '!hosts',
             but_not=[
                 '!pick',
                 '!random',
@@ -33,6 +34,7 @@ def test_commands(commander, hook):
             '!playlist',
             '!joke',
             '!time',
+            '!hosts',
             '!pick',
             '!random',
             '!request',
@@ -53,6 +55,7 @@ def test_commands(commander, hook):
             '!playlist',
             '!joke',
             '!time',
+            '!hosts',
             '!pick',
             '!random',
             '!request',

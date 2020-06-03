@@ -8,9 +8,6 @@ Improve queue by managing already played songs more explicitly
 
 BEFORE RELEASE
     Document all commands in README
-COMMANDS
-    VWR
-        !hosts - list of hosts for the channel
 
 Type hint review (customsforge, others)
 

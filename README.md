@@ -67,6 +67,10 @@ Responds with current time in UTC.
 
 Tells the most awesome joke ever.
 
+#### !hosts
+
+Prints the list of hosts for the channel.
+
 ### FLWR (follower)
 
 #### !request, !song, !sr QUERY

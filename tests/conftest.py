@@ -125,7 +125,7 @@ def live_users(twitchy):
 
 
 @pytest.fixture
-def commander(users):
+def commander(users, twitchy):
     from sahyun_bot.commander import TheCommander
     from sahyun_bot.down import Downtime
     downtime = {
@@ -133,7 +133,7 @@ def commander(users):
         'time': '30',
         'testfollow': '30:1',
     }
-    return TheCommander(us=users, dt=Downtime(config=downtime))
+    return TheCommander(us=users, tw=twitchy, dt=Downtime(config=downtime))
 
 
 @pytest.fixture
