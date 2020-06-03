@@ -289,6 +289,12 @@ in the console for some reason
 LoggingConfigFilename = filename which contains logging configuration; defaults to 'config_log_default.ini';
 if the defaults are not suitable for you, consider making 'config_log.ini' which is ignored by git
 
+#### [links]
+
+Default = default way to handle links from CDLCs when popping from queue; defaults to 'ignore';
+other supported values are 'browse', which opens it in a new browser tab & 'copy' which puts it
+into clipboard
+
 #### [commands]
 
 MaxSearch = maximum amount of matches to consider for requests; defaults to 10; any positive number is OK;

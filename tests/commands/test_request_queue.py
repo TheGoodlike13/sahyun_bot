@@ -1,6 +1,7 @@
 from assertpy import assert_that
 
 from sahyun_bot.commands.request_queue import Request, Next, Pick, Top, Played, Last, Playlist
+from sahyun_bot.link_job_properties import LinkJob
 from sahyun_bot.users_settings import UserRank
 
 
@@ -43,8 +44,10 @@ def test_next(rq, hook):
     with Request(rq=rq).executest(hook, nick='sahyun', args='ZUN'):
         pass
 
-    with Next(rq=rq).executest(hook):
+    job = MockJob()
+    with job, Next(rq=rq, lj=job).executest(hook):
         hook.assert_success('Next: (L) ZUN - Paradise ~ Deep Mountain (coldrampage) by ADMIN sahyun')
+        assert_that(job.last_link).is_equal_to('https://customsforge.com/process.php?id=49886')
 
     assert_that(rq).is_empty()
 
@@ -124,22 +127,27 @@ def test_admin_pick_next(rq, hook):
     with Request(rq=rq).executest(hook, args='parke'):
         pass
 
-    with Next(rq=rq).executest(hook):
+    job = MockJob()
+    with job, Next(rq=rq, lj=job).executest(hook):
         hook.assert_success(
             'Pick for <parke> by ADMIN _test: ',
             '!1 Linkin Park - All For Nothing (AntonZap)',
             "!2 Trey Parker - Jackin' It In San Diego (dtn828)",
             but_not='Next: '
         )
+        assert_that(job.last_link).is_none()
 
-    with Pick(rq=rq).executest(hook, alias='3'):
+    with job, Pick(rq=rq, lj=job).executest(hook, alias='3'):
         hook.assert_failure('3 is not available; max: 2')
+        assert_that(job.last_link).is_none()
 
-    with Pick(rq=rq).executest(hook, alias='1'):
+    with job, Pick(rq=rq, lj=job).executest(hook, alias='1'):
         hook.assert_success('Next: (LRBV) Linkin Park - All For Nothing (AntonZap)')
+        assert_that(job.last_link).is_equal_to('https://customsforge.com/process.php?id=12990')
 
-    with Pick(rq=rq).executest(hook, alias='2'):
+    with job, Pick(rq=rq, lj=job).executest(hook, alias='2'):
         hook.assert_success("Next: (RBV) Trey Parker - Jackin' It In San Diego (dtn828)")
+        assert_that(job.last_link).is_equal_to('https://customsforge.com/process.php?id=49874')
 
 
 def test_not_playable(rq, hook):
@@ -231,3 +239,17 @@ def test_ranks(commander, hook):
 
     with commander.executest(hook, '!last', 'sahyunbot'):
         hook.assert_silent_failure()
+
+
+class MockJob(LinkJob):
+    def __init__(self):
+        self.last_link = None
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args):
+        self.last_link = None
+
+    def handle(self, link: str):
+        self.last_link = link

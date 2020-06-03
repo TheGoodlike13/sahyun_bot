@@ -31,6 +31,7 @@ pydle = "^0.9.3"
 cachetools = "^4.1.0"
 twitch-python = "^0.0.18"
 humanize = "^2.4.0"
+pyperclip = "^1.8.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

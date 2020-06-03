@@ -56,6 +56,13 @@ def clean_link(link: str) -> str:
     return link or ''
 
 
+def choose(key: str, **kwargs):
+    """
+    :returns value associated with key in kwargs, None if no such value
+    """
+    return kwargs.get(key, None)
+
+
 class Closeable(ABC):
     """
     To avoid making errors in the method signatures, just extend this class for objects that can be used as context.

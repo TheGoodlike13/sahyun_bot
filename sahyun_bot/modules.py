@@ -14,12 +14,15 @@ from sahyun_bot.down import Downtime
 from sahyun_bot.down_settings import *
 from sahyun_bot.elastic_settings import *
 from sahyun_bot.irc_bot import botyun
+from sahyun_bot.link_job import BrowseLink, CopyLinkToPaste, LinkJobFactory, IgnoreLink
+from sahyun_bot.link_job_properties import *
 from sahyun_bot.the_loaderer import *
 from sahyun_bot.the_loaderer_settings import *
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.twitchy_settings import *
 from sahyun_bot.users import Users
 from sahyun_bot.users_settings import *
+from sahyun_bot.utils import choose
 from sahyun_bot.utils_elastic import print_elastic_indexes
 from sahyun_bot.utils_logging import get_logger
 from sahyun_bot.utils_queue import MemoryQueue
@@ -62,6 +65,15 @@ init_module(us, 'User factory')
 tl = TheLoaderer(cf=cf, max_threads=l_max)
 init_module(tl, 'The loaderer')
 
+lb = BrowseLink()
+lc = CopyLinkToPaste()
+li = IgnoreLink()
+
+lj_config = {
+    'fallback': choose(lj_default, browse=lb, copy=lc, ignore=li)
+}
+lj = LinkJobFactory(**lj_config)
+
 rq = MemoryQueue()
 init_module(rq, 'Request queue')
 
@@ -70,7 +82,7 @@ tc_config = {
     'max_pick': cm_pick,
     'max_print': cm_print,
 }
-tc = TheCommander(cf=cf, tw=tw, es=es, dt=dt, us=us, tl=tl, rq=rq, **tc_config)
+tc = TheCommander(cf=cf, tw=tw, es=es, dt=dt, us=us, tl=tl, lj=lj, rq=rq, **tc_config)
 init_module(tc, 'The commander')
 
 bot = botyun(tc=tc,

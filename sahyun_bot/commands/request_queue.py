@@ -8,6 +8,7 @@ from typing import List, Iterator, Optional, Tuple, FrozenSet, Iterable, Union
 
 from sahyun_bot.commander_settings import Command, ResponseHook, DEFAULT_MAX_SEARCH, DEFAULT_MAX_PICK, DEFAULT_MAX_PRINT
 from sahyun_bot.elastic import CustomDLC
+from sahyun_bot.link_job_properties import LinkJob
 from sahyun_bot.users_settings import User, UserRank
 from sahyun_bot.utils_queue import MemoryQueue
 
@@ -196,6 +197,7 @@ class Pick(BaseRequest):
     def __init__(self, **beans):
         super().__init__(**beans)
 
+        self.__job: LinkJob = beans.get('lj', None)
         self.__max_pick = beans.get('max_pick', DEFAULT_MAX_PICK)
         self.__choices = list(map(str, range(1, self.__max_pick + 1)))
 
@@ -248,6 +250,8 @@ class Pick(BaseRequest):
 
         self._queue.mandela(chosen)
         respond.to_sender(f'Next: {chosen}')
+        if self.__job and self.__job.supports(chosen.exact.link):
+            self.__job.handle(chosen.exact.link)
 
     def __choice(self, alias: str, args: str) -> int:
         if alias in self.__choices:
@@ -274,6 +278,7 @@ class Next(Command):
     def __init__(self, **beans):
         super().__init__(**beans)
         self.__queue: MemoryQueue[Match] = beans.get('rq')
+        self.__job: LinkJob = beans.get('lj', None)
 
     def execute(self, user: User, alias: str, args: str, respond: ResponseHook) -> bool:
         """
@@ -289,6 +294,8 @@ class Next(Command):
 
         if request.is_exact:
             respond.to_sender(f'Next: {request} by {request.user}')
+            if self.__job and self.__job.supports(request.exact.link):
+                self.__job.handle(request.exact.link)
         else:
             respond.to_sender(f'Pick for {request} by {request.user}: {pick_format(request)}')
 
