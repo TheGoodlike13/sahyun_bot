@@ -110,10 +110,14 @@ def domains() -> FrozenSet[str]:
     return frozenset(extract(hit.link).registered_domain for hit in CustomDLC.search().scan())
 
 
-def domain_example(domain: str) -> str:
-    link = next(domain_all(domain), '')
-    if not link:
-        LOG.warning('No example for domain <%s> found.', domain)
+def domain_example(domain: str, skip: int = 0) -> str:
+    all_links = domain_all(domain)
+
+    link = ''
+    for i in range(skip + 1):
+        link = next(all_links, '')
+        if not link:
+            return LOG.warning('No more examples for domain <%s> found.', domain)
 
     return link
 
