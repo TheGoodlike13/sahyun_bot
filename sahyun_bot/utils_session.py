@@ -26,7 +26,7 @@ class SessionFactory:
         self.__dump = HttpDump(**dump_kwargs)
         self.__retry_count = max(0, retry_count) or DEFAULT_RETRY_COUNT
 
-    def with_retry(self, session: Session = None):
+    def with_retry(self, session: Session = None) -> Session:
         session = session or Session()
         session.hooks['response'] = [self.__dump.all]
 

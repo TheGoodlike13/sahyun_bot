@@ -76,7 +76,7 @@ class Twitchy(Closeable):
         v_id = self.get_id(viewer)
         return s_id and v_id and self.__call(self.__is_following, s_id, v_id)
 
-    def hosts(self, streamer: str) -> List[str]:
+    def hosts(self, streamer: Union[str, int]) -> List[str]:
         """
         :param streamer: nick or id of a streamer
         :returns list of nicks who are hosting the streamer if possible to determine

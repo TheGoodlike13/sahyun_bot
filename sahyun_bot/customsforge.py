@@ -149,7 +149,7 @@ class CustomsforgeClient:
 
         return r.headers.get('Location', '') if r and r.is_redirect else ''
 
-    def calculate_date_skip(self, since: date, date_count: int):
+    def calculate_date_skip(self, since: date, date_count: int) -> int:
         """
         :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
         but can become outdated; therefore, only estimate right before calling for dates
@@ -159,7 +159,7 @@ class CustomsforgeClient:
         skip_estimate = date_count - passed_since.days - 3
         return max(0, skip_estimate)
 
-    def __has_credentials(self, username: str, password: str):
+    def __has_credentials(self, username: str, password: str) -> bool:
         if username and password:
             self.__username = username
             self.__password = password
@@ -176,7 +176,7 @@ class CustomsforgeClient:
 
         return True
 
-    def __dates(self, since: date, session: Session):
+    def __dates(self, since: date, session: Session) -> Iterator[str]:
         since = since or EONS_AGO
 
         lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',

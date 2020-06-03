@@ -32,7 +32,7 @@ from tldextract import extract
 from sahyun_bot.customsforge import CustomsforgeClient
 from sahyun_bot.elastic import CustomDLC
 from sahyun_bot.the_loaderer_settings import DEFAULT_MAX_THREADS
-from sahyun_bot.utils import debug_ex, Closeable
+from sahyun_bot.utils import debug_ex, Closeable, T
 from sahyun_bot.utils_elastic import ElasticAware
 from sahyun_bot.utils_logging import get_logger
 
@@ -476,7 +476,7 @@ class TheLoaderer(ElasticAware):
 
         return LOG.warning('Cannot use <%s> because elastic is disabled.', coerced_name)
 
-    def __coerce(self, o, fallback):
+    def __coerce(self, o, fallback: T) -> T:
         if not o:
             return fallback
 

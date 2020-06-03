@@ -5,5 +5,3 @@ Automatic CDLC download from supported websites into pre-configured folder
 Fallback implementation for CDLC search (similar to the original bot, querying the website)
 Sub & mod support
 Improve queue by managing already played songs more explicitly
-
-Type hint review (customsforge, others)

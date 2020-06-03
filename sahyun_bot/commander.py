@@ -110,7 +110,7 @@ class TheCommander:
     def __is_console_like(self, sender: str) -> bool:
         return sender[:1] == '_'
 
-    def __required_rank(self, command):
+    def __required_rank(self, command: Command) -> UserRank:
         with self.__lock:
             return UserRank.ADMIN if self.__is_admin_only else command.min_rank()
 
@@ -120,7 +120,7 @@ class TheCommander:
     def __is_command_class(self, item) -> bool:
         return inspect.isclass(item) and issubclass(item, Command)
 
-    def __is_abstract(self, command_class_name: str):
+    def __is_abstract(self, command_class_name: str) -> bool:
         return command_class_name == 'Command' or command_class_name[:4] == 'Base'
 
     def __create_and_cache(self, command_class, **beans):
