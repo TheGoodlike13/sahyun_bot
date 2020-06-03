@@ -37,8 +37,8 @@ class Downtime:
         self.__leniency = timedelta(seconds=max(leniency, DEFAULT_LENIENCY))
 
         self.__index = 0
-        self.__uses = Cache()
-        self.__uses_lock = RLock()
+        self.__memory = Cache()
+        self.__memory_lock = RLock()
 
         self.__timeout: Dict[str, timedelta] = {}
         self.__per_user: Dict[str, int] = {}
@@ -54,17 +54,17 @@ class Downtime:
     def remember_use(self, command: Command, user: User):
         downtime = self.__downtime(command)
         if downtime:
-            with self.__uses_lock:
+            with self.__memory_lock:
                 ref = self.__key(command, user)
-                self.__uses.set(ref, {'timestamp': self.__now()}, duration=downtime)
+                self.__memory.set(ref, {'timestamp': self.__now()}, duration=downtime)
 
-    def downtime_left(self, command: Command, user: User) -> timedelta:
+    def remaining(self, command: Command, user: User) -> timedelta:
         downtime = self.__downtime(command)
         if not downtime:
             return ZERO_DOWNTIME
 
         prefix = self.__prefix(command, user)
-        with self.__uses_lock:
+        with self.__memory_lock:
             matches = self.__get_matches(prefix)
             if not matches or len(matches) < self.__use_limit(command):
                 return ZERO_DOWNTIME
@@ -88,12 +88,12 @@ class Downtime:
 
     def __get_matches(self, prefix: str) -> List[datetime]:
         self.__cleanup_cache_if_needed()
-        all_matches = (self.__uses.get(k) for k in self.__uses._store if k.startswith(prefix))
-        return [m['timestamp'] for m in all_matches if m]
+        all_matches = (self.__memory.get(k) for k in self.__memory._store if k.startswith(prefix))
+        return [match['timestamp'] for match in all_matches if match]
 
     def __cleanup_cache_if_needed(self):
         if self.__index % 100 == 0:
-            self.__uses.clean()
+            self.__memory.clean()
 
     def __use_limit(self, command: Command) -> int:
         for alias in command.alias():

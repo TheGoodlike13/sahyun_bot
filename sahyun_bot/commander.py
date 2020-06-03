@@ -78,7 +78,7 @@ class TheCommander:
                 return LOG.warning('<%s> is not authorized to use !%s.', user, name)
 
             if self._downtime and user.is_limited:
-                time_to_wait = self._downtime.downtime_left(command, user)
+                time_to_wait = self._downtime.remaining(command, user)
                 if time_to_wait:
                     time_words = naturaldelta(time_to_wait)
                     if not self._downtime.is_global(command):
