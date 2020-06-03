@@ -1,0 +1,19 @@
+Version 1.0.0:
+
+I am taking a break from working on the bot, and all the initial functionality is finished.
+Here's a list of stuff the bot does for now:
+
+* runs locally (no deployment)
+* REPL mode (access to all modules for debug/trying something out)
+* commands via console
+* commands via IRC (twitch chat)
+* dynamically loaded commands
+* downtime configuration for commands
+* CDLCs from customsforge
+* CDLC dumping/loading to JSON file
+* CDLC search via elasticsearch
+* user ranks via elasticsearch
+* CDLC request queue
+* CDLC links in browser/clipboard
+* twitch follower check
+* list of twitch hosts
