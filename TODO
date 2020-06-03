@@ -6,7 +6,4 @@ Fallback implementation for CDLC search (similar to the original bot, querying t
 Sub & mod support
 Improve queue by managing already played songs more explicitly
 
-BEFORE RELEASE
-    Document all commands in README
-
 Type hint review (customsforge, others)
