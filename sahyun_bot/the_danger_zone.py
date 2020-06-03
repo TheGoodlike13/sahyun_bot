@@ -28,10 +28,11 @@ if __name__ == '__main__':
     setup_elastic_usage(us, tl, use_elastic=True)
 
     local_utils = [m[:-3] for m in os.listdir(os.path.dirname(__file__)) if m[:5] == 'utils']
+    jobs = [f'links.{m[:-3]}' for m in os.listdir(os.path.join(os.path.dirname(__file__), 'links')) if m[:1] != '_']
     other_utils = ['datetime', 'itertools', 'urllib.parse', 'dictdiffer', 'humanize', 'random']
 
-    for u in chain(local_utils, other_utils):
-        m = __import__(u, globals(), locals(), ['*'], 0)
+    for stuff in chain(local_utils, jobs, other_utils):
+        m = __import__(stuff, globals(), locals(), ['*'], 0)
         for item in dir(m):
             if item[:1] != '_' and item not in locals():
                 locals()[item] = getattr(m, item)
