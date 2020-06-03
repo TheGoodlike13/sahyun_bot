@@ -73,6 +73,7 @@ lj_config = {
     'fallback': choose(lj_default, browse=lb, copy=lc, ignore=li)
 }
 lj = LinkJobFactory(**lj_config)
+init_module(lj, 'Link jobs')
 
 rq = MemoryQueue()
 init_module(rq, 'Request queue')
