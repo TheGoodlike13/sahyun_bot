@@ -15,13 +15,13 @@ https://www.twitch.tv/sahyun
 >> !3 AC/DC - Highway to Hell (fetal_icecream)
 >>
 > !1
->> Your request for <(LRBV) AC/DC - Highway to Hell (Brooklyn_Sounds)> is now in position 1
+>> Your request for (LRBV) AC/DC - Highway to Hell (Brooklyn_Sounds) is now in position 1
 >>
 > !next
->> Next: <(LRBV) AC/DC - Highway to Hell (Brooklyn_Sounds)> by ADMIN sahyun
+>> Next: (LRBV) AC/DC - Highway to Hell (Brooklyn_Sounds) by ADMIN sahyun
 >>
 > !random acdc
->> Your request for <(LRBV) AC/DC - ThunderStruck (rGUNSLINGERr)> is now in position 1
+>> Your request for (LRBV) AC/DC - ThunderStruck (rGUNSLINGERr) is now in position 1
 
 ## Permissions
 
