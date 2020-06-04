@@ -7,7 +7,7 @@ https://www.twitch.tv/sahyun
 ## Usage example
 
 > !request acdc highway to hell
->> Your request for <acdc highway to hell> is now in position 1
+>> Your request for \<acdc highway to hell> is now in position 1
 >>
 >> To pick exact:
 >> !1 AC/DC - Highway to Hell (Brooklyn_Sounds);
