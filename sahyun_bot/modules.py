@@ -31,7 +31,7 @@ LOG = get_logger(__name__)
 
 
 def init_module(module: Any, desc: str):
-    LOG.warning('%s is %savailable.', desc, '' if module else 'un')
+    LOG.warning('%s is %savailable.', desc, 'un' if module is None else '')
     if module and hasattr(module, 'close') and callable(module.close):
         atexit.register(module.close)
     return module
