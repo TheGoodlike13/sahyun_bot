@@ -179,7 +179,7 @@ def _migrate(es: Elasticsearch, doc: Type[BaseDoc], index: str):
     LOG.warning('Copying data from %s to %s.', original_index, index)
     es.reindex({'source': {'index': original_index}, 'dest': {'index': index}}, request_timeout=60)
 
-    LOG.critical('Deleting original index & its contents: %s', doc.index_name())
+    LOG.critical('Deleting original index & its contents: %s', original_index)
     es.indices.delete(original_index)
 
     LOG.warning(f'Index for {doc.__name__} has been migrated to {index}.')
