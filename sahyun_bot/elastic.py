@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from random import random, randrange
+from random import random
 from typing import Optional, Union, List
 
 from elasticsearch_dsl import Text, Keyword, Boolean, Long, token_filter, analyzer, Index, Search
@@ -146,8 +146,7 @@ class CustomDLC(BaseDoc):
         if not total:
             return None
 
-        random_pick = randrange(0, total)
-        for hit in cls.random_pool(query, *exclude, **kwargs)[random_pick:random_pick + 1]:
+        for hit in cls.random_pool(query, *exclude, **kwargs).sort(elastic_settings.RANDOM_SORT)[:1]:
             return hit
 
     def __str__(self) -> str:

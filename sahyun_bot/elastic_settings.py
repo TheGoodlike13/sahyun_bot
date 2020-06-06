@@ -118,6 +118,14 @@ def init_test():
     e_allow_official = DEFAULT_OFFICIAL
 
 
+RANDOM_SORT = {
+    '_script': {
+        'script': 'Math.random()',
+        'type': 'number',
+    },
+}
+
+
 class BaseDoc(Document):
     @classmethod
     def index_name(cls) -> Optional[str]:
