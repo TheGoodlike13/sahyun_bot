@@ -1,3 +1,10 @@
+Version 1.0.1:
+
+* Fixed a bug where request queue was considered unavailable because it was empty
+* Fixed a bug where migration was printing incorrect index name for deletion
+* Added 'quit' as another way to stop bot besides 'exit()'
+* Fixed a bug where elasticsearch would fail to pick random value from a pool of >10K results
+
 Version 1.0.0:
 
 I am taking a break from working on the bot, and all the initial functionality is finished.
