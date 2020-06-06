@@ -4,6 +4,11 @@ from sahyun_bot.utils_logging import get_logger
 
 LOG = get_logger(__name__)
 
+EXIT_WORDS = [
+    'exit()',
+    'quit',
+]
+
 
 def setup_console(tc: TheCommander):
     LOG.warning('Waiting for commands.')
@@ -11,7 +16,7 @@ def setup_console(tc: TheCommander):
     hook = ToConsole()
     while True:
         line = input('>>> ')
-        if line == 'exit()':
+        if line in EXIT_WORDS:
             break
 
         tc.execute('_console', line, hook)
