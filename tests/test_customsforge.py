@@ -15,8 +15,7 @@ from tests.mock_settings import *
 
 @pytest.fixture
 def cf_off():
-    return CustomsforgeClient(api_key=MOCK_API_KEY,
-                              batch_size=1,
+    return CustomsforgeClient(batch_size=1,
                               cookie_jar_file=None,
                               get_today=lambda: TEST_DATE)
 
@@ -29,8 +28,7 @@ def cf_cookies():
     with open(TEST_COOKIE_FILE, 'wb') as jar:
         pickle.dump(cookies, jar)
 
-    yield CustomsforgeClient(api_key='key',
-                             batch_size=1,
+    yield CustomsforgeClient(batch_size=1,
                              cookie_jar_file=TEST_COOKIE_FILE,
                              get_today=lambda: TEST_DATE)
 
@@ -41,7 +39,7 @@ def cf_cookies():
 def test_server_down(cf, cf_off):
     with HTTMock(server_down):
         for c in [cf, cf_off]:
-            assert_that(c.login(MOCK_USER, MOCK_PASS)).is_false()
+            assert_that(c.login(MOCK_EMAIL, MOCK_PASS)).is_false()
             assert_that(list(c.dates())).is_empty()
             assert_that(list(c.cdlcs())).is_empty()
             assert_that(c.direct_link('any')).is_empty()
@@ -57,8 +55,8 @@ def test_offline(cf_off):
 def test_manual_login(cf, cf_off):
     with HTTMock(customsforge):
         for c in [cf, cf_off]:
-            assert_that(c.login(MOCK_USER, MOCK_PASS)).is_true()
-            assert_that(c.login(MOCK_USER, MOCK_PASS + ' but wrong')).is_false()
+            assert_that(c.login(MOCK_EMAIL, MOCK_PASS)).is_true()
+            assert_that(c.login(MOCK_EMAIL, MOCK_PASS + ' but wrong')).is_false()
 
 
 def test_re_log(cf, cf_off):

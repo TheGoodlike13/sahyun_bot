@@ -3,9 +3,11 @@ from typing import Dict
 
 from httmock import all_requests
 
-MOCK_USER = 'user'
+from sahyun_bot.customsforge import LOGIN_FORM_CSRF, LOGIN_FORM_EMAIL, LOGIN_FORM_PASSWORD
+
+MOCK_CSRF = 'acdc'
+MOCK_EMAIL = 'email'
 MOCK_PASS = 'pass'
-MOCK_API_KEY = 'key'
 
 MOCK_COOKIE_KEY = '-login_cookie'
 MOCK_COOKIE_VALUE = 'login_value'
@@ -15,9 +17,9 @@ MOCK_COOKIE = MOCK_COOKIE_KEY + '=' + MOCK_COOKIE_VALUE
 MOCK_SET_COOKIE = f'{MOCK_COOKIE}; path={MOCK_COOKIE_PATH}; domain={MOCK_COOKIE_DOMAIN}; httponly'
 
 VALID_LOGIN_FORM = frozenset([
-    f'ips_username={MOCK_USER}',
-    f'ips_password={MOCK_PASS}',
-    f'auth_key={MOCK_API_KEY}',
+    f'{LOGIN_FORM_CSRF}={MOCK_CSRF}',
+    f'{LOGIN_FORM_EMAIL}={MOCK_EMAIL}',
+    f'{LOGIN_FORM_PASSWORD}={MOCK_PASS}',
 ])
 
 TEST_DATE = date.fromisoformat('2020-05-15')

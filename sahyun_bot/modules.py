@@ -39,14 +39,13 @@ def init_module(module: Any, desc: str):
 
 LOG.warning('Please check config.ini file if any module is unavailable.')
 
-cf = CustomsforgeClient(api_key=c_api_key,
-                        batch_size=c_batch,
+cf = CustomsforgeClient(batch_size=c_batch,
                         timeout=c_timeout,
                         cookie_jar_file=c_jar,
-                        username=c_user,
-                        password=c_pass) if c_api_key else None
-if init_module(cf, 'Customsforge client'):
-    init_module(c_jar, 'Cookie jar for customsforge')
+                        email=c_email,
+                        password=c_pass)
+init_module(cf, 'Customsforge client')
+init_module(c_jar, 'Cookie jar for customsforge')
 
 tw = Twitchy(client_id=t_id, client_secret=t_secret) if t_id and t_secret else None
 init_module(tw, 'Twitch API')

@@ -195,13 +195,9 @@ are not provided, the related module will not function, or have limited function
 
 #### [customsforge]
 
-ApiKey = key used in login form of customsforge.com
+Email = email for an account in customsforge.com
 
-Username = username for an account in customsforge.com
-
-Password = password for an account in customsforge.com;
-while unlikely, it is possible the password will be sent over plaintext, so change it to something
-completely random or anything else you wouldn't mind exposed
+Password = password for an account in customsforge.com
 
 BatchSize = amount of values returned per request; defaults to 100; allowed range: [1..100]
 

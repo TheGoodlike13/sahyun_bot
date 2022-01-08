@@ -138,9 +138,8 @@ def commander(users, twitchy):
 
 @pytest.fixture
 def cf():
-    return CustomsforgeClient(api_key=MOCK_API_KEY,
-                              batch_size=1,
-                              username=MOCK_USER,
+    return CustomsforgeClient(batch_size=1,
+                              email=MOCK_EMAIL,
                               password=MOCK_PASS,
                               cookie_jar_file=None,
                               get_today=lambda: TEST_DATE)

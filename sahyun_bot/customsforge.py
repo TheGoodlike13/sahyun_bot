@@ -1,5 +1,6 @@
 import html
 import pickle
+import re
 from datetime import date, timedelta
 from itertools import dropwhile
 from threading import RLock
@@ -16,11 +17,14 @@ from sahyun_bot.utils_settings import parse_bool, parse_list
 
 LOG = get_logger(__name__)
 
-MAIN_PAGE = 'http://customsforge.com/'
-LOGIN_PAGE = 'https://customsforge.com/index.php?app=core&module=global&section=login'
-CDLC_PAGE = 'http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-enabled-rs-2014-cdlc/{}-r{}'
+LOGIN_PAGE = 'https://customsforge.com/index.php?/login/'
+LOGIN_REDIRECT = 'https://customsforge.com/?&_fromLogin=1'
 
-LOGIN_API = 'https://customsforge.com/index.php?app=core&module=global&section=login&do=process'
+LOGIN_FORM_CSRF = 'csrfKey'
+LOGIN_FORM_EMAIL = 'auth'
+LOGIN_FORM_PASSWORD = 'password'
+
+CDLC_PAGE = 'http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-enabled-rs-2014-cdlc/{}-r{}'
 DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
 CDLC_BY_DATE_API = 'https://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
@@ -37,31 +41,29 @@ class CustomsforgeClient:
     this process in subsequent executions.
     """
     def __init__(self,
-                 api_key: str,
                  batch_size: int = DEFAULT_BATCH_SIZE,
                  timeout: int = DEFAULT_TIMEOUT,
                  cookie_jar_file: Optional[str] = DEFAULT_COOKIE_FILE,
-                 username: str = None,
+                 email: str = None,
                  password: str = None,
                  get_today: Callable[[], date] = date.today):
-        self.__api_key = api_key
         self.__batch_size = batch_size if Verify.batch_size(batch_size) else DEFAULT_BATCH_SIZE
         self.__timeout = max(0, timeout) or DEFAULT_TIMEOUT
         self.__cookie_jar_file = cookie_jar_file
 
-        self.__username = username
+        self.__email = email
         self.__password = password
         self.__login_rejected = False
         self.__prevent_multiple_login_lock = RLock()
 
-        self.__sessions = SessionFactory(unsafe=['ips_password'])
+        self.__sessions = SessionFactory(unsafe=[LOGIN_FORM_PASSWORD])
         self.__cookies = RequestsCookieJar()
         self.__with_cookie_jar('rb', lambda f: self.__cookies.update(pickle.load(f)))
         # no error, since cookie file probably doesn't exist; we'll try to write it later and log any error then
 
         self.__get_today = get_today
 
-    def login(self, username: str = None, password: str = None) -> bool:
+    def login(self, email: str = None, password: str = None) -> bool:
         """
         Tries to log in using given credentials. They are stored for future use (e.g. automatic re-log).
 
@@ -73,23 +75,34 @@ class CustomsforgeClient:
         :returns true if login succeeded, false otherwise
         """
         with self.__prevent_multiple_login_lock:
-            if not self.__has_credentials(username, password):
+            if not self.__has_credentials(email, password):
                 return False
 
-            form = {
-                'ips_username': self.__username,
-                'ips_password': self.__password,
-                'auth_key': self.__api_key,
-                'rememberMe': '1',
-                'referer': MAIN_PAGE,
-            }
             with self.__sessions.with_retry() as session:
-                r = self.__call('login', session.post, LOGIN_API, data=form, cookies=None, try_login=False)
+                csrf = self.__call('get csrf', session.get, LOGIN_PAGE, cookies=None, try_login=False)
+                if not csrf:  # this indicates an error - repeated attempts may still succeed
+                    return False
+
+                match = re.search(r'<input[^>]+name="csrfKey" value="(\w+)">', csrf.text)
+                if not match:
+                    LOG.error('Login failed. Cannot retrieve CSRF key.')
+                    self.__login_rejected = True
+                    return False
+
+                form = {
+                    LOGIN_FORM_CSRF: match.group(1),
+                    LOGIN_FORM_EMAIL: self.__email,
+                    LOGIN_FORM_PASSWORD: self.__password,
+                    'remember_me': '1',
+                    '_processLogin': 'usernamepassword',
+                }
+
+                r = self.__call('login', session.post, LOGIN_PAGE, cookies=csrf.cookies, data=form, try_login=False)
 
             if not r:  # this indicates an error - repeated attempts may still succeed
                 return False
 
-            if not r.is_redirect or not r.headers.get('Location', '') == MAIN_PAGE:
+            if not r.is_redirect or not r.headers.get('Location', '') == LOGIN_REDIRECT:
                 LOG.error('Login failed. Please check your credentials.')
                 self.__login_rejected = True
                 return False
@@ -159,9 +172,9 @@ class CustomsforgeClient:
         skip_estimate = date_count - passed_since.days - 3
         return max(0, skip_estimate)
 
-    def __has_credentials(self, username: str, password: str) -> bool:
-        if username and password:
-            self.__username = username
+    def __has_credentials(self, email: str, password: str) -> bool:
+        if email and password:
+            self.__email = email
             self.__password = password
             self.__login_rejected = False
 
@@ -169,7 +182,7 @@ class CustomsforgeClient:
             LOG.debug('Login rejected. Please provide new credentials to try again.')
             return False
 
-        if not self.__username and not self.__password:
+        if not self.__email and not self.__password:
             LOG.error('No credentials have been provided.')
             self.__login_rejected = True
             return False

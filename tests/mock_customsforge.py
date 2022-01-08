@@ -1,4 +1,4 @@
-from sahyun_bot.customsforge import MAIN_PAGE, LOGIN_PAGE
+from sahyun_bot.customsforge import LOGIN_PAGE, LOGIN_REDIRECT
 from tests.mock_settings import *
 
 
@@ -27,14 +27,13 @@ def customsforge(url, request):
 
 
 def login_mock(url, request):
-    if all(param in request.body.split('&') for param in VALID_LOGIN_FORM):
-        return to_main_page()
+    if request.method == 'GET':
+        return ok(f'Initial login page <input name="csrfKey" value="{MOCK_CSRF}">')
 
-    return {
-        'status_code': 200,
-        'reason': 'OK',
-        'content': 'Sign-in error page',
-    }
+    if all(param in request.body.split('&') for param in VALID_LOGIN_FORM):
+        return successful_login_redirect()
+
+    return ok('Sign-in error page')
 
 
 def dates_mock(url, request):
@@ -80,14 +79,14 @@ def values(content=None):
     }
 
 
-def to_main_page():
+def successful_login_redirect():
     return {
         'status_code': 302,
         'reason': 'Moved Temporarily',
         'content': 'Redirect to main page - login successful!',
         'headers': {
             'Set-Cookie': MOCK_SET_COOKIE,
-            'Location': MAIN_PAGE,
+            'Location': LOGIN_REDIRECT,
         },
     }
 
@@ -111,4 +110,12 @@ def to_direct_link(link: str = ''):
         'headers': {
             'Location': link,
         },
+    }
+
+
+def ok(content=None):
+    return {
+        'status_code': 200,
+        'reason': 'OK',
+        'content': content,
     }
