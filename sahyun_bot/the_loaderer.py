@@ -5,9 +5,9 @@ Continuity in this context simply means that CDLC data is read or written in an 
 is defined by 'snapshot_timestamp', i.e. the last time the CDLC data was updated. As long as the data is
 processed in this order, we can be sure we have all the data up to some timestamp, and resume from there.
 
-This module provides implementations for the purposes of this application, but any implementation of Source,
-Destination or DirectLinkSource are OK, as long as they adhere to the requirements for continuity. It is
-assumed that the CDLC data inside these is authentic.
+This module provides implementations for the purposes of this application, but any implementation of Source or
+Destination are OK, as long as they adhere to the requirements for continuity.
+It is assumed that the CDLC data inside these is authentic.
 
 Loading CDLC data manually or through implementations that do not adhere to the contract can ruin the integrity
 of the underlying data by breaking assumptions. For that reason, avoid using bootleg implementations or forged files.
@@ -16,22 +16,19 @@ import json
 import os
 import shutil
 from abc import ABC
-from concurrent.futures import Future
-from concurrent.futures.thread import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from itertools import dropwhile
 from pathlib import Path
 from queue import Queue, Empty
 from tempfile import NamedTemporaryFile
 from threading import Thread, Event
-from typing import Iterator, Any, IO, Union, List
+from typing import Iterator, Any, IO, List
 
-from elasticsearch import Elasticsearch, NotFoundError
+from elasticsearch import Elasticsearch
 from tldextract import extract
 
-from sahyun_bot.customsforge import CustomsforgeClient
+from sahyun_bot.customsforge import CustomsforgeClient, EONS_AGO
 from sahyun_bot.elastic import CustomDLC
-from sahyun_bot.the_loaderer_settings import DEFAULT_MAX_THREADS
 from sahyun_bot.utils import debug_ex, Closeable, T
 from sahyun_bot.utils_elastic import ElasticAware
 from sahyun_bot.utils_logging import get_logger
@@ -54,7 +51,7 @@ ELASTIC_STR = frozenset([
 
 
 class Source(Closeable, ABC):
-    def read_all(self, start_from: int = 0) -> Iterator[dict]:
+    def read_all(self, since: date = EONS_AGO) -> Iterator[dict]:
         """
         Generates all CDLCs since given time of update (or beginning, if not given).
         Time is given in epoch seconds.
@@ -65,65 +62,39 @@ class Source(Closeable, ABC):
         raise NotImplementedError
 
 
-class DirectLinkSource(ABC):
-    def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
-        """
-        :returns direct download link for given CDLC id, if it is available
-        """
-        raise NotImplementedError
-
-
 class Destination(Closeable, ABC):
-    def start_from(self) -> int:
+    def start_from(self) -> date:
         """
         To avoid loading continuous sources from beginning, this value is used as optimization.
-        :returns time, in epoch seconds, which should be passed into Source#read_all; 0 means from beginning
+        :returns date which should be passed into Source#read_all; EONS_AGO means from beginning
         """
-        return 0
+        return EONS_AGO
 
-    def try_write(self, cdlc: dict) -> Any:
+    def try_write(self, cdlc: dict):
         """
         Try to write the given CDLC data into the destination.
         The actual write can be deferred until the Destination object is closed if needed.
         However, if the write is NOT deferred, it should not destroy the integrity or continuity of this destination.
-
-        If the CDLC information is incomplete and requires updating (such as direct link), the internal
-        representation of CDLC data should be returned. It will be later passed back into this destination
-        for updating purposes. If update is not supported or unnecessary, return None instead.
-        """
-        raise NotImplementedError
-
-    def update(self, from_write: Any, direct_link: str):
-        """
-        Update the CDLC data with direct link. Called if and only if try_write returns not None.
-
-        This method should be thread-safe, as it will be called by background threads.
-
-        :param from_write: whatever try_write returned
-        :param direct_link: direct download link, if found
         """
         raise NotImplementedError
 
 
-class Customsforge(Source, DirectLinkSource):
+class Customsforge(Source):
     """
     The prime source for CDLC data. Always continuous.
     """
     def __init__(self, cf: CustomsforgeClient):
         self.__cf = cf
 
-    def read_all(self, start_from: int = 0) -> Iterator[dict]:
-        LOG.warning('Loading Customsforge CDLCs from %s.', loading_from(start_from))
+    def read_all(self, since: date = EONS_AGO) -> Iterator[dict]:
+        LOG.warning('Loading Customsforge CDLCs from %s.', since)
 
-        for cdlc in self.__cf.cdlcs(since_exact=start_from):
-            cdlc[CONTINUOUS_FROM] = start_from or 0
+        for cdlc in self.__cf.cdlcs(since=since):
+            cdlc[CONTINUOUS_FROM] = since
             yield cdlc
 
-    def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
-        return self.__cf.direct_link(cdlc_id)
 
-
-class ElasticIndex(Source, DirectLinkSource, Destination):
+class ElasticIndex(Source, Destination):
     """
     Represents CDLC data in the application.
 
@@ -134,24 +105,24 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
     In continuous mode, only continuous documents are provided by the Source API.
     Similarly, Destination API attempts to read documents from the last continuous document, even if more up-to-date
     documents exist that are not continuous (even if they have the flag set!)
-
-    Continuous mode has no effect on DirectLinkSource API.
     """
     def __init__(self, continuous: bool = True):
         self.__continuous = continuous
 
     def __enter__(self):
-        self.__start_from = CustomDLC.latest_auto_time() if self.__continuous else None
+        self.__start_from = self.__latest_auto_date() if self.__continuous else None
 
-    def read_all(self, start_from: int = 0) -> Iterator[dict]:
-        LOG.warning('Loading elastic index CDLCs from %s (%s).', loading_from(start_from), self.__describe_mode())
+    def read_all(self, since: date = EONS_AGO) -> Iterator[dict]:
+        LOG.warning('Loading elastic index CDLCs from %s (%s).', date, self.__describe_mode())
 
-        timestamp_range = {'gte': start_from} if start_from else {}
+        since_timestamp = int(datetime.combine(since, datetime.min.time(), tzinfo=timezone.utc).timestamp())
+        timestamp_range = {'gte': since_timestamp} if since_timestamp else {}
 
         s = CustomDLC.search()
         if self.__continuous:
             s = s.filter('term', from_auto_index=True).sort('snapshot_timestamp').params(preserve_order=True)
-            timestamp_range['lte'] = self.start_from()
+            start_time = int(datetime.combine(self.start_from(), datetime.min.time(), tzinfo=timezone.utc).timestamp())
+            timestamp_range['lte'] = start_time
 
         if timestamp_range:
             s = s.filter('range', snapshot_timestamp=timestamp_range)
@@ -160,18 +131,14 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
             cdlc = hit.to_dict()
             cdlc.pop('from_auto_index', None)
             if self.__continuous:
-                cdlc[CONTINUOUS_FROM] = start_from or 0
+                cdlc[CONTINUOUS_FROM] = since
 
             yield cdlc
 
-    def to_direct_link(self, cdlc_id: Union[str, int]) -> str:
-        c = CustomDLC.get(cdlc_id, ignore=[404])
-        return c.direct_download if c else None
+    def start_from(self) -> date:
+        return self.__start_from or EONS_AGO
 
-    def start_from(self) -> int:
-        return self.__start_from or 0
-
-    def try_write(self, cdlc: dict) -> Any:
+    def try_write(self, cdlc: dict):
         continuous_from = cdlc.pop(CONTINUOUS_FROM, None)
         is_continuous = self.__continuous and continuous_from is not None and continuous_from <= self.start_from()
 
@@ -179,50 +146,13 @@ class ElasticIndex(Source, DirectLinkSource, Destination):
         c = CustomDLC(_id=cdlc_id, from_auto_index=is_continuous, **cdlc)
         c.save()
         LOG.warning('Indexed CDLC #%s.', cdlc_id)
-        return None if c.direct_download else c
 
-    def update(self, from_write: Any, direct_link: str):
-        c = from_write
-        if direct_link:
-            c.update(direct_download=direct_link)
-            LOG.warning('Indexed direct link for CDLC #%s.', c.id)
+    def __latest_auto_date(self):
+        timestamp = CustomDLC.latest_auto_time()
+        return datetime.fromtimestamp(timestamp, tz=timezone.utc).date() if timestamp else None
 
     def __describe_mode(self):
         return 'only continuous' if self.__continuous else 'both continuous and not'
-
-
-class ElasticIndexUpdateOnly(Destination):
-    """
-    Special Destination implementation which only updates links. Useless for anything else, I suppose.
-    """
-    def try_write(self, cdlc: dict) -> Any:
-        direct_link = cdlc.get('direct_download', None)
-        return None if direct_link and not direct_link.isspace() else cdlc.get('id', None)
-
-    def update(self, from_write: Any, direct_link: str):
-        cdlc_id = from_write
-        if cdlc_id and direct_link:
-            CustomDLC(_id=cdlc_id).update(direct_download=direct_link)
-            LOG.warning('Indexed direct link for CDLC #%s.', cdlc_id)
-
-
-class ElasticAbsolution(Destination):
-    """
-    Very special Destination which fixes the one time programming error I committed. See TheLoaderer#fix_sin_against_art
-    """
-    def try_write(self, cdlc: dict) -> Any:
-        cdlc_id = cdlc.get('id', None)
-        art = cdlc.get('art', '')
-        try:
-            CustomDLC(_id=cdlc_id).update(art=art)
-        except NotFoundError as e:
-            LOG.warning('Art update failed for CDLC #%s, probably because it has not been loaded yet.', cdlc_id)
-            debug_ex(e, 'fix my sins', LOG, silent=True)
-
-        return None
-
-    def update(self, from_write: Any, direct_link: str):
-        raise NotImplementedError('This method should never be called because try_write always returns None.')
 
 
 class ElasticWeirdness(Destination):
@@ -230,18 +160,13 @@ class ElasticWeirdness(Destination):
     Special Destination which prints CDLCs which have weird links to the user. Lookup is not performed, as it is
     intended as a review.
     """
-    def try_write(self, cdlc: dict) -> Any:
+    def try_write(self, cdlc: dict):
         direct_link = cdlc.get('direct_download', None)
         if direct_link and not direct_link.isspace():
             domain = extract(direct_link).registered_domain
             if not domain:
                 cdlc_id = cdlc.get('id', None)
                 LOG.warning('Could not determine the domain for CDLC #%s: <%s>', cdlc_id, direct_link)
-
-        return None
-
-    def update(self, from_write: Any, direct_link: str):
-        raise NotImplementedError('This method should never be called because try_write always returns None.')
 
 
 class FileDump(Source, Destination):
@@ -255,7 +180,7 @@ class FileDump(Source, Destination):
 
     The file is overwritten during dumping, so be careful to not delete existing dumps, etc.
     """
-    def __init__(self, file, start_from: int = 0):
+    def __init__(self, file, start_from: date = EONS_AGO):
         self.__file = file
         self.__start_from = start_from
         self.__contents: List[dict] = []
@@ -306,20 +231,18 @@ class FileDump(Source, Destination):
             except Exception as e:
                 debug_ex(e, f'clean up temp file {self.__temp_dump.name}', LOG, silent=True)
 
-    def read_all(self, start_from: int = 0) -> Iterator[dict]:
-        LOG.warning('Loading JSON file CDLCs from %s.', loading_from(start_from))
-        yield from dropwhile(lambda c: c.get('snapshot_timestamp', 0) < start_from, self.__contents)
+    def read_all(self, since: date = EONS_AGO) -> Iterator[dict]:
+        LOG.warning('Loading JSON file CDLCs from %s.', since)
+        since_timestamp = int(datetime.combine(since, datetime.min.time(), tzinfo=timezone.utc).timestamp())
+        yield from dropwhile(lambda c: c.get('snapshot_timestamp', 0) < since_timestamp, self.__contents)
 
-    def start_from(self) -> int:
+    def start_from(self) -> date:
         return self.__start_from
 
-    def try_write(self, cdlc: dict) -> Any:
+    def try_write(self, cdlc: dict):
         direct_link = cdlc.get('direct_download', '')
         if direct_link and not direct_link.isspace():
             self.__write_queue.put(cdlc)
-            return None
-
-        return cdlc
 
     def update(self, from_write: Any, direct_link: str):
         cdlc = from_write
@@ -357,12 +280,10 @@ class FileDump(Source, Destination):
 class TheLoaderer(ElasticAware):
     def __init__(self,
                  cf: CustomsforgeClient = None,
-                 max_threads: int = DEFAULT_MAX_THREADS,
                  use_elastic: bool = False):
         super().__init__(use_elastic)
 
         self.__cf_source = Customsforge(cf) if cf else None
-        self.__max_threads = max(0, max_threads) or DEFAULT_MAX_THREADS
 
     def log_weird_links(self):
         """
@@ -370,36 +291,12 @@ class TheLoaderer(ElasticAware):
         """
         self.load(ElasticIndex(continuous=False), ElasticWeirdness())
 
-    def fix_sin_against_art(self):
-        """
-        Fixes a programming error I made. Instead of loading each CDLC's art link, I loaded a constant...
-        """
-        self.load(self.__cf_source, ElasticAbsolution())
-
-    def load_links(self, links=None):
-        """
-        Loads all missing links to ElasticIndex.
-
-        This is NOT an efficient, but accurate process. It's relatively hard to make a query for missing
-        or empty fields, and I'm not sure if it's possible to query whitespace only fields. This call
-        loads all the data from the index & checks for missing links programmatically. If needed, it can
-        be updated at any time, but with 8 years worth of CDLCs it finishes in seconds (not counting time
-        spent retrieving links), so it should be fine.
-
-        :param links: DirectLinkSource implementation or an object that can be resolved to one
-
-        Resolution logic is the same as in TheLoaderer#load, with one exception: src is never used as
-        stand-in for links, as it is assumed ElasticIndex does not have the ones we need.
-        """
-        self.load(ElasticIndex(continuous=False), ElasticIndexUpdateOnly(), links or self.__cf_source)
-
-    def load(self, src=None, dest=None, links=None) -> bool:
+    def load(self, src=None, dest=None) -> bool:
         """
         Loads CDLCs from a source to a destination.
 
         :param src: Source implementation or an object that can be resolved to one
         :param dest: Destination implementation or an object that can be resolved to one
-        :param links: DirectLinkSource implementation or an object that can be resolved to one
         :returns true if loading was attempted, false if it failed before even starting
 
         Resolution logic:
@@ -414,38 +311,21 @@ class TheLoaderer(ElasticAware):
         Defaults:
         src: Customsforge
         dest: ElasticIndex
-        links: src if it implements DirectLinkSource, otherwise Customsforge
 
         In all cases, if src, dest or links is a known implementation that relies on elastic, they will not be used
         when elastic is disabled.
         """
         src = self.__coerce_source(src)
         dest = self.__coerce_destination(dest)
-        links = self.__coerce_links(src, links)
 
         if not src or not dest:
             return False
 
-        work_queue: List[Future] = []
-
-        with src, dest, ThreadPoolExecutor(self.__max_threads) as p:
+        with src, dest:
             for cdlc in src.read_all(dest.start_from()):
-                c = dest.try_write(cdlc)
-                if c is not None:
-                    work = p.submit(self.__update, links, cdlc.get('id', None), dest, c)
-                    work_queue.append(work)
-
-            for item in work_queue:
-                item.result()
+                dest.try_write(cdlc)
 
         return True
-
-    def __update(self, links: DirectLinkSource, c_id, dest: Destination, c):
-        direct_link = links.to_direct_link(c_id) if links and c_id else ''
-        if direct_link and not extract(direct_link).registered_domain:
-            LOG.warning('Strange link detected for CDLC #%s: <%s>', c_id, direct_link)
-
-        dest.update(c, direct_link)
 
     def __coerce_source(self, src) -> Source:
         src = self.__coerce_and_check_elastic(src, self.__cf_source)
@@ -460,13 +340,6 @@ class TheLoaderer(ElasticAware):
             return dest
 
         return LOG.error('Could not be coerce Destination: %s', dest)
-
-    def __coerce_links(self, src, links) -> DirectLinkSource:
-        links = self.__coerce_and_check_elastic(links, src if isinstance(src, DirectLinkSource) else self.__cf_source)
-        if isinstance(links, DirectLinkSource):
-            return links
-
-        return LOG.error('Could not be coerce DirectLinkSource: %s', links)
 
     def __coerce_and_check_elastic(self, o, fallback):
         o = self.__coerce(o, fallback)
@@ -499,7 +372,3 @@ class TheLoaderer(ElasticAware):
             return FileDump(o)
 
         return o
-
-
-def loading_from(start: int):
-    return datetime.fromtimestamp(start, tz=timezone.utc) if start and start > 0 else 'beginning'

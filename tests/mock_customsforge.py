@@ -10,14 +10,8 @@ def customsforge(url, request):
     if not request.headers.get('Cookie', '') == MOCK_COOKIE:
         return to_login_page()
 
-    if 'get_content' in url.path:
-        return dates_mock(url, request)
-
-    if 'get_group_content' in url.path:
+    if 'ignition4' in url.hostname:
         return cdlcs_mock(url, request)
-
-    if 'process.php' in url.path:
-        return direct_link_mock(url, request)
 
     return {
         'status_code': 404,
@@ -36,52 +30,21 @@ def login_mock(url, request):
     return ok('Sign-in error page')
 
 
-def dates_mock(url, request):
-    before, skip, after = url.query.partition('skip=')
-    if after:
-        date_str = '2020-05-1' + after[:1]
-        if date_str in MOCK_CDLC:
-            return group(date_str)
-
-    return values()
-
-
-def group(date_str: str):
-    return values([
-        [{'grp': date_str}],
-        [{'total': len(MOCK_CDLC)}]
-    ])
-
-
 def cdlcs_mock(url, request):
-    if 'skip=0' in url.query:
-        for date_str, cdlc in MOCK_CDLC.items():
-            if date_str in url.query:
-                return values([cdlc])
+    if 'draw' in url.query:
+        return ok({
+            'draw': 1,
+            'recordsTotal': 6,
+            'recordsFiltered': 6,
+            'data': MOCK_CDLC if 'start=0' in url.query else []
+        })
 
-    return values('[]')
-
-
-def direct_link_mock(url, request):
-    for date_str, cdlc in MOCK_CDLC.items():
-        id_param = f'id={cdlc.get("id")}'
-        if id_param in url.query:
-            return to_direct_link('magical_link')
-
-    return to_direct_link()
-
-
-def values(content=None):
-    return {
-        'status_code': 200,
-        'reason': 'OK',
-        'content': content,
-    }
+    return ok('Default ignition page. Used for pinging.')
 
 
 def successful_login_redirect():
     return {
-        'status_code': 302,
+        'status_code': 301,
         'reason': 'Moved Temporarily',
         'content': 'Redirect to main page - login successful!',
         'headers': {
@@ -93,22 +56,11 @@ def successful_login_redirect():
 
 def to_login_page():
     return {
-        'status_code': 302,
+        'status_code': 301,
         'reason': 'Moved Temporarily',
         'content': 'Redirect to login page - login is required!',
         'headers': {
             'Location': LOGIN_PAGE,
-        },
-    }
-
-
-def to_direct_link(link: str = ''):
-    return {
-        'status_code': 302,
-        'reason': 'Moved Temporarily',
-        'content': 'Redirect to direct link - if one exists, that is!',
-        'headers': {
-            'Location': link,
         },
     }
 

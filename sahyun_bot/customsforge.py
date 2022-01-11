@@ -1,12 +1,12 @@
 import html
 import pickle
 import re
-from datetime import date, timedelta
-from itertools import dropwhile
+from datetime import date, datetime, timezone
+from itertools import takewhile
 from threading import RLock
-from typing import Iterator, Optional, Callable, IO, Any, List, Union
+from typing import Iterator, Optional, Callable, IO, Any, List
 
-from requests import Response, Session
+from requests import Response
 from requests.cookies import RequestsCookieJar
 
 from sahyun_bot.customsforge_settings import *
@@ -24,12 +24,55 @@ LOGIN_FORM_CSRF = 'csrfKey'
 LOGIN_FORM_EMAIL = 'auth'
 LOGIN_FORM_PASSWORD = 'password'
 
-CDLC_PAGE = 'http://customsforge.com/page/customsforge_rs_2014_cdlc.html/_/pc-enabled-rs-2014-cdlc/{}-r{}'
-DATES_API = 'https://ignition.customsforge.com/search/get_content?group=updated'
-CDLC_BY_DATE_API = 'https://ignition.customsforge.com/search/get_group_content?group=updated&sort=updated'
+CDLC_PAGE = 'https://ignition4.customsforge.com/cdlc/{}'
+CDLC_API = 'https://ignition4.customsforge.com/'
 DOWNLOAD_API = 'https://customsforge.com/process.php?id={}'
 
 EONS_AGO = date.fromisoformat('2010-01-01')  # this should pre-date even the oldest CDLC
+
+AJAX_HEADERS = {
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "X-Requested-With": "XMLHttpRequest",
+}
+
+CDLC_API_PARAMS_BASE = {
+    'draw': '1',
+    'columns[0][data]': 'addBtn',
+    'columns[0][searchable]': 'false',
+    'columns[0][orderable]': 'false',
+    'columns[1][data]': 'artistName',
+    'columns[2][data]': 'titleName',
+    'columns[3][data]': 'albumName',
+    'columns[4][data]': 'year',
+    'columns[5][data]': 'duration',
+    'columns[5][orderable]': 'false',
+    'columns[6][data]': 'tunings',
+    'columns[6][searchable]': 'false',
+    'columns[6][orderable]': 'false',
+    'columns[7][data]': 'version',
+    'columns[7][searchable]': 'false',
+    'columns[7][orderable]': 'false',
+    'columns[8][data]': 'author.name',
+    'columns[9][data]': 'created_at',
+    'columns[9][searchable]': 'false',
+    'columns[10][data]': 'updated_at',
+    'columns[10][searchable]': 'false',
+    'columns[11][data]': 'downloads',
+    'columns[11][searchable]': 'false',
+    'columns[12][data]': 'parts',
+    'columns[12][orderable]': 'false',
+    'columns[13][data]': 'platforms',
+    'columns[14][data]': 'file_pc_link',
+    'columns[14][searchable]': 'false',
+    'columns[15][data]': 'file_mac_link',
+    'columns[15][searchable]': 'false',
+    'columns[16][data]': 'artist.name',
+    'columns[17][data]': 'title',
+    'columns[18][data]': 'album',
+    'order[0][column]': '10',
+    'order[0][dir]': 'desc',
+    'search[value]': '',
+}
 
 
 class CustomsforgeClient:
@@ -116,61 +159,25 @@ class CustomsforgeClient:
         :returns true if a simple call to customsforge succeeded (including login), false otherwise
         """
         with self.__sessions.with_retry() as session:
-            return self.__date_count(session=session) is not None
+            return self.__call('ping', session.get, CDLC_API) is not None
 
-    def dates(self, since: date = None) -> Iterator[str]:
-        """
-        Generates all dates which had an updated CDLC, since the date given, in ascending order.
-        If no date is given, starts at the beginning.
+    def cdlcs(self, since: date = EONS_AGO) -> Iterator[dict]:
+        import time
+        epoch_millis = int(time.time() * 1000)
 
-        The dates are returned in ISO format strings, intended to be used by other APIs.
-        """
-        with self.__sessions.with_retry() as session:
-            yield from self.__dates(since, session)
-
-    def cdlcs(self, since: date = None, since_exact: int = 0) -> Iterator[dict]:
-        """
-        Generates all CDLCs which are available in customsforge, since the date and/or exact time given.
-        Exact time takes precedence over the date, unless it is 0 (or negative).
-        If no date or exact time is given, starts at the beginning.
-
-        CDLCs are returned in order of ascending last update time.
-        CDLCs are returned as dicts containing information, such as artist, title, id, link, etc.
-        Refer to To.cdlcs method for specifics.
-        """
-        since_exact = since_exact or 0
-        since = self.__estimate_date(since_exact) if since_exact else since
+        params = dict(CDLC_API_PARAMS_BASE)
+        params['_'] = epoch_millis
 
         with self.__sessions.with_retry() as session:
-            for d in self.__dates(since, session):
-                lazy_cdlcs = self.__lazy_all(trying_to='find CDLCs',
-                                             call=session.get,
-                                             url=CDLC_BY_DATE_API,
-                                             params={'filter': d},
-                                             convert=To.cdlcs)
+            lazy_cdlcs = self.__lazy_all(trying_to='find CDLCs',
+                                         call=session.get,
+                                         url=CDLC_API,
+                                         params=params,
+                                         headers=AJAX_HEADERS,
+                                         convert=To.cdlcs)
 
-                yield from dropwhile(lambda c: c['snapshot_timestamp'] < since_exact, lazy_cdlcs)
-
-    def direct_link(self, cdlc_id: Union[str, int]) -> str:
-        """
-        :returns link to the direct download of the CDLC with given id, if such exists, empty string otherwise
-        """
-        url = DOWNLOAD_API.format(cdlc_id)
-
-        with self.__sessions.with_retry() as session:
-            r = self.__call('get direct link', session.get, url)
-
-        return r.headers.get('Location', '') if r and r.is_redirect else ''
-
-    def calculate_date_skip(self, since: date, date_count: int) -> int:
-        """
-        :returns how many dates can be skipped to arrive closer to expected date; this is usually a generous estimate,
-        but can become outdated; therefore, only estimate right before calling for dates
-        """
-        passed_since = self.__get_today() - since
-        # we subtract one to include the date, one to account for time passing, one to avoid timezone shenanigans
-        skip_estimate = date_count - passed_since.days - 3
-        return max(0, skip_estimate)
+        since_timestamp = int(datetime.combine(since, datetime.min.time(), tzinfo=timezone.utc).timestamp())
+        return reversed(list(takewhile(lambda c: c['snapshot_timestamp'] >= since_timestamp, lazy_cdlcs)))
 
     def __has_credentials(self, email: str, password: str) -> bool:
         if email and password:
@@ -188,39 +195,6 @@ class CustomsforgeClient:
             return False
 
         return True
-
-    def __dates(self, since: date, session: Session) -> Iterator[str]:
-        since = since or EONS_AGO
-
-        lazy_dates = self.__lazy_all(trying_to='find dates for CDLC updates',
-                                     call=session.get,
-                                     url=DATES_API,
-                                     convert=To.dates,
-                                     skip=self.__estimate_date_skip(since, session))
-
-        yield from dropwhile(lambda d: date.fromisoformat(d) < since, lazy_dates)
-
-    def __estimate_date_skip(self, since: date, session: Session) -> int:
-        if since <= EONS_AGO:
-            return 0
-
-        date_count = self.__date_count(session)
-        if not date_count:
-            return 0
-
-        return self.calculate_date_skip(since, date_count)
-
-    def __estimate_date(self, epoch_seconds: int) -> date:
-        # we subtract one day to account for timezone shenanigans
-        return date.fromtimestamp(epoch_seconds) - timedelta(days=1) if epoch_seconds > 0 else EONS_AGO
-
-    def __date_count(self, session: Session) -> Optional[int]:
-        date_count = self.__lazy_all(trying_to='total count of dates',
-                                     call=session.get,
-                                     url=DATES_API,
-                                     convert=To.date_count,
-                                     batch=1)
-        return next(date_count, None)
 
     def __call(self,
                trying_to: str,
@@ -254,8 +228,8 @@ class CustomsforgeClient:
 
         while True:
             params = call_params.setdefault('params', {})
-            params['skip'] = skip
-            params['take'] = batch
+            params['start'] = skip
+            params['length'] = batch
 
             r = self.__call(**call_params)
             if not r or not r.text:
@@ -298,56 +272,105 @@ class Verify:
 
 class To:
     @staticmethod
-    def dates(dates_api_response) -> Iterator[str]:
-        date_groups = dates_api_response[0]
-        if not date_groups:
+    def cdlcs(cdlcs) -> Iterator[dict]:
+        if not cdlcs:
             return
 
-        for date_group in date_groups:
-            yield date_group['grp']
-
-    @staticmethod
-    def date_count(dates_api_response) -> Iterator[str]:
-        yield dates_api_response[1][0]['total']
-
-    @staticmethod
-    def cdlcs(cdlcs_by_date) -> Iterator[dict]:
-        if not cdlcs_by_date:
-            return
-
-        for c in cdlcs_by_date:
+        for c in cdlcs['data']:
             yield To.cdlc(c)
 
     @staticmethod
-    def cdlc(c) -> dict:
+    def cdlc(c: dict) -> dict:
         cdlc_id = c['id']
         return {
             'id': cdlc_id,
-            'artist': read(c, 'artist'),
+            'artist': read(c['artist'], 'name'),
             'title': read(c, 'title'),
             'album': read(c, 'album'),
-            'tuning': read(c, 'tuning'),
-            'instrument_info': read_all(c, 'instrument_info'),
-            'parts': read_all(c, 'parts'),
-            'platforms': read_all(c, 'platforms'),
-            'has_dynamic_difficulty': read_bool(c, 'dd'),
-            'is_official': read_bool(c, 'official'),
+            'tuning': read_tuning(c),
+            'instrument_info': read_instruments(c),
+            'parts': read_parts(c),
+            'platforms': read_platforms(c),
+            'has_dynamic_difficulty': read_dynamic_difficulty(c),
+            'is_official': read_bool(c, 'is_official'),
 
-            'author': read(c, 'member'),
+            'author': read(c['author'], 'name'),
             'version': read(c, 'version'),
 
-            'download': DOWNLOAD_API.format(cdlc_id),
-            'info': CDLC_PAGE.format(read(c, 'furl'), cdlc_id),
-            'video': read_link(c, 'music_video'),
-            'art': read_link(c, 'album_art'),
+            'direct_download': read(c, 'file_pc_link'),
+            'download': DOWNLOAD_API.format(cdlc_id),  # no longer works, can be deleted
+            'info': CDLC_PAGE.format(cdlc_id),
+            'video': read_link(c, 'music_video_url'),
+            'art': read_link(c, 'album_art_url'),
 
-            'snapshot_timestamp': c['updated'],
+            'snapshot_timestamp': read_last_update(c),
         }
 
 
+def read_tuning(cdlc: dict):
+    for tuning in ['lead', 'rhythm', 'bass', 'alt_lead', 'alt_rhythm', 'alt_bass']:
+        value = read(cdlc, tuning)
+        if value and not value.isspace() and not value == '0':
+            return value
+
+    return None
+
+
+def read_instruments(cdlc: dict):
+    instruments = []
+    read_from_bool(cdlc, 'require_capo_lead', 'ii_capolead', instruments)
+    read_from_bool(cdlc, 'require_capo_rhythm', 'ii_caporhythm', instruments)
+    read_from_bool(cdlc, 'require_slide_lead', 'ii_slidelead', instruments)
+    read_from_bool(cdlc, 'require_slide_rhythm', 'ii_sliderhythm', instruments)
+    read_from_bool(cdlc, 'require_five_bass', 'ii_5stringbass', instruments)
+    read_from_bool(cdlc, 'require_six_bass', 'ii_6stringbass', instruments)
+    read_from_bool(cdlc, 'require_seven_guitar', 'ii_7stringguitar', instruments)
+    read_from_bool(cdlc, 'require_twelve_guitar', 'ii_12stringguitar', instruments)
+    read_from_bool(cdlc, 'require_heavy_gauge', 'ii_heavystrings', instruments)
+    read_from_bool(cdlc, 'require_whammy_bar', 'ii_tremolo', instruments)
+    return instruments
+
+
+def read_parts(cdlc: dict):
+    parts = []
+    for tuning in ['lead', 'rhythm', 'bass', 'alt_lead', 'alt_rhythm', 'alt_bass']:
+        value = read(cdlc, tuning)
+        if value and not value.isspace() and not value == '0':
+            parts.append(tuning.rpartition('alt_')[2])
+
+    read_from_bool(cdlc, 'has_lyrics', 'vocals', parts)
+
+    return parts
+
+
+def read_platforms(cdlc: dict):
+    platforms = []
+    for platform in ['pc', 'mac']:  # no mapping for xbox360 and ps3
+        value = read_link(cdlc, f'file_{platform}_link')
+        if value and not value.isspace():
+            platforms.append(platform)
+
+    return platforms
+
+
+def read_dynamic_difficulty(cdlc: dict):
+    return False  # could not find mapping
+
+
+def read_last_update(cdlc: dict):
+    value = read(cdlc, 'updated_at')
+    update = datetime.strptime(value, '%m/%d/%Y')
+    return int(update.replace(tzinfo=timezone.utc).timestamp())
+
+
+def read_from_bool(data: dict, key: str, value: str, l: List[str]):
+    if read_bool(data, key):
+        l.append(value)
+
+
 def read(data: dict, key: str) -> str:
-    value = data[key]
-    return html.unescape(value.strip()) if value else ''
+    value = '' if data[key] is None else str(data[key])
+    return html.unescape(value.strip())
 
 
 def read_all(data: dict, key: str) -> List[str]:

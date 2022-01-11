@@ -5,3 +5,9 @@ Automatic CDLC download from supported websites into pre-configured folder
 Fallback implementation for CDLC search (similar to the original bot, querying the website)
 Sub & mod support
 Improve queue by managing already played songs more explicitly
+
+Post-fix cleanup, if needed:
+Add support for multiple tunings
+Add support for mac-only CDLCs
+Cleanup tuning values (old vs new)
+Make CDLC loading use dates explicitly instead of timestamps

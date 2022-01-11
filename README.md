@@ -261,11 +261,6 @@ CDLCs with only unplayable parts will not be queued or chosen randomly by the bo
 RandomOfficial = true if you want the bot to include all official CDLCs when picking random;
 defaults to false
 
-#### [load]
-
-MaxWorkers = amount of background threads that assist with loading CDLCs; defaults to 8;
-any positive integer is allowed
-
 #### [irc]
 
 Nick = bot username, account on twitch

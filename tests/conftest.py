@@ -28,9 +28,8 @@ MANUAL_USERS = {
 def prepare_cdlc_data():
     data_dir = Path(os.path.realpath(__file__)).parent / 'data'
     for p in data_dir.glob('cdlc_*.json'):
-        date_str = p.name[5:-5]
         with p.open() as f:
-            MOCK_CDLC[date_str] = json.load(f)
+            MOCK_CDLC.append(json.load(f))
 
 
 @pytest.fixture(scope='session')
@@ -94,9 +93,8 @@ def prepare_index(doc):
 
 
 def prepare_cdlcs(doc):
-    for cdlc in MOCK_CDLC.values():
+    for cdlc in MOCK_CDLC:
         c = To.cdlc(cdlc)
-        c['direct_download'] = ''
         c['from_auto_index'] = False
         yield doc(_id=cdlc['id'], **c)
 

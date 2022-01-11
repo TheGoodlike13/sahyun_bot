@@ -17,7 +17,6 @@ from sahyun_bot.irc_bot import botyun
 from sahyun_bot.link_job import BrowseLink, CopyLinkToPaste, LinkJobFactory, IgnoreLink
 from sahyun_bot.link_job_properties import *
 from sahyun_bot.the_loaderer import *
-from sahyun_bot.the_loaderer_settings import *
 from sahyun_bot.twitchy import Twitchy
 from sahyun_bot.twitchy_settings import *
 from sahyun_bot.users import Users
