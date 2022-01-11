@@ -88,11 +88,10 @@ def test_to_cdlc():
         artist='Hockey Dad',
         title='I Wanna Be Everybody',
         album='Blend Inn',
-        tuning='E Standard',
+        tuning=['E Standard', 'E Standard'],
         instrument_info=['ii_tremolo'],
         parts=['lead', 'bass', 'vocals'],
         platforms=['pc', 'mac'],
-        has_dynamic_difficulty=False,
         is_official=False,
 
         author='AlQapone',

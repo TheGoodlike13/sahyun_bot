@@ -7,7 +7,6 @@ Sub & mod support
 Improve queue by managing already played songs more explicitly
 
 Post-fix cleanup, if needed:
-Add support for multiple tunings
+Add support for multiple tunings (mapped to parts?)
 Add support for mac-only CDLCs
 Cleanup tuning values (old vs new)
-Make CDLC loading use dates explicitly instead of timestamps

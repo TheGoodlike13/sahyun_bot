@@ -79,18 +79,16 @@ class CustomDLC(BaseDoc):
     artist = Keyword(required=True, copy_to=['full_title_grammar_comrade', 'full_title_shingle_city'])
     title = Keyword(required=True, copy_to=['full_title_grammar_comrade', 'full_title_shingle_city'])
     album = Keyword(required=True)
-    tuning = Keyword(required=True)
+    tuning = Keyword(multi=True, required=True)
     instrument_info = Keyword(multi=True)
     parts = Keyword(multi=True, required=True)
     platforms = Keyword(multi=True, required=True)
-    has_dynamic_difficulty = Boolean(required=True)
     is_official = Boolean(required=True)
 
     author = Keyword(required=True)
     version = Keyword(required=True)
 
     direct_download = Keyword()
-    download = Keyword(required=True)
     info = Keyword(required=True)
     video = Keyword()
     art = Keyword()
@@ -102,6 +100,9 @@ class CustomDLC(BaseDoc):
     # combined artist & title fields for analysis & search - see #fuzzy_match for explanation
     full_title_grammar_comrade = Text(analyzer=grammar_comrade, term_vector='yes')
     full_title_shingle_city = Text(analyzer=shingle_city, term_vector='yes')
+
+    # legacy fields (no longer mapped or replaced)
+    has_dynamic_difficulty = Boolean()
 
     @classmethod
     def search(cls, query: str = None, **kwargs) -> Search:
@@ -167,7 +168,7 @@ class CustomDLC(BaseDoc):
 
     @property
     def link(self) -> str:
-        return self.direct_download if self.direct_download else self.download
+        return self.direct_download
 
     @property
     def is_playable(self) -> bool:

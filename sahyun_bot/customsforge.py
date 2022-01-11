@@ -287,11 +287,10 @@ class To:
             'artist': read(c['artist'], 'name'),
             'title': read(c, 'title'),
             'album': read(c, 'album'),
-            'tuning': read_tuning(c),
+            'tuning': read_tunings(c),
             'instrument_info': read_instruments(c),
             'parts': read_parts(c),
             'platforms': read_platforms(c),
-            'has_dynamic_difficulty': read_dynamic_difficulty(c),
             'is_official': read_bool(c, 'is_official'),
 
             'author': read(c['author'], 'name'),
@@ -307,16 +306,17 @@ class To:
         }
 
 
-def read_tuning(cdlc: dict):
+def read_tunings(cdlc: dict) -> List[str]:
+    tunings = []
     for tuning in ['lead', 'rhythm', 'bass', 'alt_lead', 'alt_rhythm', 'alt_bass']:
         value = read(cdlc, tuning)
         if value and not value.isspace() and not value == '0':
-            return value
+            tunings.append(value)
 
-    return None
+    return tunings
 
 
-def read_instruments(cdlc: dict):
+def read_instruments(cdlc: dict) -> List[str]:
     instruments = []
     read_from_bool(cdlc, 'require_capo_lead', 'ii_capolead', instruments)
     read_from_bool(cdlc, 'require_capo_rhythm', 'ii_caporhythm', instruments)
@@ -331,7 +331,7 @@ def read_instruments(cdlc: dict):
     return instruments
 
 
-def read_parts(cdlc: dict):
+def read_parts(cdlc: dict) -> List[str]:
     parts = []
     for tuning in ['lead', 'rhythm', 'bass', 'alt_lead', 'alt_rhythm', 'alt_bass']:
         value = read(cdlc, tuning)
@@ -343,7 +343,7 @@ def read_parts(cdlc: dict):
     return parts
 
 
-def read_platforms(cdlc: dict):
+def read_platforms(cdlc: dict) -> List[str]:
     platforms = []
     for platform in ['pc', 'mac']:  # no mapping for xbox360 and ps3
         value = read_link(cdlc, f'file_{platform}_link')
@@ -353,11 +353,7 @@ def read_platforms(cdlc: dict):
     return platforms
 
 
-def read_dynamic_difficulty(cdlc: dict):
-    return False  # could not find mapping
-
-
-def read_last_update(cdlc: dict):
+def read_last_update(cdlc: dict) -> int:
     value = read(cdlc, 'updated_at')
     update = datetime.strptime(value, '%m/%d/%Y')
     return int(update.replace(tzinfo=timezone.utc).timestamp())

@@ -60,7 +60,7 @@ init_module(dt, 'Downtime for commands')
 us = Users(streamer=i_streamer, tw=tw, cache_follows=u_cache_f, cache_viewers=u_cache_w)
 init_module(us, 'User factory')
 
-tl = TheLoaderer(cf=cf, max_threads=l_max)
+tl = TheLoaderer(cf=cf)
 init_module(tl, 'The loaderer')
 
 lb = BrowseLink()
