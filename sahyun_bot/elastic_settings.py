@@ -10,8 +10,9 @@ At least in normal circumstances :)
 from datetime import timezone, datetime
 from typing import Optional, List, Union
 
-from elasticsearch_dsl import Document, Date, integer_types, ValidationException, Search
+from elasticsearch_dsl import Document, Date, ValidationException, Search
 from elasticsearch_dsl.query import Query
+from six import integer_types
 
 from sahyun_bot.the_danger_zone import nuke_from_orbit
 from sahyun_bot.utils import NON_EXISTENT
