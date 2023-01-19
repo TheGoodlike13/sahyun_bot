@@ -19,7 +19,7 @@ def test_fallback(fallback_users):
 
 def test_no_elastic(live_users):
     assert_user(live_users.user('sahyun'), rank=UserRank.ADMIN, user_id=13144519)
-    assert_user(live_users.user('thegoodlike13'), rank=UserRank.FLWR, user_id=37103864)
+    # assert_user(live_users.user('thegoodlike13'), rank=UserRank.FLWR, user_id=37103864)  deleted account
     assert_user(live_users.user('goodlikebot'), rank=UserRank.VWR, user_id=91770105)
     assert_user(live_users.user('sahyunbot'), rank=UserRank.FLWR, user_id=92152420)
 
